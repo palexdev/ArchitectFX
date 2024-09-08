@@ -1,0 +1,46 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+plugins {
+    id 'java'
+    id 'org.openjfx.javafxplugin' version "$jfxPlugin"
+}
+
+group = 'io.github.palexdev'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.yaml:snakeyaml:$snakeyaml"
+    implementation "org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven:$mavenResolver"
+    implementation "org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:$mavenResolver"
+    implementation "org.jooq:joor:$joor"
+    implementation "io.github.classgraph:classgraph:$classgraph"
+    implementation "org.tinylog:tinylog-impl:$tinylog"
+    //implementation "org.tinylog:slf4j-tinylog:$tinylog"
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation "org.testfx:testfx-core:$testfx"
+    testImplementation "org.testfx:testfx-junit5:$testfx"
+}
+
+javafx {
+    // Workaround for Linux ARM64 because JavaFX is not updated as often for this architecture
+    var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
+    version = isLinuxArm ? "21.0.1" : "$jfx"
+    configurations = ['implementation', 'testImplementation']
+    modules = ['javafx.controls']
+}
+
+test {
+    useJUnitPlatform()
+    testLogging.showStandardStreams = true
+}
+
+task testRun(type: JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'app.TestApp'
+}

@@ -1,0 +1,116 @@
+package io.github.palexdev.architectfx.deps;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import org.joor.Reflect;
+import org.joor.ReflectException;
+import org.tinylog.Logger;
+
+import io.github.palexdev.architectfx.utils.ReflectionUtils;
+
+public class DependencyManager {
+	//================================================================================
+	// Singleton
+	//================================================================================
+	private static final DependencyManager instance = new DependencyManager();
+
+	public static DependencyManager instance() {
+		return instance;
+	}
+
+	//================================================================================
+	// Properties
+	//================================================================================
+	private final Set<File> dependencies = new HashSet<>();
+	private final MavenHelper mavenHelper = new MavenHelper();
+	private DynamicClassLoader classLoader = new DynamicClassLoader();
+
+	//================================================================================
+	// Constructors
+	//================================================================================
+	private DependencyManager() {
+	}
+
+	//================================================================================
+	// Methods
+	//================================================================================
+	public <T> T create(String className, Object... args) {
+		try {
+			Class<?> klass = ReflectionUtils.findClass(className);
+			return create(klass, args);
+		} catch (ClassNotFoundException | IllegalStateException ex) {
+			Logger.error(ex, "Failed to create class {}", className);
+			return null;
+		}
+	}
+
+	public <T> T create(Class<?> klass, Object... args) {
+		try {
+			Logger.trace("Attempting to create class {} with args: {}", klass.getName(), Arrays.toString(args));
+			return Reflect.onClass(klass.getName(), classLoader)
+				.create(args)
+				.get();
+		} catch (Exception ex) {
+			Logger.error("Failed to create class {} because: {}", klass.getName(), ex.getMessage());
+			return null;
+		}
+	}
+
+	public <T> Optional<T> createOpt(String className, Object... args) {
+		return Optional.ofNullable(create(className, args));
+	}
+
+	public <T> Optional<T> createOpt(Class<?> klass, Object... args) {
+		return Optional.ofNullable(create(klass, args));
+	}
+
+	public Class<?> loadClass(String fqName) {
+		try {
+			return classLoader.loadClass(fqName);
+		} catch (ClassNotFoundException ex) {
+			Logger.error(ex, "Failed to load class {}", fqName);
+			return null;
+		}
+	}
+
+	public DependencyManager addDeps(String... artifacts) {
+		if (artifacts.length != 0) {
+			File[] deps = mavenHelper.downloadFiles(artifacts);
+			Collections.addAll(dependencies, deps);
+		}
+		return this;
+	}
+
+	public DependencyManager addDeps(File... deps) {
+		Collections.addAll(dependencies, deps);
+		return this;
+	}
+
+	public DependencyManager cleanDeps() {
+		dependencies.clear();
+		return this;
+	}
+
+	public DependencyManager refresh() {
+		try {
+			classLoader.close();
+		} catch (Exception ex) {
+			Logger.warn(ex, "Failed to dispose old class loader");
+		}
+		classLoader = new DynamicClassLoader();
+		classLoader.addJars(dependencies);
+		return this;
+	}
+
+	//================================================================================
+	// Getters
+	//================================================================================
+	public Set<File> getDependencies() {
+		return Collections.unmodifiableSet(dependencies);
+	}
+}
