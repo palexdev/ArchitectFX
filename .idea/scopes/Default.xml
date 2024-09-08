@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Default" pattern="(!test:*..*&amp;&amp;!lib:*..*||file[ArchitectFX*]:*//*)&amp;&amp;!file[ArchitectFX.main]:resources//*&amp;&amp;!file[ArchitectFX.test]:*/&amp;&amp;!file[ArchitectFX]:*/" />
+</component>
