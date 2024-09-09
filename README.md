@@ -30,4 +30,4 @@ In other words, this mode does not let you modify the Scene by dragging controls
 This mode's con is that compared to a GUI editor it's more inconvenient. But! The pro is that you still have a live preview of what you view will look like once loaded.
 ## Project Status
 
-I figured that _maybe_ organizing the progress in a Kanban board would be definitely better than having a checklist here in Markdown. So, you can monitor the progress [here](https://github.com/palexdev/ArchitectFX/projects).
+I figured that _maybe_ organizing the progress in a Kanban board would be definitely better than having a checklist here in Markdown. So, you can monitor the progress [here](https://trello.com/b/v303w5k6/architectfx-progress).
