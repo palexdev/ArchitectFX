@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.joor.Reflect;
-import org.joor.ReflectException;
 import org.tinylog.Logger;
 
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
@@ -85,6 +84,29 @@ public class DependencyManager {
 
 	public <T> Optional<T> createOpt(Class<?> klass, Object... args) {
 		return Optional.ofNullable(create(klass, args));
+	}
+
+	public <T> T invokeFactory(String factoryName, Object... args) {
+		int lastDot = factoryName.lastIndexOf(".");
+		String className = factoryName.substring(0, lastDot);
+		String method = factoryName.substring(lastDot + 1);
+		try {
+			Logger.trace(
+				"Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
+				 factoryName, Arrays.toString(args), className, method
+			);
+			Class<?> klass = ReflectionUtils.findClass(className);
+			return Reflect.onClass(klass.getName(), classLoader)
+				.call(method, args)
+				.get();
+		} catch (Exception ex) {
+			Logger.error("Failed to invoke factory {} because: {}", factoryName, ex.getMessage());
+			return null;
+		}
+	}
+
+	public <T> Optional<T> invokeFactoryOpt(String factoryName, Object... args) {
+		return Optional.ofNullable(invokeFactory(factoryName, args));
 	}
 
 	public Class<?> loadClass(String fqName) {

@@ -5,11 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static utils.TestUtils.getProperty;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import com.sun.javafx.application.PlatformImpl;
 import org.junit.jupiter.api.Test;
 
 import io.github.palexdev.architectfx.yaml.YamlLoader;
@@ -20,6 +20,8 @@ import javafx.geometry.VPos;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import utils.TestUtils;
 
 public class TestLoader {
 
@@ -79,7 +81,7 @@ public class TestLoader {
 
             assertEquals(6, root.getRowConstraints().size());
             double[] params = new double[] { 32.0, 64.0, 64.0, 10.0, 32.0, 150.0 };
-            for (int i = 6; i < 6; i++) {
+            for (int i = 0; i < 6; i++) {
                 RowConstraints rc = root.getRowConstraints().get(i);
                 assertEquals(10.0, rc.getMinHeight());
                 assertEquals(params[i], rc.getPrefHeight());
@@ -135,25 +137,34 @@ public class TestLoader {
 
     @Test
     void testLoadWithoutImports() {
-        // Force initialize JavaFX toolkit
-        PlatformImpl.startup(() -> {});
-
-        // TODO implement factories (static method to create objects in YAML format)
-        // Test by setting the MFXFontIcon's color
+        // Almost without
+        // There are several classes named Color
+        TestUtils.forceInitFX();
         String document = """
         deps: ["io.github.palexdev:materialfx:11.17.0"]
+        imports: ["javafx.scene.paint.Color"]
         MFXButton:
           alignment: "CENTER"
           padding: { type: "Insets", args: [10.0] }
-          graphic: { type: "MFXFontIcon", args: ["fas-user"] }
+          graphic: {
+            type: "MFXFontIcon", args: ["fas-user"],
+            color: { type: "Color", factory: "Color.web", args: ["#845EC2"] }
+          }
           text: "This is a MaterialFX's Button"
         """;
 
         try {
             InputStream stream = new ByteArrayInputStream(document.getBytes());
             Object obj = YamlLoader.instance().load(stream);
+            assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
+            assertEquals(new Insets(10.0), getProperty(obj, "padding"));
+            assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
 
-            // TODO test attributes
+            // Test graphic
+            Object graphic = getProperty(obj, "graphic");
+            assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
+            assertEquals("fas-user", getProperty(graphic, "description"));
+            assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
         } catch (Exception ex) {
             ex.printStackTrace();
             fail(ex);

@@ -146,9 +146,7 @@ public class ReflectionUtils {
 						String setter = resolveSetter(name);
 						Reflect.on(obj).call(setter, o);
 					},
-					() -> {
-						Logger.error("Could not set complex object {}, skipping...");
-					}
+					() -> Logger.error("Could not set complex object {}, skipping...")
 				);
 				continue;
 			}
@@ -204,10 +202,24 @@ public class ReflectionUtils {
 	}
 
 	private static Optional<Object> handleComplexType(String type, SequencedMap<String, ?> map) {
+		Optional<Object> opt;
 		Object[] args = new Object[0];
 		if (map.containsKey("args")) args = ((List<?>) map.remove("args")).toArray();
-		Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
-		Optional<Object> opt = DependencyManager.instance().createOpt(type, args);
+		if (map.containsKey("factory")) {
+			String factory = (String) map.remove("factory");
+			if (!factory.contains(".")) {
+				Logger.error(
+					"Could not create complex type through factory because the name {} is incorrect",
+					factory
+				);
+				return Optional.empty();
+			}
+			Logger.debug("Creating complex type with factory {} and args {}", factory, Arrays.toString(args));
+			opt = DependencyManager.instance().invokeFactoryOpt(factory, args);
+		} else {
+			Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
+			opt = DependencyManager.instance().createOpt(type, args);
+		}
 		if (opt.isEmpty()) return Optional.empty();
 
 		// Exctract properties and initialize the object
