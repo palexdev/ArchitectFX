@@ -40,7 +40,7 @@ test {
     testLogging.showStandardStreams = true
 }
 
-task testRun(type: JavaExec) {
+tasks.register('testRun', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'app.TestApp'
 }
