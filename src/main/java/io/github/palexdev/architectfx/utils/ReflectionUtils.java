@@ -277,11 +277,11 @@ public class ReflectionUtils {
 		return klass.isPrimitive() || primitives.contains(klass);
 	}
 
-	private static String resolveGetter(String fieldName) {
+	public static String resolveGetter(String fieldName) {
 		return "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 	}
 
-	private static String resolveSetter(String fieldName) {
+	public static String resolveSetter(String fieldName) {
 		return "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 	}
 
