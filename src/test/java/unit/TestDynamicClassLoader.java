@@ -15,6 +15,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.deps.DynamicClassLoader;
 import javafx.geometry.Insets;
+import utils.TestUtils;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class TestDynamicClassLoader {
@@ -48,9 +49,9 @@ public class TestDynamicClassLoader {
 		assertNotNull(obj);
 		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-		double w = Reflect.on(obj).call("getWidth").get();
+		double w = TestUtils.getProperty(obj, "width");
 		assertEquals(69.0, w);
-		double h = Reflect.on(obj).call("getHeight").get();
+		double h = TestUtils.getProperty(obj, "height");
 		assertEquals(420.0, h);
 	}
 
@@ -72,9 +73,9 @@ public class TestDynamicClassLoader {
 		assertNotNull(obj);
 		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-		double w = Reflect.on(obj).call("getWidth").get();
+		double w = TestUtils.getProperty(obj, "width");
 		assertEquals(69.0, w);
-		double h = Reflect.on(obj).call("getHeight").get();
+		double h = TestUtils.getProperty(obj, "height");
 		assertEquals(420.0, h);
 	}
 }
