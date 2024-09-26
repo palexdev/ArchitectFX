@@ -18,9 +18,11 @@
 
 package io.github.palexdev.architectfx.model;
 
+import org.tinylog.Logger;
+
 import java.util.SequencedMap;
 
-import org.tinylog.Logger;
+import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.TYPE_TAG;
 
 public class Property {
     //================================================================================
@@ -46,7 +48,7 @@ public class Property {
         Logger.trace("Determining property type for Name:{} Value:{}", name, property);
         if (property instanceof SequencedMap<?,?> m) {
             Logger.trace("Type is complex...");
-            Object type = m.remove("type");
+            Object type = m.remove(TYPE_TAG);
             if (type instanceof String s) {
                 Logger.trace("Found type {} for property {}", s, name);
                 return s;

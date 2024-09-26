@@ -31,6 +31,8 @@ import org.tinylog.Logger;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
+
 public class ReflectionUtils {
 	//================================================================================
 	// Static Properties
@@ -192,19 +194,21 @@ public class ReflectionUtils {
 	}
 
 	private static Optional<Object> handleComplexType(String type, SequencedMap<String, ?> map) {
+		if (type == null) return Optional.empty();
+
 		// Extract args if present
-		Object[] args = Optional.ofNullable(map.remove("args"))
+		Object[] args = Optional.ofNullable(map.remove(ARGS_TAG))
 			.map(o -> ((List<?>) o).toArray())
 			.orElseGet(() -> new Object[0]);
 
 		// Extract steps if present
-		List<Step> steps = Optional.ofNullable(map.remove("steps"))
+		List<Step> steps = Optional.ofNullable(map.remove(STEPS_TAG))
 			.map(o -> (List<?>) o)
 			.map(YamlDeserializer.instance()::parseSteps)
 			.orElseGet(List::of);
 
 		Optional<Object> opt;
-		if (map.containsKey("factory")) { // Handle factories/builders
+		if (map.containsKey(FACTORY_TAG)) { // Handle factories/builders
 			opt = handleFactory(type, map, args);
 		} else { // Standard object instantiation
 			Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
@@ -235,7 +239,7 @@ public class ReflectionUtils {
 	}
 
 	private static Optional<Object> handleFactory(String type, SequencedMap<String, ?> map, Object[] args) {
-		String factory = (String) map.remove("factory");
+		String factory = (String) map.remove(FACTORY_TAG);
 		if (factory == null || !factory.contains(".")) {
 			Logger.error(
 				"Could not create complex type {} through factory because the name {} is invalid",
@@ -269,12 +273,12 @@ public class ReflectionUtils {
 				case SequencedMap<?, ?> m -> {
 					Logger.debug("Value {} is complex...", val);
 					SequencedMap<String, ?> map = CastUtils.asYamlMap(m);
-					if (!map.containsKey("type")) {
+					if (!map.containsKey(TYPE_TAG)) {
 						Logger.error("Type property not found for complex type, skipping...");
 						continue;
 					}
 
-					handleComplexType((String) map.remove("type"), map).ifPresentOrElse(
+					handleComplexType((String) map.remove(TYPE_TAG), map).ifPresentOrElse(
 						o -> {
 							Logger.debug("Adding complex type {}:{} to collection", o.getClass(), o);
 							collection.add(o);

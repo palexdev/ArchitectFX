@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
+import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
 
 public class YamlDeserializer {
     //================================================================================
@@ -109,10 +110,10 @@ public class YamlDeserializer {
 
     private List<String> parseDependencies(SequencedMap<String, ?> map) {
         Object depsObj = null;
-        if (map.containsKey("deps")) {
-            depsObj = map.remove("deps");
-        } else if (map.containsKey("dependencies")) {
-            depsObj = map.remove("dependencies");
+        if (map.containsKey(DEPS_TAG)) {
+            depsObj = map.remove(DEPS_TAG);
+        } else if (map.containsKey(DEPENDENCIES_TAG)) {
+            depsObj = map.remove(DEPENDENCIES_TAG);
         }
         return Optional.ofNullable(depsObj)
             .filter(List.class::isInstance)
@@ -121,14 +122,14 @@ public class YamlDeserializer {
     }
 
     private List<String> parseImports(SequencedMap<String, ?> map) {
-        return Optional.ofNullable(map.remove("imports"))
+        return Optional.ofNullable(map.remove(IMPORTS_TAG))
             .filter(List.class::isInstance)
             .map(l -> asList(l, String.class))
             .orElseGet(List::of);
     }
 
     private String parseController(SequencedMap<String, ?> map) {
-        return Optional.ofNullable(map.remove("controller"))
+        return Optional.ofNullable(map.remove(CONTROLLER_TAG))
             .filter(String.class::isInstance)
             .map(o -> as(o, String.class))
             .orElse(null);

@@ -24,7 +24,7 @@ public class TestLoader {
     @Test
     void testSimpleLoad() {
         String document = """
-                imports: [
+                .imports: [
                   "javafx.geometry.*",
                   "javafx.scene.layout.*"
                 ]
@@ -33,27 +33,27 @@ public class TestLoader {
                   alignment: "Pos.CENTER"
                   hgap: 20.0
                   vgap: 20.0
-                  padding: { type: "Insets", args: [20.0, 30.0, 20.0, 30.0] }
+                  padding: { .type: "Insets", .args: [20.0, 30.0, 20.0, 30.0] }
                   styleClass:
                     - "grid-pane"
                   stylesheets:
                     - "../css/TextFields.css"
 
                   columnConstraints: [
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-                    { type: ColumnConstraints, halignment: "HPos.CENTER" }
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" }
                   ]
                   rowConstraints: [
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-                    { type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
                   ]
                 """;
 
@@ -97,27 +97,27 @@ public class TestLoader {
           alignment: "Pos.CENTER"
           hgap: 20.0
           vgap: 20.0
-          padding: { type: "Insets", args: [20.0, 30.0, 20.0, 30.0] }
+          padding: { .type: "Insets", .args: [20.0, 30.0, 20.0, 30.0] }
           styleClass:
             - "grid-pane"
           stylesheets:
             - "../css/TextFields.css"
 
           columnConstraints: [
-            { type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { type: ColumnConstraints, halignment: "HPos.CENTER" }
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+            { .type: ColumnConstraints, halignment: "HPos.CENTER" }
           ]
           rowConstraints: [
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-            { type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
           ]
         """;
 
@@ -160,14 +160,14 @@ public class TestLoader {
         // There are several classes named Color
         TestUtils.forceInitFX();
         String document = """
-        deps: ["io.github.palexdev:materialfx:11.17.0"]
-        imports: ["javafx.scene.paint.Color"]
+        .deps: ["io.github.palexdev:materialfx:11.17.0"]
+        .imports: ["javafx.scene.paint.Color"]
         MFXButton:
-          alignment: "CENTER"
-          padding: { type: "Insets", args: [10.0] }
+          alignment: "Pos.CENTER"
+          padding: { .type: "Insets", .args: [10.0] }
           graphic: {
-            type: "MFXFontIcon", args: ["fas-user"],
-            color: { type: "Color", factory: "Color.web", args: ["#845EC2"] }
+            .type: "MFXFontIcon", .args: ["fas-user"],
+            color: { .type: "Color", .factory: "Color.web", .args: ["#845EC2"] }
           }
           text: "This is a MaterialFX's Button"
         """;

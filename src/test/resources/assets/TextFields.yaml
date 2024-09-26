@@ -3,7 +3,7 @@
 # Although it has to be said, adding imports makes the parsing much faster
 # because we do not have to rely on the ClassGraph scan
 # (Improve this! especially now that we have DynamicClassLoader)
-imports: [
+.imports: [
   "io.github.palexdev.materialfx.controls.*",
   "javafx.geometry.*",
   "javafx.scene.control.Label",
@@ -11,33 +11,33 @@ imports: [
 ]
 
 # There can be only one controller per view, special handle like for imports
-controller: "TextFieldsController"
+.controller: "TextFieldsController"
 
 GridPane:
   alignment: "Pos.CENTER"
   hgap: 20.0
   vgap: 20.0
-  padding: { type: "Insets", args: [20.0, 30.0, 20.0, 30.0] }
+  padding: { .type: "Insets", .args: [20.0, 30.0, 20.0, 30.0] }
   styleClass:
     - "grid-pane"
   stylesheets:
     - "../css/TextFields.css"
 
   columnConstraints: [
-    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-    { type: ColumnConstraints, halignment: "HPos.CENTER" },
-    { type: ColumnConstraints, halignment: "HPos.CENTER" }
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { .type: ColumnConstraints, halignment: "HPos.CENTER" }
   ]
   rowConstraints: [
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
   ]
 
   children:
@@ -49,7 +49,7 @@ GridPane:
           - "grid-background"
         GridPane.columnSpan: 2147483647
         GridPane.rowSpan: 3
-        GridPane.margin: { type: "Insets", right: -15.0, bottom: -7.0, left: -15.0 }
+        GridPane.margin: { .type: "Insets", .args: [0.0, -15.0, -7.0, -15.0] }
 
     - Label:
         alignment: "Pos.CENTER"
@@ -143,14 +143,15 @@ GridPane:
         Grid.rowIndex: 4
         GridPane.columnSpan: 2147483647
         GridPane.rowSpan: 2147483647
-        GridPane.margin: { type: "Insets", right: -15.0, bottom: -15.0, left: -15.0 }
+        GridPane.margin: { type: "Insets", .args: [0.0, -15.0, -15.0, -15.0] }
 
     - Label:
         alignment: "Pos.CENTER"
         maxWidth: 1.7976931348623157E308
         maxHeight: 1.7976931348623157E308
         text: "Features"
-        styleClass: "header-label"
+        styleClass:
+          - "header-label"
         GridPane.rowIndex: 4
         GridPane.columnSpan: 2147483647
 
@@ -177,7 +178,7 @@ GridPane:
     # Special password field
     - VBox:
         spacing: 5.0
-        padding: { type: "Insets", right: 10.0 }
+        padding: { .type: "Insets", .args: [0.0, 10.0, 0.0, 0.0] }
         GridPane.columnIndex: 3
         GridPane.rowIndex: 5
         GridPane.columnSpan: 2147483647

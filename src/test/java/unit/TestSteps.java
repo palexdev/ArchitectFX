@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SequencedMap;
 
+import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.STEPS_TAG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,7 +46,7 @@ public class TestSteps {
     @Test
     void testSimpleAsYaml() {
         String yaml = """
-            steps: [
+            .steps: [
               { name: "add", args: ["A"] },
               { name: "add", args: ["B"] },
               { name: "add", args: ["C"] },
@@ -55,9 +56,9 @@ public class TestSteps {
             ]
             """;
         SequencedMap<String, Object> map = new Yaml().load(yaml);
-        assertTrue(map.containsKey("steps"));
-        assertEquals(ArrayList.class, map.get("steps").getClass());
-        List<Step> steps = YamlDeserializer.instance().parseSteps(((List<?>) map.get("steps")));
+        assertTrue(map.containsKey(STEPS_TAG));
+        assertEquals(ArrayList.class, map.get(STEPS_TAG).getClass());
+        List<Step> steps = YamlDeserializer.instance().parseSteps(((List<?>) map.get(STEPS_TAG)));
 
         Optional<List<String>> res = Optional.of(new ArrayList<>());
         for (Step step : steps) {
