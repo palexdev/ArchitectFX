@@ -52,7 +52,7 @@ public class ReflectionUtils {
 	//================================================================================
 	// Constructors
 	//================================================================================
-	
+
 	private ReflectionUtils() {}
 
 	//================================================================================
@@ -157,26 +157,22 @@ public class ReflectionUtils {
 		}
 	}
 
-	@SuppressWarnings({"rawtypes","unchecked"})
 	private static boolean handleEnum(Object obj, String fieldName, Object value) {
-		try {
-			// Get enum class
-			String getter = resolveGetter(fieldName);
-			Class<?> retType = obj.getClass().getMethod(getter).getReturnType();
-			if (!retType.isEnum()) {
-				Logger.trace("Type {} is not an enum.", retType);
-				return false;
-			}
+		if (value instanceof String sValue) {
+			Optional<Enum<?>> eValue = isEnum(sValue);
+			if (eValue.isEmpty()) return false;
 
-			// Do it via setter method
-			String setter = resolveSetter(fieldName);
-			Logger.debug("Attempting to set enum value {} via setter {}", value, setter);
-			Reflect.on(obj).call(setter, Enum.valueOf((Class<? extends Enum>) retType, (String) value));
-			return true;
-		} catch (Exception ex) {
-			Logger.error(ex, "Failed to set enum value.");
-			return false;
+			// Do it via setter
+			try {
+				String setter = resolveSetter(fieldName);
+				Logger.debug("Attempting to set enum value {} via setter {}", value, setter);
+				Reflect.on(obj).call(setter, eValue.get());
+				return true;
+			} catch (ReflectException ex) {
+                Logger.error(ex, "Failed to set enum value.");
+			}
 		}
+		return false;
 	}
 
 	private static boolean handlePrimitive(Object obj, String fieldName, Object value) {
@@ -301,6 +297,32 @@ public class ReflectionUtils {
 
 	public static boolean isPrimitive(Class<?> klass) {
 		return klass.isPrimitive() || primitives.contains(klass);
+	}
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public static Optional<Enum<?>> isEnum(String value) {
+		if (!value.contains(".")) return Optional.empty();
+		String[] split = value.split("\\.");
+		if (split.length < 2) {
+			Logger.trace("YAML value {} is not an enum", value);
+			return Optional.empty();
+		}
+
+		try {
+			String enumClass = split[0];
+			String enumConst = split[1];
+			Class<?> klass = findClass(enumClass);
+			if (!klass.isEnum()) {
+				Logger.trace("Class {} is not an enum");
+				return Optional.empty();
+			}
+			Enum<?> enumVal = Enum.valueOf((Class<? extends Enum>) klass, enumConst);
+			return Optional.of(enumVal);
+		} catch (ClassNotFoundException | IllegalArgumentException ex) {
+			Logger.error("Failed to resolve enum constant {}", value);
+			Logger.error(ex);
+			return Optional.empty();
+		}
 	}
 
 	public static String resolveGetter(String fieldName) {

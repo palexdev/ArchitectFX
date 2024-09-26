@@ -14,7 +14,7 @@ imports: [
 controller: "TextFieldsController"
 
 GridPane:
-  alignment: "CENTER"
+  alignment: "Pos.CENTER"
   hgap: 20.0
   vgap: 20.0
   padding: { type: "Insets", args: [20.0, 30.0, 20.0, 30.0] }
@@ -24,12 +24,12 @@ GridPane:
     - "../css/TextFields.css"
 
   columnConstraints: [
-    { type: ColumnConstraints, halignment: "CENTER" },
-    { type: ColumnConstraints, halignment: "CENTER" },
-    { type: ColumnConstraints, halignment: "CENTER" },
-    { type: ColumnConstraints, halignment: "CENTER" },
-    { type: ColumnConstraints, halignment: "CENTER" },
-    { type: ColumnConstraints, halignment: "CENTER" }
+    { type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { type: ColumnConstraints, halignment: "HPos.CENTER" },
+    { type: ColumnConstraints, halignment: "HPos.CENTER" }
   ]
   rowConstraints: [
     { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
@@ -37,7 +37,7 @@ GridPane:
     { type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
     { type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
     { type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-    { type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "BASELINE" }
+    { type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
   ]
 
   children:
@@ -52,7 +52,7 @@ GridPane:
         GridPane.margin: { type: "Insets", right: -15.0, bottom: -7.0, left: -15.0 }
 
     - Label:
-        alignment: "CENTER"
+        alignment: "Pos.CENTER"
         maxWidth: 1.7976931348623157E308
         maxHeight: 1.7976931348623157E308
         text: "Text Fields and Password Fields"
@@ -65,20 +65,20 @@ GridPane:
         GridPane.rowIndex: 1
 
     - MFXTextField:
-        floatMode: "BORDER"
+        floatMode: "FloatMode.BORDER"
         floatingText: "Border Mode"
         GridPane.columnIndex: 1
         GridPane.rowIndex: 1
 
     - MFXTextField:
         borderGap: 2.0
-        floatMode: "ABOVE"
+        floatMode: "FloatMode.ABOVE"
         floatingText: "Above Mode"
         GridPane.columnIndex: 2
         GridPane.rowIndex: 1
 
     - MFXTextField:
-        floatMode: "DISABLED"
+        floatMode: "FloatMode.DISABLED"
         floatingText: "No Floating Text"
         GridPane.columnIndex: 3
         GridPane.rowIndex: 1
@@ -102,20 +102,20 @@ GridPane:
         GridPane.rowIndex: 2
 
     - MFXPasswordField:
-        floatMode: "BORDER"
+        floatMode: "FloatMode.BORDER"
         floatingText: "Border Mode"
         GridPane.columnIndex: 1
         GridPane.rowIndex: 2
 
     - MFXPasswordField:
         borderGap: 2.0
-        floatMode: "ABOVE"
+        floatMode: "FloatMode.ABOVE"
         floatingText: "Above Mode"
         GridPane.columnIndex: 2
         GridPane.rowIndex: 2
 
     - MFXPasswordField:
-        floatMode: "DISABLED"
+        floatMode: "FloatMode.DISABLED"
         floatingText: "No Floating Text"
         GridPane.columnIndex: 3
         GridPane.rowIndex: 2
@@ -146,7 +146,7 @@ GridPane:
         GridPane.margin: { type: "Insets", right: -15.0, bottom: -15.0, left: -15.0 }
 
     - Label:
-        alignment: "CENTER"
+        alignment: "Pos.CENTER"
         maxWidth: 1.7976931348623157E308
         maxHeight: 1.7976931348623157E308
         text: "Features"

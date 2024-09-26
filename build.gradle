@@ -38,6 +38,9 @@ javafx {
 test {
     useJUnitPlatform()
     testLogging.showStandardStreams = true
+    jvmArgs += [
+            '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
+    ]
 }
 
 tasks.register('testRun', JavaExec) {
