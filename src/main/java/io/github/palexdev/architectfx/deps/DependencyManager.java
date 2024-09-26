@@ -83,9 +83,9 @@ public class DependencyManager {
 	}
 
 	public <T> T invokeFactory(String factoryName, Object... args) {
-		int lastDot = factoryName.lastIndexOf(".");
-		String className = factoryName.substring(0, lastDot);
-		String method = factoryName.substring(lastDot + 1);
+		String[] split = factoryName.split("\\.");
+		String className = split[0];
+		String method = split[1];
 		try {
 			Logger.trace(
 				"Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
