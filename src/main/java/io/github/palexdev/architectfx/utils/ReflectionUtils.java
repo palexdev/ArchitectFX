@@ -18,24 +18,18 @@
 
 package io.github.palexdev.architectfx.utils;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SequencedMap;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import io.github.classgraph.ClassInfoList;
+import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.model.Property;
+import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
+import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
-import io.github.classgraph.ClassInfoList;
-import io.github.palexdev.architectfx.deps.DependencyManager;
-import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ReflectionUtils {
 	//================================================================================
@@ -202,27 +196,28 @@ public class ReflectionUtils {
 	}
 
 	private static Optional<Object> handleComplexType(String type, SequencedMap<String, ?> map) {
+		// Extract args if present
+		Object[] args = Optional.ofNullable(map.remove("args"))
+			.map(o -> ((List<?>) o).toArray())
+			.orElseGet(() -> new Object[0]);
+
+		// Extract steps if present
+		List<Step> steps = Optional.ofNullable(map.remove("steps"))
+			.map(o -> (List<?>) o)
+			.map(YamlDeserializer.instance()::parseSteps)
+			.orElseGet(List::of);
+
 		Optional<Object> opt;
-		Object[] args = new Object[0];
-		if (map.containsKey("args")) args = ((List<?>) map.remove("args")).toArray();
-		if (map.containsKey("factory")) {
-			String factory = (String) map.remove("factory");
-			if (!factory.contains(".")) {
-				Logger.error(
-					"Could not create complex type through factory because the name {} is incorrect",
-					factory
-				);
-				return Optional.empty();
-			}
-			Logger.debug("Creating complex type with factory {} and args {}", factory, Arrays.toString(args));
-			opt = DependencyManager.instance().invokeFactoryOpt(factory, args);
-		} else {
+		if (map.containsKey("factory")) { // Handle factories/builders
+			opt = handleFactory(type, map, args);
+		} else { // Standard object instantiation
 			Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
 			opt = DependencyManager.instance().createOpt(type, args);
 		}
+
 		if (opt.isEmpty()) return Optional.empty();
 
-		// Exctract properties and initialize the object
+		// Extract properties and initialize the object
 		Logger.debug("Extracting properties for complex type...");
 		Set<Property> properties = map.entrySet().stream()
 			.map(e -> {
@@ -233,11 +228,30 @@ public class ReflectionUtils {
 			}).collect(Collectors.toSet());
 		Logger.trace("Properties: {}", properties);
 		initialize(opt.get(), properties);
+
+		// Finally execute steps
+		for (Step step : steps) {
+			if (opt.isEmpty()) break;
+			opt = step.run(opt.get());
+		}
+
 		return opt;
 	}
 
+	private static Optional<Object> handleFactory(String type, SequencedMap<String, ?> map, Object[] args) {
+		String factory = (String) map.remove("factory");
+		if (factory == null || !factory.contains(".")) {
+			Logger.error(
+				"Could not create complex type {} through factory because the name {} is invalid",
+				type, factory
+			);
+			return Optional.empty();
+		}
+		return DependencyManager.instance().invokeFactoryOpt(factory, args);
+	}
+
 	private static void handleCollection(Object obj, String fieldName, List<?> values) {
-		// For now collections handling requires a getter in the target object
+		// For now, collections handling requires a getter in the target object
 		// to retrieve the collection.
 		Collection<? super Object> collection;
 		try {

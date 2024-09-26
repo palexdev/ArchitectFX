@@ -21,14 +21,11 @@ package io.github.palexdev.architectfx.yaml;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
 import io.github.palexdev.architectfx.model.Property;
-import java.io.IOException;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.SequencedMap;
-
+import io.github.palexdev.architectfx.model.Step;
 import org.tinylog.Logger;
+
+import java.io.IOException;
+import java.util.*;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
 
@@ -75,11 +72,46 @@ public class YamlDeserializer {
         return document;
     }
 
+    public List<Step> parseSteps(List<?> yamlSteps) {
+        if (yamlSteps.isEmpty()) return List.of();
+        List<Step> steps = new ArrayList<>();
+        for (Object yamlStep : yamlSteps) {
+            Optional<Step> step = parseStep(yamlStep);
+            if (step.isEmpty()) {
+                Logger.error("Failed to parse steps...");
+                return List.of();
+            }
+            steps.add(step.get());
+        }
+        return steps;
+    }
+
+    private Optional<Step> parseStep(Object yamlStep) {
+        if (yamlStep instanceof SequencedMap<?,?>) {
+            SequencedMap<String, Object> map = asYamlMap(yamlStep);
+            if (!map.containsKey("name")) {
+                Logger.error("Invalid step because no name was found");
+                return Optional.empty();
+            }
+
+            String name = (String) map.get("name");
+            Object[] args = Optional.ofNullable(map.get("args"))
+                .map(o -> ((List<?>) o).toArray())
+                .orElseGet(() -> new Object[0]);
+            boolean transform = Optional.ofNullable(map.get("transform"))
+                .map(o -> Boolean.parseBoolean(o.toString()))
+                .orElse(false);
+            return Optional.of(new Step(name, args).setTransform(transform));
+        }
+        Logger.error("Invalid step because object {} is not a valid YAML map", yamlStep);
+        return Optional.empty();
+    }
+
     private List<String> parseDependencies(SequencedMap<String, ?> map) {
         Object depsObj = null;
         if (map.containsKey("deps")) {
             depsObj = map.remove("deps");
-        } else if (map.containsKey("dependecies")) {
+        } else if (map.containsKey("dependencies")) {
             depsObj = map.remove("dependencies");
         }
         return Optional.ofNullable(depsObj)

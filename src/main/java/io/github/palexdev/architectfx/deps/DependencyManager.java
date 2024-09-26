@@ -18,17 +18,12 @@
 
 package io.github.palexdev.architectfx.deps;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
+import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import org.joor.Reflect;
 import org.tinylog.Logger;
 
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import java.io.File;
+import java.util.*;
 
 public class DependencyManager {
 	//================================================================================
@@ -56,6 +51,7 @@ public class DependencyManager {
 	//================================================================================
 	// Methods
 	//================================================================================
+	// TODO all these methods should be moved to ReflectionUtils
 	public <T> T create(String className, Object... args) {
 		try {
 			Class<?> klass = ReflectionUtils.findClass(className);
