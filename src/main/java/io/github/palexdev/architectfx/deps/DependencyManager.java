@@ -18,12 +18,12 @@
 
 package io.github.palexdev.architectfx.deps;
 
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
-import org.joor.Reflect;
 import org.tinylog.Logger;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DependencyManager {
 	//================================================================================
@@ -51,59 +51,6 @@ public class DependencyManager {
 	//================================================================================
 	// Methods
 	//================================================================================
-	// TODO all these methods should be moved to ReflectionUtils
-	public <T> T create(String className, Object... args) {
-		try {
-			Class<?> klass = ReflectionUtils.findClass(className);
-			return create(klass, args);
-		} catch (ClassNotFoundException | IllegalStateException ex) {
-			Logger.error(ex, "Failed to create class {}", className);
-			return null;
-		}
-	}
-
-	public <T> T create(Class<?> klass, Object... args) {
-		try {
-			Logger.trace("Attempting to create class {} with args: {}", klass.getName(), Arrays.toString(args));
-			return Reflect.onClass(klass.getName(), classLoader)
-				.create(args)
-				.get();
-		} catch (Exception ex) {
-			Logger.error("Failed to create class {} because: {}", klass.getName(), ex.getMessage());
-			return null;
-		}
-	}
-
-	public <T> Optional<T> createOpt(String className, Object... args) {
-		return Optional.ofNullable(create(className, args));
-	}
-
-	public <T> Optional<T> createOpt(Class<?> klass, Object... args) {
-		return Optional.ofNullable(create(klass, args));
-	}
-
-	public <T> T invokeFactory(String factoryName, Object... args) {
-		String[] split = factoryName.split("\\.");
-		String className = split[0];
-		String method = split[1];
-		try {
-			Logger.trace(
-				"Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
-				 factoryName, Arrays.toString(args), className, method
-			);
-			Class<?> klass = ReflectionUtils.findClass(className);
-			return Reflect.onClass(klass.getName(), classLoader)
-				.call(method, args)
-				.get();
-		} catch (Exception ex) {
-			Logger.error("Failed to invoke factory {} because: {}", factoryName, ex.getMessage());
-			return null;
-		}
-	}
-
-	public <T> Optional<T> invokeFactoryOpt(String factoryName, Object... args) {
-		return Optional.ofNullable(invokeFactory(factoryName, args));
-	}
 
 	public Class<?> loadClass(String fqName) {
 		try {
@@ -148,5 +95,9 @@ public class DependencyManager {
 	//================================================================================
 	public Set<File> getDependencies() {
 		return Collections.unmodifiableSet(dependencies);
+	}
+
+	public DynamicClassLoader getClassLoader() {
+		return classLoader;
 	}
 }

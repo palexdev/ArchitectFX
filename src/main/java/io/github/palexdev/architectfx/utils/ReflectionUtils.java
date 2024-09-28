@@ -18,11 +18,9 @@
 
 package io.github.palexdev.architectfx.utils;
 
-import io.github.classgraph.ClassInfoList;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.Step;
-import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import org.joor.Reflect;
 import org.joor.ReflectException;
@@ -37,8 +35,6 @@ public class ReflectionUtils {
 	//================================================================================
 	// Static Properties
 	//================================================================================
-	private static final Set<String> imports = new ImportsSet();
-	private static final Map<String, Class<?>> searchCache = new HashMap<>();
 	private static final Set<Class<?>> primitives = Set.of(
         Boolean.class,
         Character.class,
@@ -60,57 +56,53 @@ public class ReflectionUtils {
 	//================================================================================
 	// Static Methods
 	//================================================================================
-
-	public static Class<?> findClass(String className) throws ClassNotFoundException {
-		// Check if it's a fully qualified name
-		// (naive approach, contains dot)
-		// In such case no need to cache
-		if (className.contains(".")) {
-			Class<?> klass = DependencyManager.instance().loadClass(className);
-			if (klass != null) return klass;
-			throw new ClassNotFoundException("Class not found: " + className);
+	public static <T> T create(Class<?> klass, Object... args) {
+		try {
+			Logger.trace("Attempting to create class {} with args: {}", klass.getName(), Arrays.toString(args));
+			return Reflect.onClass(klass.getName(), DependencyManager.instance().getClassLoader())
+				.create(args)
+				.get();
+		} catch (Exception ex) {
+			Logger.error("Failed to create class {} because: {}", klass.getName(), ex.getMessage());
+			return null;
 		}
+	}
 
-		// Simple names handling
-		// Check cache first
-		if (searchCache.containsKey(className)) return searchCache.get(className);
-
-		// Then try with imports and add to cache
-		for (String imp : imports) {
-			try {
-				Class<?> klass = switch(imp) {
-					case String s when s.endsWith(className) -> Class.forName(s);
-					case String s when s.endsWith("*") -> {
-						String pkg = s.substring(0, s.lastIndexOf('.'));
-						yield Class.forName(pkg + "." + className);
-					}
-					default -> null;
-				};
-
-				if (klass != null) {
-					searchCache.put(className, klass);
-					return klass;
-				}
-			} catch (ClassNotFoundException ex) {
-				Logger.trace("Invalid name or class not found: {}", ex.getMessage());
-			}
+	public static <T> T create(String className, Object... args) {
+		try {
+			Class<?> klass = ClassScanner.findClass(className);
+			return create(klass, args);
+		} catch (ClassNotFoundException | IllegalStateException ex) {
+			Logger.error(ex, "Failed to create class {}", className);
+			return null;
 		}
+	}
 
-		// Last resort, use ClassGraph
-		Logger.warn("Resorting to ClassGraph to find class {}, this may take a while for the first scan...", className);
-		ClassInfoList results = ClassScanner.searchClasses(className, ScanScope.DEPS);
-		if (results.isEmpty()) throw new ClassNotFoundException("Class not found: " + className);
-		if (results.size() > 1) throw new IllegalStateException(
-			"More than one class for name %s have been found: %s".formatted(className, results.toArray())
-		);
+	public static <T> Optional<T> createOpt(String className, Object... args) {
+		return Optional.ofNullable(create(className, args));
+	}
 
-		String fqName = results.getFirst().getName();
-		Class<?> klass = DependencyManager.instance().loadClass(fqName);
-		if (klass == null)
-			throw new ClassNotFoundException("Failed to load class: " + fqName);
-		Logger.trace("Found class: {}", fqName);
-		searchCache.put(className, klass);
-		return klass;
+	public static <T> T invokeFactory(String factoryName, Object... args) {
+		String[] split = factoryName.split("\\.");
+		String className = split[0];
+		String method = split[1];
+		try {
+			Logger.trace(
+				"Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
+				factoryName, Arrays.toString(args), className, method
+			);
+			Class<?> klass = ClassScanner.findClass(className);
+			return Reflect.onClass(klass.getName(), DependencyManager.instance().getClassLoader())
+				.call(method, args)
+				.get();
+		} catch (Exception ex) {
+			Logger.error("Failed to invoke factory {} because: {}", factoryName, ex.getMessage());
+			return null;
+		}
+	}
+
+	public static <T> Optional<T> invokeFactoryOpt(String factoryName, Object... args) {
+		return Optional.ofNullable(invokeFactory(factoryName, args));
 	}
 
 	public static void initialize(Object obj, Collection<Property> properties) {
@@ -212,7 +204,7 @@ public class ReflectionUtils {
 			opt = handleFactory(type, map, args);
 		} else { // Standard object instantiation
 			Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
-			opt = DependencyManager.instance().createOpt(type, args);
+			opt = createOpt(type, args);
 		}
 
 		if (opt.isEmpty()) return Optional.empty();
@@ -247,7 +239,7 @@ public class ReflectionUtils {
 			);
 			return Optional.empty();
 		}
-		return DependencyManager.instance().invokeFactoryOpt(factory, args);
+		return invokeFactoryOpt(factory, args);
 	}
 
 	private static void handleCollection(Object obj, String fieldName, List<?> values) {
@@ -315,7 +307,7 @@ public class ReflectionUtils {
 		try {
 			String enumClass = split[0];
 			String enumConst = split[1];
-			Class<?> klass = findClass(enumClass);
+			Class<?> klass = ClassScanner.findClass(enumClass);
 			if (!klass.isEnum()) {
 				Logger.trace("Class {} is not an enum");
 				return Optional.empty();
@@ -335,10 +327,5 @@ public class ReflectionUtils {
 
 	public static String resolveSetter(String fieldName) {
 		return "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-	}
-
-	public static void setImports(Collection<String> imports) {
-		ReflectionUtils.imports.clear();
-		ReflectionUtils.imports.addAll(imports);
 	}
 }

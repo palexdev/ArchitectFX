@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.yaml;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
+import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import javafx.scene.Parent;
 
@@ -65,7 +66,7 @@ public class YamlLoader {
                 .refresh();
 
             // Make imports available to the reflection module rather than passing them as args every time
-            ReflectionUtils.setImports(document.getImports());
+            ClassScanner.setImports(document.getImports());
             return doLoad(document);
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -92,8 +93,7 @@ public class YamlLoader {
 
     private Parent doLoad(Document document) throws IOException {
         Node root = document.getRoot();
-        Parent parent = DependencyManager.instance()
-            .create(root.getType());
+        Parent parent = ReflectionUtils.create(root.getType());
         if (parent == null)
             throw new IOException("Failed to create root node!");
 

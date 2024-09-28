@@ -1,21 +1,18 @@
 package unit;
 
-import static io.github.palexdev.architectfx.deps.MavenHelper.artifact;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.fail;
-
+import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.deps.DynamicClassLoader;
+import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import javafx.geometry.Insets;
 import org.joor.Reflect;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-
-import io.github.palexdev.architectfx.deps.DependencyManager;
-import io.github.palexdev.architectfx.deps.DynamicClassLoader;
-import javafx.geometry.Insets;
 import utils.TestUtils;
+
+import static io.github.palexdev.architectfx.deps.MavenHelper.artifact;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(OrderAnnotation.class)
 public class TestDynamicClassLoader {
@@ -39,13 +36,12 @@ public class TestDynamicClassLoader {
 	@Order(2)
 	@Test
 	void testWithDeps() {
-		DependencyManager dm = DependencyManager.instance();
-		dm.addDeps(
+		DependencyManager.instance().addDeps(
 				artifact("io.github.palexdev", "materialfx", "11.17.0"),
 				artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
 			)
 			.refresh();
-		Object obj = dm.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+		Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
 		assertNotNull(obj);
 		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
@@ -62,14 +58,14 @@ public class TestDynamicClassLoader {
 		dm.cleanDeps().refresh();
 		assertEquals(0, dm.getDependencies().size());
 
-		Object obj = dm.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+		Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
 		assertNull(obj);
 
 		dm.addDeps(
 				artifact("io.github.palexdev", "materialfx", "11.17.0"),
 				artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
 		).refresh();
-		obj = dm.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+		obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
 		assertNotNull(obj);
 		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
