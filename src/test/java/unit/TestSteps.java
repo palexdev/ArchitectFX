@@ -47,12 +47,12 @@ public class TestSteps {
     void testSimpleAsYaml() {
         String yaml = """
             .steps: [
-              { name: "add", args: ["A"] },
-              { name: "add", args: ["B"] },
-              { name: "add", args: ["C"] },
-              { name: "add", args: ["D"] },
-              { name: "set", args: [2, "Z"] },
-              { name: "subList", args: [2, 4], transform: true },
+              { .name: "add", .args: ["A"] },
+              { .name: "add", .args: ["B"] },
+              { .name: "add", .args: ["C"] },
+              { .name: "add", .args: ["D"] },
+              { .name: "set", .args: [2, "Z"] },
+              { .name: "subList", .args: [2, 4], .transform: true },
             ]
             """;
         SequencedMap<String, Object> map = new Yaml().load(yaml);

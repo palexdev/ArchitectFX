@@ -90,16 +90,16 @@ public class YamlDeserializer {
     private Optional<Step> parseStep(Object yamlStep) {
         if (yamlStep instanceof SequencedMap<?,?>) {
             SequencedMap<String, Object> map = asYamlMap(yamlStep);
-            if (!map.containsKey("name")) {
+            if (!map.containsKey(NAME_TAG)) {
                 Logger.error("Invalid step because no name was found");
                 return Optional.empty();
             }
 
-            String name = (String) map.get("name");
-            Object[] args = Optional.ofNullable(map.get("args"))
+            String name = (String) map.get(NAME_TAG);
+            Object[] args = Optional.ofNullable(map.get(ARGS_TAG))
                 .map(o -> ((List<?>) o).toArray())
                 .orElseGet(() -> new Object[0]);
-            boolean transform = Optional.ofNullable(map.get("transform"))
+            boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
                 .map(o -> Boolean.parseBoolean(o.toString()))
                 .orElse(false);
             return Optional.of(new Step(name, args).setTransform(transform));
