@@ -50,9 +50,6 @@ public class YamlDeserializer {
     //================================================================================
     public Document parse(SequencedMap<String, Object> mappings) throws IOException {
         if (mappings.isEmpty()) throw new IOException("Failed to parse document, cause: empty");
-        if (mappings.size() > 2) {
-            Logger.warn("Document is probably malformed. {} root nodes detected, trying to parse anyway...", mappings.size());
-        }
 
         // Handle dependencies if present
         List<String> deps = parseDependencies(mappings);
@@ -65,6 +62,9 @@ public class YamlDeserializer {
         // Handle controller if present
         String controller = parseController(mappings);
         Logger.debug("Controller {}found", controller != null ? "" : "not ");
+
+        if (mappings.size() > 1)
+            Logger.warn("Document is probably malformed. {} root nodes detected, trying to parse anyway...", mappings.size());
 
         Node root = parse(mappings.firstEntry());
         Document document = new Document(root, controller);
