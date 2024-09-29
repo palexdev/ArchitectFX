@@ -36,12 +36,12 @@ public class TreePrinter {
         if (!node.getProperties().isEmpty()) {
             printIndent(indent + 1);
             System.out.println("Properties:");
-            node.getProperties().forEach(p -> {
+            node.getProperties().values().forEach(p -> {
                 printIndent(indent + 2);
                 if (printTypes) {
-                    System.out.printf(p.getName() + ": " + p.getValue() + " [%s]%n", p.getValue().getClass().getSimpleName());
+                    System.out.printf(p.name() + ": " + p.value() + " [%s]%n", p.type());
                 } else {
-                    System.out.println(p.getName() + ": " + p.getValue());
+                    System.out.println(p.name() + ": " + p.value());
                 }
             });
         }

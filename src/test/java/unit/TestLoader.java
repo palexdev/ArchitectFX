@@ -1,5 +1,7 @@
 package unit;
 
+import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.utils.CastUtils;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -14,6 +16,7 @@ import utils.TestUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.List;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.as;
 import static org.junit.jupiter.api.Assertions.*;
@@ -156,20 +159,28 @@ public class TestLoader {
 
     @Test
     void testLoadWithoutImports() {
+        // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
+        DependencyManager.instance().cleanDeps();
+
         // Almost without
         // There are several classes named Color
         TestUtils.forceInitFX();
         String document = """
-        .deps: ["io.github.palexdev:materialfx:11.17.0"]
+        .deps: [
+          "io.github.palexdev:mfxcomponents:11.26.1",
+        ]
         .imports: ["javafx.scene.paint.Color"]
         MFXButton:
+          .args: ["This is a MaterialFX's Button"]
           alignment: "Pos.CENTER"
           padding: { .type: "Insets", .args: [10.0] }
           graphic: {
             .type: "MFXFontIcon", .args: ["fas-user"],
             color: { .type: "Color", .factory: "Color.web", .args: ["#845EC2"] }
           }
-          text: "This is a MaterialFX's Button"
+          .steps: [
+            { .name: filled }
+          ]
         """;
 
         try {
@@ -184,6 +195,10 @@ public class TestLoader {
             assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
             assertEquals("fas-user", getProperty(graphic, "description"));
             assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
+
+            // Test variant
+            List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
+            assertTrue(styleClass.contains("filled"));
         } catch (Exception ex) {
             ex.printStackTrace();
             fail(ex);

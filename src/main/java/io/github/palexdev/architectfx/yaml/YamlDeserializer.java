@@ -18,10 +18,8 @@
 
 package io.github.palexdev.architectfx.yaml;
 
-import io.github.palexdev.architectfx.model.Document;
-import io.github.palexdev.architectfx.model.Node;
-import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.enums.Type;
+import io.github.palexdev.architectfx.model.*;
 import org.tinylog.Logger;
 
 import java.io.IOException;
@@ -73,8 +71,41 @@ public class YamlDeserializer {
         return document;
     }
 
+    public SequencedMap<String, Property> parseProperties(SequencedMap<String, ?> map) {
+        if (map.isEmpty()) return new LinkedHashMap<>();
+
+        Logger.debug("Parsing properties...");
+        SequencedMap<String, Property> properties = new LinkedHashMap<>();
+        for (Map.Entry<String, ?> e : map.entrySet()) {
+            String name = e.getKey();
+            Type type;
+            Object value;
+
+            // Handle metadata
+            if (Type.isMetadata(name)) {
+                value = switch (name) {
+                    case ARGS_TAG -> e.getValue(); // TODO implement parsing
+                    case STEPS_TAG -> parseSteps(asList(e.getValue(), Map.class));
+                    default -> e.getValue();
+                };
+                type = Type.METADATA;
+            } else {
+                value = e.getValue();
+                type = Property.getPropertyType(name, value);
+            }
+            if (value == null) continue;
+
+            Property property = Property.of(name, type, value);
+            properties.put(name, property);
+            Logger.debug("Parsed property {}", property);
+        }
+        return properties;
+    }
+
+    // TODO parse arguments! (since we already do it for Collections we can commonize the code)
+
     public List<Step> parseSteps(List<?> yamlSteps) {
-        if (yamlSteps.isEmpty()) return List.of();
+        if (yamlSteps == null || yamlSteps.isEmpty()) return List.of();
         List<Step> steps = new ArrayList<>();
         for (Object yamlStep : yamlSteps) {
             Optional<Step> step = parseStep(yamlStep);
@@ -147,9 +178,8 @@ public class YamlDeserializer {
             .filter(List.class::isInstance)
             .map(List.class::cast)
             .orElseGet(List::of);
-        if (!children.isEmpty())
-            Logger.debug("Parsing children...");
 
+        if (!children.isEmpty()) Logger.debug("Parsing children...");
         for (Object child : children) {
             SequencedMap<String, Object> asMap = asYamlMap(child);
             // Each child is a map of length 1
@@ -171,15 +201,8 @@ public class YamlDeserializer {
         }
 
         // Handle properties
-        if (!properties.isEmpty()) Logger.debug("Parsing properties...");
-        for (Map.Entry<String, Object> pEntry : properties.entrySet()) {
-            String pName = pEntry.getKey();
-            String pType = Property.getPropertyType(pName, pEntry.getValue());
-            Object value = pEntry.getValue();
-            Property property = new Property(pName, pType, value);
-            node.getProperties().add(property);
-            Logger.debug("Added property: {}", property);
-        }
+        SequencedMap<String, Property> parsedProperties = parseProperties(properties);
+        node.getProperties().putAll(parsedProperties);
         return node;
     }
 }

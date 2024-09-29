@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.yaml;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
+import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import javafx.scene.Parent;
@@ -33,7 +34,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 import java.util.SequencedMap;
+
+import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.ARGS_TAG;
 
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {
@@ -93,11 +97,18 @@ public class YamlLoader {
 
     private Parent doLoad(Document document) throws IOException {
         Node root = document.getRoot();
-        Parent parent = ReflectionUtils.create(root.getType());
+        Object[] args = root.getProperty(ARGS_TAG)
+            .map(Property::value)
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            //.map() TODO parse args (probably already done by the deserializer)
+            .map(List::toArray)
+            .orElseGet(() -> new Object[0]);
+        Parent parent = ReflectionUtils.create(root.getType(), args);
         if (parent == null)
             throw new IOException("Failed to create root node!");
 
-        ReflectionUtils.initialize(parent, root.getProperties());
+        ReflectionUtils.initialize(parent, root.getProperties().values());
         //handleChildren(document, root, parent);
         return parent;
     }

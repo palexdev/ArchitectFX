@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.utils;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.Step;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
@@ -27,30 +28,13 @@ import org.joor.ReflectException;
 import org.tinylog.Logger;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
 
 public class ReflectionUtils {
 	//================================================================================
-	// Static Properties
-	//================================================================================
-	private static final Set<Class<?>> primitives = Set.of(
-        Boolean.class,
-        Character.class,
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Float.class,
-        Double.class,
-        String.class // Special case
-    );
-
-	//================================================================================
 	// Constructors
 	//================================================================================
-
 	private ReflectionUtils() {}
 
 	//================================================================================
@@ -106,102 +90,98 @@ public class ReflectionUtils {
 	}
 
 	public static void initialize(Object obj, Collection<Property> properties) {
-		Logger.debug("Initializing object {}", obj);
+		Logger.debug("Initializing object {}", obj.getClass().getName());
 		for (Property p : properties) {
-			String name = p.getName();
-			String type = p.getType();
-			Object value = p.getValue();
+			String name = p.name();
 			Logger.trace(p);
+
+			// Handle metadata (for now only .steps is relevant)
+			if (name.equals(STEPS_TAG)) {
+				List<Step> steps = CastUtils.asList(p.value(), Step.class);
+				Optional<Object> opt = Optional.of(obj);
+				for (Step step : steps) {
+					if (opt.isEmpty()) break;
+					opt = step.run(opt.get());
+				}
+				continue;
+			}
+			if (p.type() == Type.METADATA) continue;
 
 			// Handle static
 			if (name.contains(".")) {
-				Logger.trace("Static field or method detected for name {}", name);
+				Logger.error("Static field or method detected for name {}", name); // TODO change this once supported
 				// TODO implement
 				System.err.println("Unsupported operation: static handling");
 				continue;
 			}
 
-			// Handle enum types
-			if (handleEnum(obj, name, value)) continue;
-
-			// Handle "primitive" types
-			if (handlePrimitive(obj, name, value)) continue;
-
-			// Handle complex types (maps)
-			if (value instanceof SequencedMap<?, ?> map) {
-				handleComplexType(type, CastUtils.asYamlMap(map)).ifPresentOrElse(
+			switch (p.type()) {
+				case ENUM -> handleEnum(obj, p);
+				case PRIMITIVE, WRAPPER, STRING -> handlePrimitive(obj, p);
+				case COMPLEX -> handleComplexType(CastUtils.asYamlMap(p.value())).ifPresentOrElse(
 					o -> {
 						String setter = resolveSetter(name);
 						Reflect.on(obj).call(setter, o);
 					},
 					() -> Logger.error("Could not set complex object {}, skipping...")
 				);
-				continue;
+				case COLLECTION -> handleCollection(obj, p);
+				case UNKNOWN -> Logger.error("Unsupported type {} for field {}, skipping...", p.type(), name);
 			}
-
-			// Handle collections
-			if (value instanceof List<?> list) {
-				Logger.debug("Value {} is a collection...", list);
-				handleCollection(obj, name, list);
-				continue;
-			}
-
-    		// Fallback: Unsupported Type
-    		Logger.error("Unsupported type {} for field {}, skipping...", type, name);
 		}
 	}
 
-	private static boolean handleEnum(Object obj, String fieldName, Object value) {
+	private static void handleEnum(Object obj, Property property) {
+		String name = property.name();
+		Object value = property.value();
 		if (value instanceof String sValue) {
-			Optional<Enum<?>> eValue = isEnum(sValue);
-			if (eValue.isEmpty()) return false;
+			Optional<Enum<?>> eValue = getEnumValue(sValue);
+			if (eValue.isEmpty()) return;
 
 			// Do it via setter
 			try {
-				String setter = resolveSetter(fieldName);
+				String setter = resolveSetter(name);
 				Logger.debug("Attempting to set enum value {} via setter {}", value, setter);
 				Reflect.on(obj).call(setter, eValue.get());
-				return true;
 			} catch (ReflectException ex) {
                 Logger.error(ex, "Failed to set enum value.");
 			}
 		}
-		return false;
 	}
 
-	private static boolean handlePrimitive(Object obj, String fieldName, Object value) {
-		// Check if it's primitive or wrapper or String
-		if (!isPrimitive(value)) return false;
-
+	private static void handlePrimitive(Object obj, Property property) {
+		String name = property.name();
+		Object value = property.value();
 		try {
 			// Do it via setter method
-			String setter = resolveSetter(fieldName);
+			String setter = resolveSetter(name);
 			Logger.debug("Attempting to set 'primitive' type {} to value {} via setter {}", value.getClass().getSimpleName(), value, setter);
 			Reflect.on(obj).call(setter, value);
-			return true;
 		} catch (Exception ex) {
 			Logger.error(ex, "Failed to set 'primitive' value.");
-			return false;
 		}
 	}
 
-	private static Optional<Object> handleComplexType(String type, SequencedMap<String, ?> map) {
+	private static Optional<Object> handleComplexType(SequencedMap<String, ?> map) {
+		// We need to clone the map because of the following remove operations
+		// We ideally do not want to alter the original map
+		//
+		// The removals happen so that we avoid the parseProperties step if not necessary.
+		// An example of this would be metadata such as .type and .args which are already used here
+		//
+		// For metadata like .steps we rely on initialize(...)
+		SequencedMap<String, ?> tmp = new LinkedHashMap<>(map);
+		String type = (String) tmp.remove(TYPE_TAG);
 		if (type == null) return Optional.empty();
 
 		// Extract args if present
-		Object[] args = Optional.ofNullable(map.remove(ARGS_TAG))
+		Object[] args = Optional.ofNullable(tmp.remove(ARGS_TAG))
 			.map(o -> ((List<?>) o).toArray())
 			.orElseGet(() -> new Object[0]);
 
-		// Extract steps if present
-		List<Step> steps = Optional.ofNullable(map.remove(STEPS_TAG))
-			.map(o -> (List<?>) o)
-			.map(YamlDeserializer.instance()::parseSteps)
-			.orElseGet(List::of);
-
 		Optional<Object> opt;
 		if (map.containsKey(FACTORY_TAG)) { // Handle factories/builders
-			opt = handleFactory(type, map, args);
+			opt = handleFactory(type, tmp, args);
 		} else { // Standard object instantiation
 			Logger.debug("Creating complex type {} with args {}", type, Arrays.toString(args));
 			opt = createOpt(type, args);
@@ -210,23 +190,12 @@ public class ReflectionUtils {
 		if (opt.isEmpty()) return Optional.empty();
 
 		// Extract properties and initialize the object
-		Logger.debug("Extracting properties for complex type...");
-		Set<Property> properties = map.entrySet().stream()
-			.map(e -> {
-				String pName = e.getKey();
-				String pType = Property.getPropertyType(pName, e.getValue());
-				Object value = e.getValue();
-				return new Property(pName, pType, value);
-			}).collect(Collectors.toSet());
-		Logger.trace("Properties: {}", properties);
-		initialize(opt.get(), properties);
-
-		// Finally execute steps
-		for (Step step : steps) {
-			if (opt.isEmpty()) break;
-			opt = step.run(opt.get());
+		if (!tmp.isEmpty()) {
+			Logger.debug("Extracting properties for complex type...");
+			SequencedMap<String, Property> properties = YamlDeserializer.instance().parseProperties(tmp);
+			Logger.trace("Properties: {}", properties);
+			initialize(opt.get(), properties.values());
 		}
-
 		return opt;
 	}
 
@@ -242,12 +211,16 @@ public class ReflectionUtils {
 		return invokeFactoryOpt(factory, args);
 	}
 
-	private static void handleCollection(Object obj, String fieldName, List<?> values) {
+	private static void handleCollection(Object obj, Property property) {
+		String name = property.name();
+		List<Object> values = CastUtils.asList(property.value(), Object.class);
+		Logger.debug("Value {} is a collection...", values);
+
 		// For now, collections handling requires a getter in the target object
 		// to retrieve the collection.
 		Collection<? super Object> collection;
 		try {
-			String getter = resolveGetter(fieldName);
+			String getter = resolveGetter(name);
 			Logger.debug("Retrieving collection via getter {}", getter);
 			collection = Reflect.on(obj).call(getter).get();
 			assert collection != null;
@@ -261,16 +234,16 @@ public class ReflectionUtils {
 		// This is because we need to check whether the element is
 		// a "primitive" type or complex type
 		for (Object val : values) {
-			switch (val) {
-				case SequencedMap<?, ?> m -> {
+			switch (Type.getType(val)) {
+				case COMPLEX -> {
 					Logger.debug("Value {} is complex...", val);
-					SequencedMap<String, ?> map = CastUtils.asYamlMap(m);
+					SequencedMap<String, ?> map = CastUtils.asYamlMap(val);
 					if (!map.containsKey(TYPE_TAG)) {
 						Logger.error("Type property not found for complex type, skipping...");
 						continue;
 					}
 
-					handleComplexType((String) map.remove(TYPE_TAG), map).ifPresentOrElse(
+					handleComplexType(map).ifPresentOrElse(
 						o -> {
 							Logger.debug("Adding complex type {}:{} to collection", o.getClass(), o);
 							collection.add(o);
@@ -278,25 +251,17 @@ public class ReflectionUtils {
 						() -> Logger.error("Value not added to collection.")
 					);
 				}
-				case Object o when isPrimitive(o) -> {
-					Logger.debug("Adding primitive type {}:{} to collection", o.getClass().getSimpleName(), o);
-					collection.add(o);
+				case PRIMITIVE, WRAPPER, STRING -> {
+					Logger.debug("Adding primitive type {}:{} to collection", val.getClass().getSimpleName(), val);
+					collection.add(val);
 				}
 				default -> Logger.error("Unsupported element type {}, skipping...", val.getClass());
 			}
 		}
 	}
 
-	public static boolean isPrimitive(Object obj) {
-		return isPrimitive(obj.getClass());
-	}
-
-	public static boolean isPrimitive(Class<?> klass) {
-		return klass.isPrimitive() || primitives.contains(klass);
-	}
-
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	public static Optional<Enum<?>> isEnum(String value) {
+	public static Optional<Enum<?>> getEnumValue(String value) {
 		if (!value.contains(".")) return Optional.empty();
 		String[] split = value.split("\\.");
 		if (split.length < 2) {

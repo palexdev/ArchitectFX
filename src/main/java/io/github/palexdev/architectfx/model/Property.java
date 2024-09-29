@@ -18,76 +18,22 @@
 
 package io.github.palexdev.architectfx.model;
 
+import io.github.palexdev.architectfx.enums.Type;
 import org.tinylog.Logger;
 
-import java.util.SequencedMap;
-
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.TYPE_TAG;
-
-public class Property {
-    //================================================================================
-    // Properties
-    //================================================================================
-    private final String name;
-    private final String type;
-    private final Object value;
-
-    //================================================================================
-    // Constructors
-    //================================================================================
-    public Property(String name, String type, Object value) {
-        this.name = name;
-        this.type = type;
-        this.value = value;
-    }
+public record Property(String name, Type type, Object value) {
 
     //================================================================================
     // Static Methods
     //================================================================================
-    public static String getPropertyType(String name, Object property) {
-        Logger.trace("Determining property type for Name:{} Value:{}", name, property);
-        if (property instanceof SequencedMap<?,?> m) {
-            Logger.trace("Type is complex...");
-            Object type = m.remove(TYPE_TAG);
-            if (type instanceof String s) {
-                Logger.trace("Found type {} for property {}", s, name);
-                return s;
-            } else {
-                Logger.error("Unable to determine type for Name:{} Value:{}", name, property);
-                throw new IllegalArgumentException(
-                    "Unexpected type %s for property %s".formatted(name,  property)
-                );
-            }
-        }
-        String className = property.getClass().getSimpleName();
-        Logger.trace("Found type {} for property {}", className, name);
-        return className;
+    public static Property of(String name, Type type, Object value) {
+        return new Property(name, type, value);
     }
 
-    //================================================================================
-    // Overridden Methods
-    //================================================================================
-    @Override
-    public String toString() {
-        return "Property{" +
-            "name='" + name + '\'' +
-            ", type='" + type + '\'' +
-            ", value=" + value +
-            '}';
-    }
-
-    //================================================================================
-    // Getters
-    //================================================================================
-    public String getName() {
-        return name;
-    }
-
-    public String getType() {
+    public static Type getPropertyType(String name, Object value) {
+        Logger.trace("Determining property type for Name:{} Value:{}", name, value);
+        Type type = Type.getType(value);
+        Logger.trace("Found type {} for property {}", type, name);
         return type;
-    }
-
-    public Object getValue() {
-        return value;
     }
 }

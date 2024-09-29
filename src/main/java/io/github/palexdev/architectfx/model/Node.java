@@ -26,7 +26,7 @@ public class Node {
     // Properties
     //================================================================================
     private final String type;
-    private final SequencedSet<Property> properties = new LinkedHashSet<>();
+    private final SequencedMap<String, Property> properties = new LinkedHashMap<>();
     private final List<Node> children = new ArrayList<>();
 
     //================================================================================
@@ -37,9 +37,20 @@ public class Node {
     }
 
     //================================================================================
-    // Overridden Methods
+    // Methods
     //================================================================================
 
+    public void addProperty(Property property) {
+        properties.put(property.name(), property);
+    }
+
+    public Optional<Property> getProperty(String name) {
+        return Optional.ofNullable(properties.get(name));
+    }
+
+    //================================================================================
+    // Overridden Methods
+    //================================================================================
 
     @Override
     public String toString() {
@@ -57,11 +68,11 @@ public class Node {
         return type;
     }
 
-    public List<Node> getChildren() {
-        return children;
+    public SequencedMap<String, Property> getProperties() {
+        return properties;
     }
 
-    public SequencedSet<Property> getProperties() {
-        return properties;
+    public List<Node> getChildren() {
+        return children;
     }
 }
