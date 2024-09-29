@@ -1,5 +1,6 @@
 package io.github.palexdev.architectfx.model;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -34,23 +35,43 @@ public class Step {
 
     @SuppressWarnings("unchecked")
     public <T> Optional<T> run(Object obj) {
+        T ret;
         try {
             Logger.debug("Running step {} with args {}", name, Arrays.toString(args));
-            Object ret = Reflect.on(obj)
+            ret = Reflect.on(obj)
                 .call(name, args)
                 .get();
             return Optional.ofNullable(transform ? ret : obj)
                 .map(o -> (T) o);
         } catch (ReflectException ex) {
+            // FIXME Try varargs fallback
+            // This is hacky, but I have 0 ideas on how to solve this
+            if ((ret = varArgsFallback(obj)) != null)
+                return Optional.of(ret);
+
             Logger.error(
-                "Failed to execute step {} on object",
-                name, obj.getClass().getName()
+                "Failed to execute step {} on object {}\n{}",
+                name, obj.getClass().getName(), ex
             );
-            Logger.error(ex);
         }
         return Optional.empty();
     }
 
+    @SuppressWarnings("unchecked")
+    protected <T> T varArgsFallback(Object obj) {
+        if (args.length == 0) return null;
+        try {
+            Object arrayArg = Array.newInstance(args[0].getClass(), args.length);
+            System.arraycopy(args, 0, arrayArg, 0, args.length);
+            T ret = Reflect.on(obj)
+                .call(name, arrayArg)
+                .get();
+            return transform ? ret : (T) obj;
+        } catch (Exception ex) {
+            Logger.error("Fallback to varargs method failed...");
+        }
+        return null;
+    }
 
     //================================================================================
     // Getters/Setters
