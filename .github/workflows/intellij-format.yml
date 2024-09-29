@@ -21,3 +21,4 @@ jobs:
         with:
           include-glob: '*.java'
           commit-message: ':memo: Reformat code'
+          fail-on-changes: 'false'
