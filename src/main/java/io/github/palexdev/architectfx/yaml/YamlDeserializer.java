@@ -26,6 +26,7 @@ import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -87,7 +88,7 @@ public class YamlDeserializer {
             // Handle metadata
             if (Type.isMetadata(name)) {
                 value = switch (name) {
-                    case ARGS_TAG -> e.getValue(); // TODO implement parsing
+                    case ARGS_TAG -> parseList(e.getValue()).toArray();
                     case STEPS_TAG -> parseSteps(asList(e.getValue(), Map.class));
                     default -> e.getValue();
                 };
@@ -107,7 +108,50 @@ public class YamlDeserializer {
         return properties;
     }
 
-    // TODO parse arguments! (since we already do it for Collections we can commonize the code)
+    public List<Object> parseList(Object obj) {
+        if (!(obj instanceof List<?>)) {
+            Logger.error("Object {} is not a list", Objects.toString(obj));
+            return List.of();
+        }
+
+        List<Object> list = asGenericList(obj);
+        Logger.debug("Value {} is a list, parsing each element...", list);
+        List<Object> parsed = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            Object e;
+            if ((e = Type.isEnum(list.get(i))) != null) {
+                Logger.debug("Element at index {} is of type: {}", i, Type.ENUM);
+                parsed.add(e);
+                continue;
+            }
+
+            e = list.get(i);
+            Type type = Type.getType(e);
+            Logger.debug("Element {} at index {} is of type: {}", Objects.toString(e), i, type);
+            switch (type) {
+                case COMPLEX -> {
+                    SequencedMap<String, Object> map = asYamlMap(e);
+                    if (!map.containsKey(TYPE_TAG)) {
+                        Logger.error("Could not parse complex element because type tag is absent, skipping...");
+                        continue;
+                    }
+                    ReflectionUtils.handleComplexType(map).ifPresentOrElse(
+                        o -> {
+                            Logger.trace("Successfully parsed, adding to list...");
+                            parsed.add(o);
+                        },
+                        () -> Logger.error("Element not added to list")
+                    );
+                }
+                case PRIMITIVE, WRAPPER, STRING -> {
+                    Logger.trace("Adding to list...");
+                    parsed.add(e);
+                }
+                default -> Logger.error("Unsupported element type {}, skipping...", e.getClass());
+            }
+        }
+        return parsed;
+    }
 
     public List<Step> parseSteps(List<?> yamlSteps) {
         if (yamlSteps == null || yamlSteps.isEmpty()) return List.of();
@@ -133,7 +177,8 @@ public class YamlDeserializer {
 
             String name = (String) map.get(NAME_TAG);
             Object[] args = Optional.ofNullable(map.get(ARGS_TAG))
-                .map(o -> ((List<?>) o).toArray())
+                .map(this::parseList)
+                .map(List::toArray)
                 .orElseGet(() -> new Object[0]);
             boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
                 .map(o -> Boolean.parseBoolean(o.toString()))

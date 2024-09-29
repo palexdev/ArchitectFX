@@ -98,10 +98,7 @@ public class YamlLoader {
         Node root = document.getRoot();
         Object[] args = root.getProperty(ARGS_TAG)
             .map(Property::value)
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            //.map() TODO parse args (probably already done by the deserializer)
-            .map(List::toArray)
+            .map(o -> ((Object[]) o))
             .orElseGet(() -> new Object[0]);
         Parent parent = ReflectionUtils.create(root.getType(), args);
         if (parent == null)

@@ -159,7 +159,7 @@ public class ReflectionUtils {
         }
     }
 
-    private static Optional<Object> handleComplexType(SequencedMap<String, ?> map) {
+    public static Optional<Object> handleComplexType(SequencedMap<String, ?> map) {
         // We need to clone the map because of the following remove operations
         // We ideally do not want to alter the original map
         //
@@ -173,7 +173,8 @@ public class ReflectionUtils {
 
         // Extract args if present
         Object[] args = Optional.ofNullable(tmp.remove(ARGS_TAG))
-            .map(o -> ((List<?>) o).toArray())
+            .map(YamlDeserializer.instance()::parseList)
+            .map(List::toArray)
             .orElseGet(() -> new Object[0]);
 
         Optional<Object> opt;
@@ -210,7 +211,7 @@ public class ReflectionUtils {
 
     private static void handleCollection(Object obj, Property property) {
         String name = property.name();
-        List<Object> values = CastUtils.asList(property.value(), Object.class);
+        List<Object> values = CastUtils.asGenericList(property.value());
         Logger.debug("Value {} is a collection...", values);
 
         // For now, collections handling requires a getter in the target object
@@ -221,42 +222,15 @@ public class ReflectionUtils {
             Logger.debug("Retrieving collection via getter {}", getter);
             collection = Reflect.on(obj).call(getter).get();
             assert collection != null;
+            Logger.trace("Retrieved collection of type {} with size {}", collection.getClass(), collection.size());
         } catch (AssertionError | ReflectException err) {
             Logger.error(err, "Failed to retrieve collection, skipping...");
             return;
         }
-        Logger.trace("Retrieved collection of type {} with size {}", collection.getClass(), collection.size());
 
-        // Elements are added to the retrieved collection one by one
-        // This is because we need to check whether the element is
-        // a "primitive" type or complex type
-        for (Object val : values) {
-            switch (Type.getType(val)) {
-                case COMPLEX -> {
-                    Logger.debug("Value {} is complex...", val);
-                    SequencedMap<String, ?> map = CastUtils.asYamlMap(val);
-                    if (!map.containsKey(TYPE_TAG)) {
-                        Logger.error("Type property not found for complex type, skipping...");
-                        continue;
-                    }
-
-                    handleComplexType(map).ifPresentOrElse(
-                        o -> {
-                            Logger.debug("Adding complex type {}:{} to collection", o.getClass(), o);
-                            collection.add(o);
-                        },
-                        () -> Logger.error("Value not added to collection.")
-                    );
-                }
-                case PRIMITIVE, WRAPPER, STRING -> {
-                    Logger.debug("Adding primitive type {}:{} to collection", val.getClass().getSimpleName(), val);
-                    collection.add(val);
-                }
-                default -> Logger.error("Unsupported element type {}, skipping...", val.getClass());
-            }
-        }
-    }
-
+        List<Object> parsed = YamlDeserializer.instance().parseList(values);
+        Logger.debug("Adding parsed elements {} to collection...", parsed);
+        collection.addAll(parsed);
     }
 
     public static String resolveGetter(String fieldName) {

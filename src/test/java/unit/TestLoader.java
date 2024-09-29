@@ -204,4 +204,55 @@ public class TestLoader {
             fail(ex);
         }
     }
+
+    @Test
+    void testComplex() {
+        // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
+        DependencyManager.instance().cleanDeps();
+
+        // Almost without
+        // There are several classes named Color
+        TestUtils.forceInitFX();
+        String document = """
+            .deps: [
+              "io.github.palexdev:mfxcomponents:11.26.1",
+            ]
+            .imports: ["javafx.scene.paint.Color"]
+            MFXButton:
+              .args: [
+                "This is a MaterialFX's Button",
+                {
+                  .type: "MFXFontIcon", .args: ["fas-user"],
+                  color: {.type: "Color", .factory: "Color.web", .args: ["#845EC2"]}
+                }
+              ]
+              alignment: "Pos.CENTER"
+              padding: { .type: "Insets", .args: [10.0] }
+              .steps: [
+                { .name: setVariants, .args: [ButtonVariants.FILLED, ButtonVariants.TEXT] }
+              ]
+            """;
+
+        try {
+            InputStream stream = new ByteArrayInputStream(document.getBytes());
+            Object obj = YamlLoader.instance().load(stream);
+            assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
+            assertEquals(new Insets(10.0), getProperty(obj, "padding"));
+            assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
+
+            // Test graphic
+            Object graphic = getProperty(obj, "graphic");
+            assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
+            assertEquals("fas-user", getProperty(graphic, "description"));
+            assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
+
+            // Test variant
+            List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
+            assertTrue(styleClass.contains("filled"));
+            assertTrue(styleClass.contains("text"));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex);
+        }
+    }
 }
