@@ -1,8 +1,8 @@
 package app;
 
-import io.github.palexdev.architectfx.yaml.YamlLoader;
-
 import java.net.URL;
+
+import io.github.palexdev.architectfx.yaml.YamlLoader;
 
 public class TestApp {
 

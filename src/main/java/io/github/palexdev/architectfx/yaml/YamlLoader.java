@@ -18,17 +18,6 @@
 
 package io.github.palexdev.architectfx.yaml;
 
-import io.github.palexdev.architectfx.deps.DependencyManager;
-import io.github.palexdev.architectfx.model.Document;
-import io.github.palexdev.architectfx.model.Node;
-import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.utils.ClassScanner;
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
-import javafx.scene.Parent;
-
-import org.tinylog.Logger;
-import org.yaml.snakeyaml.Yaml;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,6 +25,16 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.SequencedMap;
+
+import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.model.Document;
+import io.github.palexdev.architectfx.model.Node;
+import io.github.palexdev.architectfx.model.Property;
+import io.github.palexdev.architectfx.utils.ClassScanner;
+import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import javafx.scene.Parent;
+import org.tinylog.Logger;
+import org.yaml.snakeyaml.Yaml;
 
 import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.ARGS_TAG;
 
@@ -53,8 +52,7 @@ public class YamlLoader {
     //================================================================================
     // Constructors
     //================================================================================
-    private YamlLoader() {
-    }
+    private YamlLoader() {}
 
     //================================================================================
     // Methods
@@ -67,8 +65,8 @@ public class YamlLoader {
 
             // Load dependencies if any
             DependencyManager.instance()
-                    .addDeps(document.getDependencies().toArray(String[]::new))
-                    .refresh();
+                .addDeps(document.getDependencies().toArray(String[]::new))
+                .refresh();
 
             // Make imports available to the reflection module rather than passing them as args every time
             ClassScanner.setImports(document.getImports());
@@ -99,12 +97,12 @@ public class YamlLoader {
     private Parent doLoad(Document document) throws IOException {
         Node root = document.getRoot();
         Object[] args = root.getProperty(ARGS_TAG)
-                .map(Property::value)
-                .filter(List.class::isInstance)
-                .map(List.class::cast)
-                //.map() TODO parse args (probably already done by the deserializer)
-                .map(List::toArray)
-                .orElseGet(() -> new Object[0]);
+            .map(Property::value)
+            .filter(List.class::isInstance)
+            .map(List.class::cast)
+            //.map() TODO parse args (probably already done by the deserializer)
+            .map(List::toArray)
+            .orElseGet(() -> new Object[0]);
         Parent parent = ReflectionUtils.create(root.getType(), args);
         if (parent == null)
             throw new IOException("Failed to create root node!");

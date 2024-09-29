@@ -49,13 +49,13 @@ public class MavenHelper {
     //================================================================================
     public File[] downloadFiles(String... artifacts) {
         return resolver.resolve(artifacts)
-                .withTransitivity()
-                .asFile();
+            .withTransitivity()
+            .asFile();
     }
 
     public MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
         return resolver.resolve(artifacts)
-                .withTransitivity()
-                .asResolvedArtifact();
+            .withTransitivity()
+            .asResolvedArtifact();
     }
 }

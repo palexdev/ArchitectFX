@@ -37,10 +37,10 @@ public class TestDynamicClassLoader {
     @Test
     void testWithDeps() {
         DependencyManager.instance().addDeps(
-                        artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                        artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-                )
-                .refresh();
+                artifact("io.github.palexdev", "materialfx", "11.17.0"),
+                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            )
+            .refresh();
         Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNotNull(obj);
         assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
@@ -62,8 +62,8 @@ public class TestDynamicClassLoader {
         assertNull(obj);
 
         dm.addDeps(
-                artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            artifact("io.github.palexdev", "materialfx", "11.17.0"),
+            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         ).refresh();
         obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNotNull(obj);

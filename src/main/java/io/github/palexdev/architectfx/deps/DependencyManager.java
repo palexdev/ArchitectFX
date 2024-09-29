@@ -18,12 +18,12 @@
 
 package io.github.palexdev.architectfx.deps;
 
-import org.tinylog.Logger;
-
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.tinylog.Logger;
 
 public class DependencyManager {
     //================================================================================

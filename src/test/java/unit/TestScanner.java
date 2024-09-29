@@ -4,7 +4,6 @@ import io.github.classgraph.ClassInfoList;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
-
 import org.junit.jupiter.api.Test;
 
 import static io.github.palexdev.architectfx.deps.MavenHelper.artifact;
@@ -27,8 +26,8 @@ public class TestScanner {
     @Test
     void testSearchDeps() {
         DependencyManager.instance().addDeps(
-                artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            artifact("io.github.palexdev", "materialfx", "11.17.0"),
+            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         ).refresh();
         ClassInfoList l = ClassScanner.searchClasses("io.github.palexdev.mfxcore.base.beans.Size", ScanScope.DEPS);
         assertEquals(1, l.size());
@@ -37,8 +36,8 @@ public class TestScanner {
     @Test
     void testMultipleResults() {
         DependencyManager.instance().addDeps(
-                artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            artifact("io.github.palexdev", "materialfx", "11.17.0"),
+            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         ).refresh();
         ClassInfoList l = ClassScanner.searchClasses("Label", ScanScope.DEPS);
         assertEquals(2, l.size());

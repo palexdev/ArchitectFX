@@ -1,12 +1,12 @@
 package io.github.palexdev.architectfx.model;
 
-import org.joor.Reflect;
-import org.joor.ReflectException;
-import org.tinylog.Logger;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
+
+import org.joor.Reflect;
+import org.joor.ReflectException;
+import org.tinylog.Logger;
 
 public class Step {
     //================================================================================
@@ -37,14 +37,14 @@ public class Step {
         try {
             Logger.debug("Running step {} with args {}", name, Arrays.toString(args));
             Object ret = Reflect.on(obj)
-                    .call(name, args)
-                    .get();
+                .call(name, args)
+                .get();
             return Optional.ofNullable(transform ? ret : obj)
-                    .map(o -> (T) o);
+                .map(o -> (T) o);
         } catch (ReflectException ex) {
             Logger.error(
-                    "Failed to execute step {} on object",
-                    name, obj.getClass().getName()
+                "Failed to execute step {} on object",
+                name, obj.getClass().getName()
             );
             Logger.error(ex);
         }

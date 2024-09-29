@@ -18,17 +18,17 @@
 
 package io.github.palexdev.architectfx.utils;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
-import io.github.palexdev.architectfx.deps.DependencyManager;
-import org.tinylog.Logger;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+import io.github.palexdev.architectfx.deps.DependencyManager;
+import org.tinylog.Logger;
 
 public class ClassScanner {
     //================================================================================
@@ -41,9 +41,7 @@ public class ClassScanner {
     //================================================================================
     // Constructors
     //================================================================================
-
-    private ClassScanner() {
-    }
+    private ClassScanner() {}
 
     //================================================================================
     // Static Methods
@@ -89,7 +87,7 @@ public class ClassScanner {
         ClassInfoList results = searchClasses(className, ScanScope.DEPS);
         if (results.isEmpty()) throw new ClassNotFoundException("Class not found: " + className);
         if (results.size() > 1) throw new IllegalStateException(
-                "More than one class for name %s have been found: %s".formatted(className, results.toArray())
+            "More than one class for name %s have been found: %s".formatted(className, results.toArray())
         );
 
         String fqName = results.getFirst().getName();
@@ -108,12 +106,12 @@ public class ClassScanner {
         // Determine if the className is simple or fully qualified
         // and set the query accordingly
         String query = className.contains(".") ?
-                className :
-                "*." + className;
+            className :
+            "*." + className;
         Logger.trace("Scan query: {}", query);
 
         ClassGraph cg = scope.build()
-                .acceptClasses(query);
+            .acceptClasses(query);
         try (ScanResult res = cg.scan()) {
             Logger.trace("ClassGraph scan terminated...");
             Logger.trace("Caching scan results...");
@@ -150,7 +148,7 @@ public class ClassScanner {
                     return ALL.build();
                 }
                 return new ClassGraph()
-                        .overrideClasspath(deps.stream().map(File::getAbsolutePath).toArray());
+                    .overrideClasspath(deps.stream().map(File::getAbsolutePath).toArray());
             }
         },
         ;

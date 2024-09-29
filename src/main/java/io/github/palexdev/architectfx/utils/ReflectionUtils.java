@@ -18,6 +18,8 @@
 
 package io.github.palexdev.architectfx.utils;
 
+import java.util.*;
+
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Property;
@@ -27,16 +29,13 @@ import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
-import java.util.*;
-
 import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
 
 public class ReflectionUtils {
     //================================================================================
     // Constructors
     //================================================================================
-    private ReflectionUtils() {
-    }
+    private ReflectionUtils() {}
 
     //================================================================================
     // Static Methods
@@ -45,8 +44,8 @@ public class ReflectionUtils {
         try {
             Logger.trace("Attempting to create class {} with args: {}", klass.getName(), Arrays.toString(args));
             return Reflect.onClass(klass.getName(), DependencyManager.instance().getClassLoader())
-                    .create(args)
-                    .get();
+                .create(args)
+                .get();
         } catch (Exception ex) {
             Logger.error("Failed to create class {} because: {}", klass.getName(), ex.getMessage());
             return null;
@@ -73,13 +72,13 @@ public class ReflectionUtils {
         String method = split[1];
         try {
             Logger.trace(
-                    "Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
-                    factoryName, Arrays.toString(args), className, method
+                "Attempting to call factory {} with args: {}\n Class: {}\n Static Method: {}",
+                factoryName, Arrays.toString(args), className, method
             );
             Class<?> klass = ClassScanner.findClass(className);
             return Reflect.onClass(klass.getName(), DependencyManager.instance().getClassLoader())
-                    .call(method, args)
-                    .get();
+                .call(method, args)
+                .get();
         } catch (Exception ex) {
             Logger.error("Failed to invoke factory {} because: {}", factoryName, ex.getMessage());
             return null;
@@ -120,11 +119,11 @@ public class ReflectionUtils {
                 case ENUM -> handleEnum(obj, p);
                 case PRIMITIVE, WRAPPER, STRING -> handlePrimitive(obj, p);
                 case COMPLEX -> handleComplexType(CastUtils.asYamlMap(p.value())).ifPresentOrElse(
-                        o -> {
-                            String setter = resolveSetter(name);
-                            Reflect.on(obj).call(setter, o);
-                        },
-                        () -> Logger.error("Could not set complex object {}, skipping...")
+                    o -> {
+                        String setter = resolveSetter(name);
+                        Reflect.on(obj).call(setter, o);
+                    },
+                    () -> Logger.error("Could not set complex object {}, skipping...")
                 );
                 case COLLECTION -> handleCollection(obj, p);
                 case UNKNOWN -> Logger.error("Unsupported type {} for field {}, skipping...", p.type(), name);
@@ -177,8 +176,8 @@ public class ReflectionUtils {
 
         // Extract args if present
         Object[] args = Optional.ofNullable(tmp.remove(ARGS_TAG))
-                .map(o -> ((List<?>) o).toArray())
-                .orElseGet(() -> new Object[0]);
+            .map(o -> ((List<?>) o).toArray())
+            .orElseGet(() -> new Object[0]);
 
         Optional<Object> opt;
         if (map.containsKey(FACTORY_TAG)) { // Handle factories/builders
@@ -204,8 +203,8 @@ public class ReflectionUtils {
         String factory = (String) map.remove(FACTORY_TAG);
         if (factory == null || !factory.contains(".")) {
             Logger.error(
-                    "Could not create complex type {} through factory because the name {} is invalid",
-                    type, factory
+                "Could not create complex type {} through factory because the name {} is invalid",
+                type, factory
             );
             return Optional.empty();
         }
@@ -245,11 +244,11 @@ public class ReflectionUtils {
                     }
 
                     handleComplexType(map).ifPresentOrElse(
-                            o -> {
-                                Logger.debug("Adding complex type {}:{} to collection", o.getClass(), o);
-                                collection.add(o);
-                            },
-                            () -> Logger.error("Value not added to collection.")
+                        o -> {
+                            Logger.debug("Adding complex type {}:{} to collection", o.getClass(), o);
+                            collection.add(o);
+                        },
+                        () -> Logger.error("Value not added to collection.")
                     );
                 }
                 case PRIMITIVE, WRAPPER, STRING -> {
