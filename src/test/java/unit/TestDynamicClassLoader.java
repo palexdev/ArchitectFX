@@ -17,61 +17,61 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(OrderAnnotation.class)
 public class TestDynamicClassLoader {
 
-	@Order(1)
-	@Test
-	void testSimple() {
-		try {
-			DynamicClassLoader dcl = new DynamicClassLoader();
-			Insets obj = Reflect.onClass(Insets.class.getName(), dcl).create(20.0).get();
-			assertEquals(20.0, obj.getTop());
-			assertEquals(20.0, obj.getRight());
-			assertEquals(20.0, obj.getBottom());
-			assertEquals(20.0, obj.getLeft());
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			fail(ex);
-		}
-	}
+    @Order(1)
+    @Test
+    void testSimple() {
+        try {
+            DynamicClassLoader dcl = new DynamicClassLoader();
+            Insets obj = Reflect.onClass(Insets.class.getName(), dcl).create(20.0).get();
+            assertEquals(20.0, obj.getTop());
+            assertEquals(20.0, obj.getRight());
+            assertEquals(20.0, obj.getBottom());
+            assertEquals(20.0, obj.getLeft());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail(ex);
+        }
+    }
 
-	@Order(2)
-	@Test
-	void testWithDeps() {
-		DependencyManager.instance().addDeps(
-				artifact("io.github.palexdev", "materialfx", "11.17.0"),
-				artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-			)
-			.refresh();
-		Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
-		assertNotNull(obj);
-		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
+    @Order(2)
+    @Test
+    void testWithDeps() {
+        DependencyManager.instance().addDeps(
+                        artifact("io.github.palexdev", "materialfx", "11.17.0"),
+                        artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+                )
+                .refresh();
+        Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        assertNotNull(obj);
+        assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-		double w = TestUtils.getProperty(obj, "width");
-		assertEquals(69.0, w);
-		double h = TestUtils.getProperty(obj, "height");
-		assertEquals(420.0, h);
-	}
+        double w = TestUtils.getProperty(obj, "width");
+        assertEquals(69.0, w);
+        double h = TestUtils.getProperty(obj, "height");
+        assertEquals(420.0, h);
+    }
 
-	@Order(3)
-	@Test
-	void testCleanup() {
-		DependencyManager dm = DependencyManager.instance();
-		dm.cleanDeps().refresh();
-		assertEquals(0, dm.getDependencies().size());
+    @Order(3)
+    @Test
+    void testCleanup() {
+        DependencyManager dm = DependencyManager.instance();
+        dm.cleanDeps().refresh();
+        assertEquals(0, dm.getDependencies().size());
 
-		Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
-		assertNull(obj);
+        Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        assertNull(obj);
 
-		dm.addDeps(
-				artifact("io.github.palexdev", "materialfx", "11.17.0"),
-				artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-		).refresh();
-		obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
-		assertNotNull(obj);
-		assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
+        dm.addDeps(
+                artifact("io.github.palexdev", "materialfx", "11.17.0"),
+                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+        ).refresh();
+        obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        assertNotNull(obj);
+        assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-		double w = TestUtils.getProperty(obj, "width");
-		assertEquals(69.0, w);
-		double h = TestUtils.getProperty(obj, "height");
-		assertEquals(420.0, h);
-	}
+        double w = TestUtils.getProperty(obj, "width");
+        assertEquals(69.0, w);
+        double h = TestUtils.getProperty(obj, "height");
+        assertEquals(420.0, h);
+    }
 }

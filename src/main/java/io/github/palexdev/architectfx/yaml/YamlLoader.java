@@ -53,7 +53,8 @@ public class YamlLoader {
     //================================================================================
     // Constructors
     //================================================================================
-    private YamlLoader() {}
+    private YamlLoader() {
+    }
 
     //================================================================================
     // Methods
@@ -66,8 +67,8 @@ public class YamlLoader {
 
             // Load dependencies if any
             DependencyManager.instance()
-                .addDeps(document.getDependencies().toArray(String[]::new))
-                .refresh();
+                    .addDeps(document.getDependencies().toArray(String[]::new))
+                    .refresh();
 
             // Make imports available to the reflection module rather than passing them as args every time
             ClassScanner.setImports(document.getImports());
@@ -98,12 +99,12 @@ public class YamlLoader {
     private Parent doLoad(Document document) throws IOException {
         Node root = document.getRoot();
         Object[] args = root.getProperty(ARGS_TAG)
-            .map(Property::value)
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            //.map() TODO parse args (probably already done by the deserializer)
-            .map(List::toArray)
-            .orElseGet(() -> new Object[0]);
+                .map(Property::value)
+                .filter(List.class::isInstance)
+                .map(List.class::cast)
+                //.map() TODO parse args (probably already done by the deserializer)
+                .map(List::toArray)
+                .orElseGet(() -> new Object[0]);
         Parent parent = ReflectionUtils.create(root.getType(), args);
         if (parent == null)
             throw new IOException("Failed to create root node!");

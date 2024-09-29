@@ -30,7 +30,8 @@ public class CastUtils {
     //================================================================================
     // Constructors
     //================================================================================
-    private CastUtils() {}
+    private CastUtils() {
+    }
 
     //================================================================================
     // Static Methods
@@ -44,8 +45,8 @@ public class CastUtils {
 
     public static <T> List<T> asList(List<?> src, Class<T> type) {
         return src.stream()
-            .map(type::cast)
-            .toList();
+                .map(type::cast)
+                .toList();
     }
 
     public static <T> List<T> asList(Object obj, Class<T> type) {
@@ -56,12 +57,12 @@ public class CastUtils {
 
     public static <M extends Map<K, V>, K, V> M asMap(Map<?, ?> map, Class<K> kType, Class<V> vType, Supplier<M> mapBuilder) {
         return map.entrySet().stream()
-            .collect(Collectors.toMap(
-                kType::cast,
-                vType::cast,
-                (v, v2) -> v2,
-                mapBuilder
-            ));
+                .collect(Collectors.toMap(
+                        kType::cast,
+                        vType::cast,
+                        (v, v2) -> v2,
+                        mapBuilder
+                ));
     }
 
     public static <M extends Map<K, V>, K, V> M asMap(Object obj, Class<K> kType, Class<V> vType, Supplier<M> mapBuilder) {
@@ -71,7 +72,7 @@ public class CastUtils {
     }
 
     public static SequencedMap<String, Object> asYamlMap(Object obj) {
-        if (obj instanceof SequencedMap<?,?>) {
+        if (obj instanceof SequencedMap<?, ?>) {
             return (SequencedMap<String, Object>) obj;
         }
         throw new IllegalArgumentException("Expected SequencedMap but found: %s".formatted(obj));

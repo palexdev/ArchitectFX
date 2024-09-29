@@ -19,14 +19,14 @@ public enum Type {
     ;
 
     private static final Set<Class<?>> wrappers = Set.of(
-        Boolean.class,
-        Character.class,
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Float.class,
-        Double.class
+            Boolean.class,
+            Character.class,
+            Byte.class,
+            Short.class,
+            Integer.class,
+            Long.class,
+            Float.class,
+            Double.class
     );
 
     public boolean isPrimitiveOrWrapperOrString() {
@@ -42,8 +42,8 @@ public enum Type {
                 return getType(ClassScanner.findClass(split[0]));
             } catch (ClassNotFoundException ex) {
                 Logger.error(
-                    "Failed to determine type for {} because class {} was not found",
-                    s, split[0]
+                        "Failed to determine type for {} because class {} was not found",
+                        s, split[0]
                 );
             }
 

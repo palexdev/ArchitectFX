@@ -19,12 +19,12 @@ public class TestSteps {
     @Test
     void testSimple() {
         List<Step> steps = List.of(
-            new Step("add", "A"),
-            new Step("add", "B"),
-            new Step("add", "C"),
-            new Step("add", "D"),
-            new Step("set", 2, "Z"),
-            new Step("subList", 2, 4).setTransform(true)
+                new Step("add", "A"),
+                new Step("add", "B"),
+                new Step("add", "C"),
+                new Step("add", "D"),
+                new Step("set", 2, "Z"),
+                new Step("subList", 2, 4).setTransform(true)
         );
 
         Optional<List<String>> res = Optional.of(new ArrayList<>());
@@ -46,15 +46,15 @@ public class TestSteps {
     @Test
     void testSimpleAsYaml() {
         String yaml = """
-            .steps: [
-              { .name: "add", .args: ["A"] },
-              { .name: "add", .args: ["B"] },
-              { .name: "add", .args: ["C"] },
-              { .name: "add", .args: ["D"] },
-              { .name: "set", .args: [2, "Z"] },
-              { .name: "subList", .args: [2, 4], .transform: true },
-            ]
-            """;
+                .steps: [
+                  { .name: "add", .args: ["A"] },
+                  { .name: "add", .args: ["B"] },
+                  { .name: "add", .args: ["C"] },
+                  { .name: "add", .args: ["D"] },
+                  { .name: "set", .args: [2, "Z"] },
+                  { .name: "subList", .args: [2, 4], .transform: true },
+                ]
+                """;
         SequencedMap<String, Object> map = new Yaml().load(yaml);
         assertTrue(map.containsKey(STEPS_TAG));
         assertEquals(ArrayList.class, map.get(STEPS_TAG).getClass());
