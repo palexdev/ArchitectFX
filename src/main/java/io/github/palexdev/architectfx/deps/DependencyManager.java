@@ -26,78 +26,78 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DependencyManager {
-	//================================================================================
-	// Singleton
-	//================================================================================
-	private static final DependencyManager instance = new DependencyManager();
+    //================================================================================
+    // Singleton
+    //================================================================================
+    private static final DependencyManager instance = new DependencyManager();
 
-	public static DependencyManager instance() {
-		return instance;
-	}
+    public static DependencyManager instance() {
+        return instance;
+    }
 
-	//================================================================================
-	// Properties
-	//================================================================================
-	private final Set<File> dependencies = new HashSet<>();
-	private final MavenHelper mavenHelper = new MavenHelper();
-	private DynamicClassLoader classLoader = new DynamicClassLoader();
+    //================================================================================
+    // Properties
+    //================================================================================
+    private final Set<File> dependencies = new HashSet<>();
+    private final MavenHelper mavenHelper = new MavenHelper();
+    private DynamicClassLoader classLoader = new DynamicClassLoader();
 
-	//================================================================================
-	// Constructors
-	//================================================================================
-	private DependencyManager() {
-	}
+    //================================================================================
+    // Constructors
+    //================================================================================
+    private DependencyManager() {
+    }
 
-	//================================================================================
-	// Methods
-	//================================================================================
+    //================================================================================
+    // Methods
+    //================================================================================
 
-	public Class<?> loadClass(String fqName) {
-		try {
-			return classLoader.loadClass(fqName);
-		} catch (ClassNotFoundException ex) {
-			Logger.error(ex, "Failed to load class {}", fqName);
-			return null;
-		}
-	}
+    public Class<?> loadClass(String fqName) {
+        try {
+            return classLoader.loadClass(fqName);
+        } catch (ClassNotFoundException ex) {
+            Logger.error(ex, "Failed to load class {}", fqName);
+            return null;
+        }
+    }
 
-	public DependencyManager addDeps(String... artifacts) {
-		if (artifacts.length != 0) {
-			File[] deps = mavenHelper.downloadFiles(artifacts);
-			Collections.addAll(dependencies, deps);
-		}
-		return this;
-	}
+    public DependencyManager addDeps(String... artifacts) {
+        if (artifacts.length != 0) {
+            File[] deps = mavenHelper.downloadFiles(artifacts);
+            Collections.addAll(dependencies, deps);
+        }
+        return this;
+    }
 
-	public DependencyManager addDeps(File... deps) {
-		Collections.addAll(dependencies, deps);
-		return this;
-	}
+    public DependencyManager addDeps(File... deps) {
+        Collections.addAll(dependencies, deps);
+        return this;
+    }
 
-	public DependencyManager cleanDeps() {
-		dependencies.clear();
-		return this;
-	}
+    public DependencyManager cleanDeps() {
+        dependencies.clear();
+        return this;
+    }
 
-	public DependencyManager refresh() {
-		try {
-			classLoader.close();
-		} catch (Exception ex) {
-			Logger.warn(ex, "Failed to dispose old class loader");
-		}
-		classLoader = new DynamicClassLoader();
-		classLoader.addJars(dependencies);
-		return this;
-	}
+    public DependencyManager refresh() {
+        try {
+            classLoader.close();
+        } catch (Exception ex) {
+            Logger.warn(ex, "Failed to dispose old class loader");
+        }
+        classLoader = new DynamicClassLoader();
+        classLoader.addJars(dependencies);
+        return this;
+    }
 
-	//================================================================================
-	// Getters
-	//================================================================================
-	public Set<File> getDependencies() {
-		return Collections.unmodifiableSet(dependencies);
-	}
+    //================================================================================
+    // Getters
+    //================================================================================
+    public Set<File> getDependencies() {
+        return Collections.unmodifiableSet(dependencies);
+    }
 
-	public DynamicClassLoader getClassLoader() {
-		return classLoader;
-	}
+    public DynamicClassLoader getClassLoader() {
+        return classLoader;
+    }
 }

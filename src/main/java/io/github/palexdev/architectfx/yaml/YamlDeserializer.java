@@ -41,7 +41,8 @@ public class YamlDeserializer {
     //================================================================================
     // Constructors
     //================================================================================
-    private YamlDeserializer() {}
+    private YamlDeserializer() {
+    }
 
     //================================================================================
     // Methods
@@ -119,7 +120,7 @@ public class YamlDeserializer {
     }
 
     private Optional<Step> parseStep(Object yamlStep) {
-        if (yamlStep instanceof SequencedMap<?,?>) {
+        if (yamlStep instanceof SequencedMap<?, ?>) {
             SequencedMap<String, Object> map = asYamlMap(yamlStep);
             if (!map.containsKey(NAME_TAG)) {
                 Logger.error("Invalid step because no name was found");
@@ -128,11 +129,11 @@ public class YamlDeserializer {
 
             String name = (String) map.get(NAME_TAG);
             Object[] args = Optional.ofNullable(map.get(ARGS_TAG))
-                .map(o -> ((List<?>) o).toArray())
-                .orElseGet(() -> new Object[0]);
+                    .map(o -> ((List<?>) o).toArray())
+                    .orElseGet(() -> new Object[0]);
             boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
-                .map(o -> Boolean.parseBoolean(o.toString()))
-                .orElse(false);
+                    .map(o -> Boolean.parseBoolean(o.toString()))
+                    .orElse(false);
             return Optional.of(new Step(name, args).setTransform(transform));
         }
         Logger.error("Invalid step because object {} is not a valid YAML map", yamlStep);
@@ -147,23 +148,23 @@ public class YamlDeserializer {
             depsObj = map.remove(DEPENDENCIES_TAG);
         }
         return Optional.ofNullable(depsObj)
-            .filter(List.class::isInstance)
-            .map(l -> asList(l, String.class))
-            .orElseGet(List::of);
+                .filter(List.class::isInstance)
+                .map(l -> asList(l, String.class))
+                .orElseGet(List::of);
     }
 
     private List<String> parseImports(SequencedMap<String, ?> map) {
         return Optional.ofNullable(map.remove(IMPORTS_TAG))
-            .filter(List.class::isInstance)
-            .map(l -> asList(l, String.class))
-            .orElseGet(List::of);
+                .filter(List.class::isInstance)
+                .map(l -> asList(l, String.class))
+                .orElseGet(List::of);
     }
 
     private String parseController(SequencedMap<String, ?> map) {
         return Optional.ofNullable(map.remove(CONTROLLER_TAG))
-            .filter(String.class::isInstance)
-            .map(o -> as(o, String.class))
-            .orElse(null);
+                .filter(String.class::isInstance)
+                .map(o -> as(o, String.class))
+                .orElse(null);
     }
 
     private Node parse(Map.Entry<String, Object> entry) {
@@ -175,9 +176,9 @@ public class YamlDeserializer {
 
         // Handle children if present
         List<?> children = Optional.ofNullable(properties.remove("children"))
-            .filter(List.class::isInstance)
-            .map(List.class::cast)
-            .orElseGet(List::of);
+                .filter(List.class::isInstance)
+                .map(List.class::cast)
+                .orElseGet(List::of);
 
         if (!children.isEmpty()) Logger.debug("Parsing children...");
         for (Object child : children) {
@@ -190,8 +191,8 @@ public class YamlDeserializer {
             }
             if (asMap.size() > 1)
                 Logger.warn(
-                    "Expected size 1 for children collection, found {}. Trying to parse anyway.",
-                    asMap.size()
+                        "Expected size 1 for children collection, found {}. Trying to parse anyway.",
+                        asMap.size()
                 );
 
             Map.Entry<String, Object> asEntry = asMap.firstEntry();

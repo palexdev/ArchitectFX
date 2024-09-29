@@ -31,7 +31,7 @@ public class TestLoader {
                   "javafx.geometry.*",
                   "javafx.scene.layout.*"
                 ]
-
+                
                 GridPane:
                   alignment: "Pos.CENTER"
                   hgap: 20.0
@@ -41,7 +41,7 @@ public class TestLoader {
                     - "grid-pane"
                   stylesheets:
                     - "../css/TextFields.css"
-
+                
                   columnConstraints: [
                     { .type: ColumnConstraints, halignment: "HPos.CENTER" },
                     { .type: ColumnConstraints, halignment: "HPos.CENTER" },
@@ -79,7 +79,7 @@ public class TestLoader {
             }
 
             assertEquals(6, root.getRowConstraints().size());
-            double[] params = new double[] { 32.0, 64.0, 64.0, 10.0, 32.0, 150.0 };
+            double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
             for (int i = 0; i < 6; i++) {
                 RowConstraints rc = root.getRowConstraints().get(i);
                 assertEquals(10.0, rc.getMinHeight());
@@ -96,33 +96,33 @@ public class TestLoader {
     @Test
     void testLoadWithoutDepsAndImports() {
         String document = """
-        GridPane:
-          alignment: "Pos.CENTER"
-          hgap: 20.0
-          vgap: 20.0
-          padding: { .type: "Insets", .args: [20.0, 30.0, 20.0, 30.0] }
-          styleClass:
-            - "grid-pane"
-          stylesheets:
-            - "../css/TextFields.css"
-
-          columnConstraints: [
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" },
-            { .type: ColumnConstraints, halignment: "HPos.CENTER" }
-          ]
-          rowConstraints: [
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
-            { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
-          ]
-        """;
+                GridPane:
+                  alignment: "Pos.CENTER"
+                  hgap: 20.0
+                  vgap: 20.0
+                  padding: { .type: "Insets", .args: [20.0, 30.0, 20.0, 30.0] }
+                  styleClass:
+                    - "grid-pane"
+                  stylesheets:
+                    - "../css/TextFields.css"
+                
+                  columnConstraints: [
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" },
+                    { .type: ColumnConstraints, halignment: "HPos.CENTER" }
+                  ]
+                  rowConstraints: [
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 64.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 10.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
+                    { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
+                  ]
+                """;
 
         try {
             InputStream stream = new ByteArrayInputStream(document.getBytes());
@@ -143,7 +143,7 @@ public class TestLoader {
             }
 
             assertEquals(6, root.getRowConstraints().size());
-            double[] params = new double[] { 32.0, 64.0, 64.0, 10.0, 32.0, 150.0 };
+            double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
             for (int i = 0; i < 6; i++) {
                 RowConstraints rc = root.getRowConstraints().get(i);
                 assertEquals(10.0, rc.getMinHeight());
@@ -166,22 +166,22 @@ public class TestLoader {
         // There are several classes named Color
         TestUtils.forceInitFX();
         String document = """
-        .deps: [
-          "io.github.palexdev:mfxcomponents:11.26.1",
-        ]
-        .imports: ["javafx.scene.paint.Color"]
-        MFXButton:
-          .args: ["This is a MaterialFX's Button"]
-          alignment: "Pos.CENTER"
-          padding: { .type: "Insets", .args: [10.0] }
-          graphic: {
-            .type: "MFXFontIcon", .args: ["fas-user"],
-            color: { .type: "Color", .factory: "Color.web", .args: ["#845EC2"] }
-          }
-          .steps: [
-            { .name: filled }
-          ]
-        """;
+                .deps: [
+                  "io.github.palexdev:mfxcomponents:11.26.1",
+                ]
+                .imports: ["javafx.scene.paint.Color"]
+                MFXButton:
+                  .args: ["This is a MaterialFX's Button"]
+                  alignment: "Pos.CENTER"
+                  padding: { .type: "Insets", .args: [10.0] }
+                  graphic: {
+                    .type: "MFXFontIcon", .args: ["fas-user"],
+                    color: { .type: "Color", .factory: "Color.web", .args: ["#845EC2"] }
+                  }
+                  .steps: [
+                    { .name: filled }
+                  ]
+                """;
 
         try {
             InputStream stream = new ByteArrayInputStream(document.getBytes());

@@ -25,37 +25,37 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
 public class MavenHelper {
-	//================================================================================
-	// Properties
-	//================================================================================
-	private final MavenResolverSystem resolver;
+    //================================================================================
+    // Properties
+    //================================================================================
+    private final MavenResolverSystem resolver;
 
-	//================================================================================
-	// Constructors
-	//================================================================================
-	public MavenHelper() {
-		this.resolver = Maven.resolver();
-	}
+    //================================================================================
+    // Constructors
+    //================================================================================
+    public MavenHelper() {
+        this.resolver = Maven.resolver();
+    }
 
-	//================================================================================
-	// Static Methods
-	//================================================================================
-	public static String artifact(String group, String name, String version) {
-		return group + ":" + name + ":" + version;
-	}
+    //================================================================================
+    // Static Methods
+    //================================================================================
+    public static String artifact(String group, String name, String version) {
+        return group + ":" + name + ":" + version;
+    }
 
-	//================================================================================
-	// Methods
-	//================================================================================
-	public File[] downloadFiles(String... artifacts) {
-		return resolver.resolve(artifacts)
-			.withTransitivity()
-			.asFile();
-	}
+    //================================================================================
+    // Methods
+    //================================================================================
+    public File[] downloadFiles(String... artifacts) {
+        return resolver.resolve(artifacts)
+                .withTransitivity()
+                .asFile();
+    }
 
-	public MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
-		return resolver.resolve(artifacts)
-			.withTransitivity()
-			.asResolvedArtifact();
-	}
+    public MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
+        return resolver.resolve(artifacts)
+                .withTransitivity()
+                .asResolvedArtifact();
+    }
 }
