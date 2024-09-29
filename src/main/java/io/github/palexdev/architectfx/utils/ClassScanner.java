@@ -19,10 +19,7 @@
 package io.github.palexdev.architectfx.utils;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
@@ -87,7 +84,7 @@ public class ClassScanner {
         ClassInfoList results = searchClasses(className, ScanScope.DEPS);
         if (results.isEmpty()) throw new ClassNotFoundException("Class not found: " + className);
         if (results.size() > 1) throw new IllegalStateException(
-            "More than one class for name %s have been found: %s".formatted(className, results.toArray())
+            "More than one class for name %s have been found: %s".formatted(className, Arrays.toString(results.toArray()))
         );
 
         String fqName = results.getFirst().getName();
