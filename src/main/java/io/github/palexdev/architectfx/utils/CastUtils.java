@@ -42,10 +42,18 @@ public class CastUtils {
         throw new IllegalArgumentException("Expected type %s but found: %s".formatted(type, obj));
     }
 
+    public static Class<? extends Enum<?>> asEnumClass(Class<?> klass) {
+        return (Class<? extends Enum<?>>) klass;
+    }
+
     public static <T> List<T> asList(List<?> src, Class<T> type) {
         return src.stream()
             .map(type::cast)
             .toList();
+    }
+
+    public static List<Object> asGenericList(Object obj) {
+        return asList(obj, Object.class);
     }
 
     public static <T> List<T> asList(Object obj, Class<T> type) {

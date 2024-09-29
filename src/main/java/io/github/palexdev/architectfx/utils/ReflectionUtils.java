@@ -134,15 +134,12 @@ public class ReflectionUtils {
     private static void handleEnum(Object obj, Property property) {
         String name = property.name();
         Object value = property.value();
-        if (value instanceof String sValue) {
-            Optional<Enum<?>> eValue = getEnumValue(sValue);
-            if (eValue.isEmpty()) return;
-
+        if (value instanceof Enum<?> eValue) {
             // Do it via setter
             try {
                 String setter = resolveSetter(name);
                 Logger.debug("Attempting to set enum value {} via setter {}", value, setter);
-                Reflect.on(obj).call(setter, eValue.get());
+                Reflect.on(obj).call(setter, eValue);
             } catch (ReflectException ex) {
                 Logger.error(ex, "Failed to set enum value.");
             }
@@ -260,30 +257,6 @@ public class ReflectionUtils {
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static Optional<Enum<?>> getEnumValue(String value) {
-        if (!value.contains(".")) return Optional.empty();
-        String[] split = value.split("\\.");
-        if (split.length < 2) {
-            Logger.trace("YAML value {} is not an enum", value);
-            return Optional.empty();
-        }
-
-        try {
-            String enumClass = split[0];
-            String enumConst = split[1];
-            Class<?> klass = ClassScanner.findClass(enumClass);
-            if (!klass.isEnum()) {
-                Logger.trace("Class {} is not an enum");
-                return Optional.empty();
-            }
-            Enum<?> enumVal = Enum.valueOf((Class<? extends Enum>) klass, enumConst);
-            return Optional.of(enumVal);
-        } catch (ClassNotFoundException | IllegalArgumentException ex) {
-            Logger.error("Failed to resolve enum constant {}", value);
-            Logger.error(ex);
-            return Optional.empty();
-        }
     }
 
     public static String resolveGetter(String fieldName) {

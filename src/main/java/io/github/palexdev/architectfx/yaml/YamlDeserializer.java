@@ -92,6 +92,8 @@ public class YamlDeserializer {
                     default -> e.getValue();
                 };
                 type = Type.METADATA;
+            } else if ((value = Type.isEnum(e.getValue())) != null) {
+                type = Type.ENUM;
             } else {
                 value = e.getValue();
                 type = Property.getPropertyType(name, value);
