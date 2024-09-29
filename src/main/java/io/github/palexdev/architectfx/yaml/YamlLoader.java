@@ -23,14 +23,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 import java.util.SequencedMap;
 
-import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
 import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import javafx.scene.Parent;
 import org.tinylog.Logger;
@@ -62,14 +59,6 @@ public class YamlLoader {
         try {
             SequencedMap<String, Object> mappings = new Yaml().load(stream);
             Document document = YamlDeserializer.instance().parse(mappings);
-
-            // Load dependencies if any
-            DependencyManager.instance()
-                .addDeps(document.getDependencies().toArray(String[]::new))
-                .refresh();
-
-            // Make imports available to the reflection module rather than passing them as args every time
-            ClassScanner.setImports(document.getImports());
             return doLoad(document);
         } catch (Exception ex) {
             throw new IOException(ex);

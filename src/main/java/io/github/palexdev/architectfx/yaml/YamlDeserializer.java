@@ -21,11 +21,13 @@ package io.github.palexdev.architectfx.yaml;
 import java.io.IOException;
 import java.util.*;
 
+import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import org.tinylog.Logger;
 
@@ -56,10 +58,16 @@ public class YamlDeserializer {
         // Handle dependencies if present
         List<String> deps = parseDependencies(mappings);
         Logger.debug("Found {} dependencies:\n{}", deps.size(), deps);
+        if (!deps.isEmpty()) {
+            DependencyManager.instance()
+                .addDeps(deps.toArray(String[]::new))
+                .refresh();
+        }
 
         // Handle imports if present
         List<String> imports = parseImports(mappings);
         Logger.debug("Found {} imports", imports.size());
+        ClassScanner.setImports(imports);
 
         // Handle controller if present
         String controller = parseController(mappings);
