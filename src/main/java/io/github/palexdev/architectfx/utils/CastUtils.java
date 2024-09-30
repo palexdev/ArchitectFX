@@ -24,7 +24,7 @@ import java.util.SequencedMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class CastUtils {
 
     //================================================================================
@@ -42,8 +42,8 @@ public class CastUtils {
         throw new IllegalArgumentException("Expected type %s but found: %s".formatted(type, obj));
     }
 
-    public static Class<? extends Enum<?>> asEnumClass(Class<?> klass) {
-        return (Class<? extends Enum<?>>) klass;
+    public static Class<? extends Enum> asEnumClass(Class<?> klass) {
+        return (Class<? extends Enum>) klass;
     }
 
     public static <T> List<T> asList(List<?> src, Class<T> type) {

@@ -69,7 +69,7 @@ public enum Type {
                 int lastDot = s.lastIndexOf('.');
                 if (lastDot == -1) return null;
 
-                Class<? extends Enum> klass;
+                Class<?> klass;
                 String sClass = s.substring(0, lastDot);
                 String sValue = s.substring(lastDot + 1);
                 if (!enumsCache.containsKey(sClass)) {
@@ -77,16 +77,17 @@ public enum Type {
                         Logger.trace("String {} is not a valid class identifier", sClass);
                         return null;
                     }
-                    klass = asEnumClass(ClassScanner.findClass(sClass));
+
+                    klass = ClassScanner.findClass(sClass);
                     if (!klass.isEnum()) {
                         Logger.trace("Class {} is not an enum", klass);
                         return null;
                     }
-                    enumsCache.put(sClass, klass);
+                    enumsCache.put(sClass, asEnumClass(klass));
                 } else {
                     klass = enumsCache.get(sClass);
                 }
-                return Enum.valueOf(klass, sValue);
+                return Enum.valueOf(asEnumClass(klass), sValue);
             } catch (Exception ex) {
                 Logger.error("Failed to parse enum from string {}\n{}", s, ex);
             }
