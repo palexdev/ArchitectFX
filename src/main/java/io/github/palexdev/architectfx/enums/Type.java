@@ -12,7 +12,7 @@ import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.asEnumClass;
 
-@SuppressWarnings({"rawtypes","unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public enum Type {
     METADATA,
     PRIMITIVE,

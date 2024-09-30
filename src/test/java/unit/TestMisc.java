@@ -124,24 +124,24 @@ public class TestMisc {
     @Test
     void testSimpleVarargs() {
         String document = """
-        list:
-          - {.type: User, .varargs: [1, 2, 3, 4]}
-          - {.type: User, .args: ["User 1", "1111"], .varargs: [5, 6, 7, 8]}
-          - {
-             .type: User,
-             .args: ["User 2", "01234"],
-             .steps: [
-               {.name: setNumbers, .varargs: [9, 10]}
-             ]
-            }
-          - {
-             .type: User,
-             .args: ["User 3", "password"],
-             .steps: [
-               {.name: setData, .args: ["Special User", "specialpass"], .varargs: [100, 200, 300, 400]}
-             ]
-            }
-        """;
+            list:
+              - {.type: User, .varargs: [1, 2, 3, 4]}
+              - {.type: User, .args: ["User 1", "1111"], .varargs: [5, 6, 7, 8]}
+              - {
+                 .type: User,
+                 .args: ["User 2", "01234"],
+                 .steps: [
+                   {.name: setNumbers, .varargs: [9, 10]}
+                 ]
+                }
+              - {
+                 .type: User,
+                 .args: ["User 3", "password"],
+                 .steps: [
+                   {.name: setData, .args: ["Special User", "specialpass"], .varargs: [100, 200, 300, 400]}
+                 ]
+                }
+            """;
 
         Object yaml = asYamlMap(new Yaml().load(new ByteArrayInputStream(document.getBytes()))).get("list");
         List<User> parsed = YamlDeserializer.instance().parseList(yaml);
@@ -151,13 +151,13 @@ public class TestMisc {
         User o0 = parsed.getFirst();
         assertEquals(o0.name(), "@placeholder");
         assertEquals(o0.password(), "@placeholder");
-        assertArrayEquals(new Integer[]{1,2,3,4}, o0.numbers());
+        assertArrayEquals(new Integer[]{1, 2, 3, 4}, o0.numbers());
 
         // Test 1
         User o1 = parsed.get(1);
         assertEquals(o1.name(), "User 1");
         assertEquals(o1.password(), "1111");
-        assertArrayEquals(new Integer[]{5,6,7,8}, o1.numbers());
+        assertArrayEquals(new Integer[]{5, 6, 7, 8}, o1.numbers());
 
         // Test 2
         User o2 = parsed.get(2);
@@ -169,6 +169,6 @@ public class TestMisc {
         User o3 = parsed.getLast();
         assertEquals(o3.name(), "Special User");
         assertEquals(o3.password(), "specialpass");
-        assertArrayEquals(new Integer[]{100,200,300,400}, o3.numbers());
+        assertArrayEquals(new Integer[]{100, 200, 300, 400}, o3.numbers());
     }
 }

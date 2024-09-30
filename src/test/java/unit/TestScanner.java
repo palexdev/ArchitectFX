@@ -41,7 +41,7 @@ public class TestScanner {
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         ).refresh();
         ClassInfoList l = ClassScanner.searchClasses("Label", ScanScope.DEPS)
-                .filter(i -> i.extendsSuperclass(Node.class));
+            .filter(i -> i.extendsSuperclass(Node.class));
         assertEquals(2, l.size());
         assertEquals("io.github.palexdev.mfxcore.controls.Label", l.getFirst().getName());
         assertEquals("javafx.scene.control.Label", l.get(1).getName());
