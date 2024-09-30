@@ -229,7 +229,7 @@ public class TestLoader {
               alignment: "Pos.CENTER"
               padding: { .type: "Insets", .args: [10.0] }
               .steps: [
-                { .name: setVariants, .args: [ButtonVariants.FILLED, ButtonVariants.TEXT] }
+                { .name: setVariants, .varargs: [ButtonVariants.FILLED, ButtonVariants.TEXT] }
               ]
             """;
 

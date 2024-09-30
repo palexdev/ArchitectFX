@@ -29,6 +29,7 @@ import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.Step;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import io.github.palexdev.architectfx.utils.VarArgsHandler;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -96,7 +97,7 @@ public class YamlDeserializer {
             // Handle metadata
             if (Type.isMetadata(name)) {
                 value = switch (name) {
-                    case ARGS_TAG -> parseList(e.getValue()).toArray();
+                    case ARGS_TAG, VARARGS_TAG -> parseList(e.getValue()).toArray();
                     case STEPS_TAG -> parseSteps(asList(e.getValue(), Map.class));
                     default -> e.getValue();
                 };
@@ -116,7 +117,8 @@ public class YamlDeserializer {
         return properties;
     }
 
-    public List<Object> parseList(Object obj) {
+    @SuppressWarnings("unchecked")
+    public <T> List<T> parseList(Object obj) {
         if (!(obj instanceof List<?>)) {
             Logger.error("Object {} is not a list", Objects.toString(obj));
             return List.of();
@@ -158,7 +160,7 @@ public class YamlDeserializer {
                 default -> Logger.error("Unsupported element type {}, skipping...", e.getClass());
             }
         }
-        return parsed;
+        return (List<T>) parsed;
     }
 
     public List<Step> parseSteps(List<?> yamlSteps) {
@@ -188,6 +190,11 @@ public class YamlDeserializer {
                 .map(this::parseList)
                 .map(List::toArray)
                 .orElseGet(() -> new Object[0]);
+            Object varargs = Optional.ofNullable(map.get(VARARGS_TAG))
+                .map(this::parseList)
+                .map(VarArgsHandler::generateArray)
+                .orElse(null);
+            args = VarArgsHandler.combine(args, varargs);
             boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
                 .map(o -> Boolean.parseBoolean(o.toString()))
                 .orElse(false);

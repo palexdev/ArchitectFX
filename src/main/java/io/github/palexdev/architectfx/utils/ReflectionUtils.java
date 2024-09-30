@@ -176,6 +176,12 @@ public class ReflectionUtils {
             .map(YamlDeserializer.instance()::parseList)
             .map(List::toArray)
             .orElseGet(() -> new Object[0]);
+        // Extract varargs if present and combine
+        Object varargs = Optional.ofNullable(tmp.remove(VARARGS_TAG))
+            .map(YamlDeserializer.instance()::parseList)
+            .map(VarArgsHandler::generateArray)
+            .orElse(null);
+        args = VarArgsHandler.combine(args, varargs);
 
         Optional<Object> opt;
         if (map.containsKey(FACTORY_TAG)) { // Handle factories/builders
