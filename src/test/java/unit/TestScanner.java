@@ -4,6 +4,7 @@ import io.github.classgraph.ClassInfoList;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
+import javafx.scene.Node;
 import org.junit.jupiter.api.Test;
 
 import static io.github.palexdev.architectfx.deps.MavenHelper.artifact;
@@ -39,7 +40,8 @@ public class TestScanner {
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         ).refresh();
-        ClassInfoList l = ClassScanner.searchClasses("Label", ScanScope.DEPS);
+        ClassInfoList l = ClassScanner.searchClasses("Label", ScanScope.DEPS)
+                .filter(i -> i.extendsSuperclass(Node.class));
         assertEquals(2, l.size());
         assertEquals("io.github.palexdev.mfxcore.controls.Label", l.getFirst().getName());
         assertEquals("javafx.scene.control.Label", l.get(1).getName());

@@ -144,8 +144,16 @@ public class ClassScanner {
                     Logger.error("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
                     return ALL.build();
                 }
-                return new ClassGraph()
-                    .overrideClasspath(deps.stream().map(File::getAbsolutePath).toArray());
+
+                ClassGraph cg = new ClassGraph()
+                    .overrideClasspath(deps.toArray());
+
+                if ("true".equals(System.getProperty("test.environment", "false"))) {
+                    Logger.trace("Test environment detected, adding project classpath to ClassGraph...");
+                    cg.overrideClasspath(System.getProperty("java.class.path"));
+                }
+
+                return cg;
             }
         },
         ;

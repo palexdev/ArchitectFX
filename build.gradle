@@ -42,6 +42,8 @@ test {
     jvmArgs += [
             '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
     ]
+
+    systemProperty('test.environment', 'true')
 }
 
 tasks.register('testRun', JavaExec) {
