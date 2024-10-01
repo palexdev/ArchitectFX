@@ -248,7 +248,7 @@ public class ReflectionUtils {
                     (klass.isEnum() && !allowEnums)
                 ) return Tuple3.of(null, sField, null);
 
-                Object val  = Reflect.onClass(klass).get(sField);
+                Object val = Reflect.onClass(klass).get(sField);
                 return Tuple3.of(klass, sField, val);
             } catch (Exception ex) {
                 Logger.error("Failed to retrieve field info\n{}", ex);

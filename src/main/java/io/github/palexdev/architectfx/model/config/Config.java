@@ -28,7 +28,7 @@ public abstract class Config {
     // Static Methods
     //================================================================================
     public static Optional<? extends Config> parse(Object obj) {
-        if (!(obj instanceof SequencedMap<?,?>)) return Optional.empty();
+        if (!(obj instanceof SequencedMap<?, ?>)) return Optional.empty();
         SequencedMap<String, ?> map = CastUtils.asYamlMap(obj);
         if (map.containsKey(FIELD_TAG)) return FieldConfig.parse(map);
         if (map.containsKey(METHOD_TAG)) return MethodConfig.parse(map);

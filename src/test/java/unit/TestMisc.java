@@ -191,12 +191,12 @@ public class TestMisc {
     @Test
     void testStaticVariables() {
         String document = """
-        list:
-          - {.type: User, .args: ["User.PLACEHOLDER", "User.PLACEHOLDER"]}
-          - {.type: User, .args: ["", ""],
-             name: "YamlFormatSpecs.TYPE_TAG", password: "YamlFormatSpecs.VALUE_TAG"
-            }
-        """;
+            list:
+              - {.type: User, .args: ["User.PLACEHOLDER", "User.PLACEHOLDER"]}
+              - {.type: User, .args: ["", ""],
+                 name: "YamlFormatSpecs.TYPE_TAG", password: "YamlFormatSpecs.VALUE_TAG"
+                }
+            """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
         List<User> parsed = YamlDeserializer.instance().parseList(yaml);
