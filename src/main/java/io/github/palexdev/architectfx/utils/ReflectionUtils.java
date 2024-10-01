@@ -231,18 +231,19 @@ public class ReflectionUtils {
         collection.addAll(parsed);
     }
 
-    public static Tuple3<Class<?>, String, Object> getFieldInfo(Object obj) {
+    public static Tuple3<Class<?>, String, Object> getFieldInfo(Object obj, boolean allowEnums) {
         if (obj instanceof String s) {
             try {
                 int lastDot = s.lastIndexOf('.');
                 String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
                 String sField = s.substring(lastDot + 1);
 
-                Class<?> klass = null;
-                if (sClass != null) {
-                    klass = ClassScanner.findClass(sClass);
-                    if (klass.isEnum()) return null;
-                }
+                Class<?> klass;
+                if (
+                    sClass == null ||
+                    (klass = ClassScanner.findClass(sClass)) == null ||
+                    (klass.isEnum() && !allowEnums)
+                ) return Tuple3.of(null, sField, null);
 
                 Object val  = Reflect.onClass(klass).get(sField);
                 return Tuple3.of(klass, sField, val);
