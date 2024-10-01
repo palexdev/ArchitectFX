@@ -31,6 +31,7 @@ import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import io.github.palexdev.architectfx.utils.Tuple2;
+import io.github.palexdev.architectfx.utils.Tuple3;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -85,6 +86,7 @@ public class YamlDeserializer {
         return document;
     }
 
+    @SuppressWarnings("unchecked")
     public SequencedMap<String, Property> parseProperties(SequencedMap<String, ?> map) {
         if (map.isEmpty()) return new LinkedHashMap<>();
 
@@ -92,7 +94,7 @@ public class YamlDeserializer {
         SequencedMap<String, Property> properties = new LinkedHashMap<>();
         for (Entry<String, ?> e : map.entrySet()) {
             String name = e.getKey();
-            Type type;
+            Type type = null;
             Object value;
 
             // Handle metadata
@@ -103,13 +105,20 @@ public class YamlDeserializer {
                     default -> e.getValue();
                 };
                 type = Type.METADATA;
-            } else if ((value = Type.isEnum(e.getValue())) != null) {
-                type = Type.ENUM;
+            } else if ((value = ReflectionUtils.getFieldInfo(e.getValue(), true)) != null) {
+                Tuple3<Class<?>, String, Object> tuple = (Tuple3<Class<?>, String, Object>) value;
+                if (tuple.a() != null) {
+                    type = Type.getType(tuple.c());
+                    value = tuple.c();
+                }
             } else {
                 value = e.getValue();
                 type = Property.getPropertyType(name, value);
             }
-            if (value == null) continue;
+            if (type == null || value == null) {
+                Logger.warn("Skipping property: {}:{}:{}", name, type, value);
+                continue;
+            }
 
             Property property = Property.of(name, type, value);
             properties.put(name, property);
@@ -154,11 +163,17 @@ public class YamlDeserializer {
         return configs;
     }
 
+    @SuppressWarnings("unchecked")
     public Tuple2<Type, Object> parseValue(Object obj) {
         Object val;
-        if ((val = Type.isEnum(obj)) != null) {
-            Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.ENUM);
-            return Tuple2.of(Type.ENUM, val);
+
+        if ((val = ReflectionUtils.getFieldInfo(obj, true)) != null) {
+            Tuple3<Class<?>, String, Object> tuple = (Tuple3<Class<?>, String, Object>) val;
+            if (tuple.a() != null) {
+                Type type = Type.getType(tuple.c());
+                Logger.debug("Value {} is of type: {}", Objects.toString(obj), type);
+                return Tuple2.of(type, tuple.c());
+            }
         }
 
         Type type = Type.getType(obj);
