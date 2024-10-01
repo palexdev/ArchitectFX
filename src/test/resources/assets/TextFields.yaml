@@ -1,3 +1,4 @@
+#@formatter:off
 # Imports are unnecessary unless two classes with the same name are detected at runtime
 # The following imports are not really necessary, I'm adding them just to test the parser
 # Although it has to be said, adding imports makes the parsing much faster
@@ -47,9 +48,10 @@ GridPane:
         minHeight: 150.0
         styleClass:
           - "grid-background"
-        GridPane.columnSpan: 2147483647
-        GridPane.rowSpan: 3
-        GridPane.margin: { .type: "Insets", .args: [0.0, -15.0, -7.0, -15.0] }
+        .config:
+          - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
+          - {.method: "GridPane.setRowSpan", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setMargin", .args: ["Keyword.THIS", {.type: "Insets", .args: [0.0, -15.0, -7.0, -15.0]}]}
 
     - Label:
         alignment: "Pos.CENTER"
@@ -58,81 +60,94 @@ GridPane:
         text: "Text Fields and Password Fields"
         styleClass:
           - "header-label"
-        GridPane.columnSpan: 2147483647
+        .config:
+          - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
 
     - MFXTextField:
         floatingText: "Inline Mode"
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
         floatMode: "FloatMode.BORDER"
         floatingText: "Border Mode"
-        GridPane.columnIndex: 1
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 1]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
         borderGap: 2.0
         floatMode: "FloatMode.ABOVE"
         floatingText: "Above Mode"
-        GridPane.columnIndex: 2
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
         floatMode: "FloatMode.DISABLED"
         floatingText: "No Floating Text"
-        GridPane.columnIndex: 3
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
         id: "customField"
         floatingText: "Custom"
         promptText: "Prompt Text"
-        GridPane.columnIndex: 4
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
         disable: true
         floatingText: "Disabled"
         text: "Text"
-        GridPane.columnIndex: 5
-        GridPane.rowIndex: 1
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 5]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXPasswordField:
         floatingText: "Inline Mode"
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
         floatMode: "FloatMode.BORDER"
         floatingText: "Border Mode"
-        GridPane.columnIndex: 1
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 1]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
         borderGap: 2.0
         floatMode: "FloatMode.ABOVE"
         floatingText: "Above Mode"
-        GridPane.columnIndex: 2
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
         floatMode: "FloatMode.DISABLED"
         floatingText: "No Floating Text"
-        GridPane.columnIndex: 3
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
         id: "customField"
         floatingText: "Custom"
         promptText: "Prompt Text"
-        GridPane.columnIndex: 4
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 4]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
         disable: true,
         floatingText: "Disabled"
         text: "Text"
-        GridPane.columnIndex: 5
-        GridPane.rowIndex: 2
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 5]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     # Second section
     - StackPane:
@@ -140,10 +155,11 @@ GridPane:
         minHeight: 150.0
         styleClass:
           - "grid-background"
-        Grid.rowIndex: 4
-        GridPane.columnSpan: 2147483647
-        GridPane.rowSpan: 2147483647
-        GridPane.margin: { type: "Insets", .args: [0.0, -15.0, -15.0, -15.0] }
+        .config:
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 4]}
+          - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
+          - {.method: "GridPane.setRowSpan", .args: ["Keyword.THIS", 2147483647]}
+          - {.method: "GridPane.setMargin", .args: ["Keyword.THIS", {.type: "Insets", .args: [0.0, -15.0, -15.0, -15.0]}]}
 
     - Label:
         alignment: "Pos.CENTER"
@@ -152,13 +168,15 @@ GridPane:
         text: "Features"
         styleClass:
           - "header-label"
-        GridPane.rowIndex: 4
-        GridPane.columnSpan: 2147483647
+        .config:
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
 
     - MFXTextField:
         animated: false
         floatingText: "Not Animated"
-        GridPane.rowIndex: 5
+        .config:
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 5]}
 
     - MFXTextField:
         allowEdit: false
@@ -166,22 +184,25 @@ GridPane:
         selectable: false
         floatingText: "As Label"
         text: "Label's text"
-        GridPane.columnIndex: 1
-        GridPane.rowIndex: 5
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 5]}
 
     - MFXTextField:
         fx.id: "textField"
         floatingText: "Characters Limit"
-        GridPane.columnIndex: 2
-        GridPane.rowIndex: 5
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 5]}
 
     # Special password field
     - VBox:
         spacing: 5.0
         padding: { .type: "Insets", .args: [0.0, 10.0, 0.0, 0.0] }
-        GridPane.columnIndex: 3
-        GridPane.rowIndex: 5
-        GridPane.columnSpan: 2147483647
+        .config:
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 5]}
+          - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
         children:
           - MFXPasswordField:
               id: "validatedField"
