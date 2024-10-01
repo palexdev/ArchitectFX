@@ -1,13 +1,15 @@
 package utils;
 
 public final class User {
+    public static final String PLACEHOLDER = "@placeholder";
+
     private String name;
     private String password;
     private Integer[] numbers;
 
     public User(Integer[] numbers) {
-        this.name = "@placeholder";
-        this.password = "@placeholder";
+        this.name = PLACEHOLDER;
+        this.password = PLACEHOLDER;
         this.numbers = numbers;
     }
 

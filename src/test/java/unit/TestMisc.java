@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
+import io.github.palexdev.architectfx.yaml.YamlFormatSpecs;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import utils.User;
@@ -17,11 +18,19 @@ public class TestMisc {
     @Test
     void testSimpleCollection() {
         String document = """
-            list: [0, 1, 2, 3, "This is a string", "io.github.palexdev.architectfx.enums.Type.COLLECTION"]
+            list:
+              - 0
+              - 1
+              - 2
+              - 3
+              - "Integer.MAX_VALUE"
+              - "This is a string"
+              - "io.github.palexdev.architectfx.enums.Type.COLLECTION"
+              - "Double.MAX_VALUE"
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
         List<Object> parsed = YamlDeserializer.instance().parseList(yaml);
-        assertEquals(6, parsed.size());
+        assertEquals(8, parsed.size());
 
         int i = 0;
         for (Object o : parsed.subList(0, 4)) {
@@ -31,12 +40,20 @@ public class TestMisc {
         }
 
         Object o4 = parsed.get(4);
-        assertInstanceOf(String.class, o4);
-        assertEquals("This is a string", o4);
+        assertInstanceOf(Integer.class, o4);
+        assertEquals(Integer.MAX_VALUE, (int) o4);
 
         Object o5 = parsed.get(5);
-        assertInstanceOf(Type.class, o5);
-        assertEquals(Type.COLLECTION, o5);
+        assertInstanceOf(String.class, o5);
+        assertEquals("This is a string", o5);
+
+        Object o6 = parsed.get(6);
+        assertInstanceOf(Type.class, o6);
+        assertEquals(Type.COLLECTION, o6);
+
+        Object o7 = parsed.get(7);
+        assertInstanceOf(Double.class, o7);
+        assertEquals(Double.MAX_VALUE, (double) o7);
     }
 
     @Test
@@ -169,5 +186,30 @@ public class TestMisc {
         assertEquals(o3.name(), "Special User");
         assertEquals(o3.password(), "specialpass");
         assertArrayEquals(new Integer[]{100, 200, 300, 400}, o3.numbers());
+    }
+
+    @Test
+    void testStaticVariables() {
+        String document = """
+        list:
+          - {.type: User, .args: ["User.PLACEHOLDER", "User.PLACEHOLDER"]}
+          - {.type: User, .args: ["", ""],
+             name: "YamlFormatSpecs.TYPE_TAG", password: "YamlFormatSpecs.VALUE_TAG"
+            }
+        """;
+
+        Object yaml = asYamlMap(new Yaml().load(document)).get("list");
+        List<User> parsed = YamlDeserializer.instance().parseList(yaml);
+        assertEquals(2, parsed.size());
+
+        // Test 0
+        User o0 = parsed.getFirst();
+        assertEquals("@placeholder", o0.name());
+        assertEquals("@placeholder", o0.password());
+
+        // Test 1
+        User o1 = parsed.get(1);
+        assertEquals(YamlFormatSpecs.TYPE_TAG, o1.name());
+        assertEquals(YamlFormatSpecs.VALUE_TAG, o1.password());
     }
 }
