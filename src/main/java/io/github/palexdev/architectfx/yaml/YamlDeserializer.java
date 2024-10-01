@@ -20,16 +20,17 @@ package io.github.palexdev.architectfx.yaml;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Node;
 import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.ClassScanner;
 import io.github.palexdev.architectfx.utils.ReflectionUtils;
-import io.github.palexdev.architectfx.utils.VarArgsHandler;
+import io.github.palexdev.architectfx.utils.Tuple2;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -89,7 +90,7 @@ public class YamlDeserializer {
 
         Logger.debug("Parsing properties...");
         SequencedMap<String, Property> properties = new LinkedHashMap<>();
-        for (Map.Entry<String, ?> e : map.entrySet()) {
+        for (Entry<String, ?> e : map.entrySet()) {
             String name = e.getKey();
             Type type;
             Object value;
@@ -98,7 +99,7 @@ public class YamlDeserializer {
             if (Type.isMetadata(name)) {
                 value = switch (name) {
                     case ARGS_TAG, VARARGS_TAG -> parseList(e.getValue()).toArray();
-                    case STEPS_TAG -> parseSteps(asList(e.getValue(), Map.class));
+                    case CONFIG_TAG -> parseConfigs(asList(e.getValue(), Map.class));
                     default -> e.getValue();
                 };
                 type = Type.METADATA;
@@ -128,80 +129,65 @@ public class YamlDeserializer {
         Logger.debug("Value {} is a list, parsing each element...", list);
         List<Object> parsed = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
-            Object e;
-            if ((e = Type.isEnum(list.get(i))) != null) {
-                Logger.debug("Element at index {} is of type: {}", i, Type.ENUM);
-                parsed.add(e);
+            Logger.debug("Parsing element at index {}", i);
+            Tuple2<Type, Object> val = parseValue(list.get(i));
+            if (val == null) {
+                Logger.warn("Parsing failed at index {}, skipping element...", i);
                 continue;
             }
-
-            e = list.get(i);
-            Type type = Type.getType(e);
-            Logger.debug("Element {} at index {} is of type: {}", Objects.toString(e), i, type);
-            switch (type) {
-                case COMPLEX -> {
-                    SequencedMap<String, Object> map = asYamlMap(e);
-                    if (!map.containsKey(TYPE_TAG)) {
-                        Logger.error("Could not parse complex element because type tag is absent, skipping...");
-                        continue;
-                    }
-                    ReflectionUtils.handleComplexType(map).ifPresentOrElse(
-                        o -> {
-                            Logger.trace("Successfully parsed, adding to list...");
-                            parsed.add(o);
-                        },
-                        () -> Logger.error("Element not added to list")
-                    );
-                }
-                case PRIMITIVE, WRAPPER, STRING -> {
-                    Logger.trace("Adding to list...");
-                    parsed.add(e);
-                }
-                default -> Logger.error("Unsupported element type {}, skipping...", e.getClass());
-            }
+            parsed.add(val.b());
         }
         return (List<T>) parsed;
     }
 
-    public List<Step> parseSteps(List<?> yamlSteps) {
-        if (yamlSteps == null || yamlSteps.isEmpty()) return List.of();
-        List<Step> steps = new ArrayList<>();
-        for (Object yamlStep : yamlSteps) {
-            Optional<Step> step = parseStep(yamlStep);
-            if (step.isEmpty()) {
-                Logger.error("Failed to parse steps...");
+    public List<Config> parseConfigs(List<?> list) {
+        if (list == null || list.isEmpty()) return List.of();
+        List<Config> configs = new ArrayList<>();
+        for (Object o : list) {
+            Optional<? extends Config> config = Config.parse(o);
+            if (config.isEmpty()) {
+                Logger.error("Failed to parse configs...");
                 return List.of();
             }
-            steps.add(step.get());
+            configs.add(config.get());
         }
-        return steps;
+        return configs;
     }
 
-    private Optional<Step> parseStep(Object yamlStep) {
-        if (yamlStep instanceof SequencedMap<?, ?>) {
-            SequencedMap<String, Object> map = asYamlMap(yamlStep);
-            if (!map.containsKey(NAME_TAG)) {
-                Logger.error("Invalid step because no name was found");
-                return Optional.empty();
-            }
-
-            String name = (String) map.get(NAME_TAG);
-            Object[] args = Optional.ofNullable(map.get(ARGS_TAG))
-                .map(this::parseList)
-                .map(List::toArray)
-                .orElseGet(() -> new Object[0]);
-            Object varargs = Optional.ofNullable(map.get(VARARGS_TAG))
-                .map(this::parseList)
-                .map(VarArgsHandler::generateArray)
-                .orElse(null);
-            args = VarArgsHandler.combine(args, varargs);
-            boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
-                .map(o -> Boolean.parseBoolean(o.toString()))
-                .orElse(false);
-            return Optional.of(new Step(name, args).setTransform(transform));
+    public Tuple2<Type, Object> parseValue(Object obj) {
+        Object val;
+        if ((val = Type.isEnum(obj)) != null) {
+            Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.ENUM);
+            return Tuple2.of(Type.ENUM, val);
         }
-        Logger.error("Invalid step because object {} is not a valid YAML map", yamlStep);
-        return Optional.empty();
+
+        Type type = Type.getType(obj);
+        val = switch (type) {
+            case COMPLEX -> {
+                SequencedMap<String, ?> map = asYamlMap(obj);
+                Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.COMPLEX);
+                if (!map.containsKey(TYPE_TAG)) {
+                    Logger.error("Could not parse complex value because {} tag is absent, skipping...", TYPE_TAG);
+                    yield null;
+                }
+                yield ReflectionUtils.handleComplexType(map).orElse(null);
+            }
+            case PRIMITIVE, WRAPPER, STRING -> {
+                Logger.debug("Value {} is either of type {} or {} or {}",
+                    Objects.toString(obj), Type.PRIMITIVE, Type.WRAPPER, Type.STRING
+                );
+                yield obj;
+            }
+            case COLLECTION -> {
+                Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.COLLECTION);
+                yield parseList(obj);
+            }
+            default -> {
+                Logger.error("Unsupported value type {}", obj.getClass().getName());
+                yield null;
+            }
+        };
+        return (val == null) ? null : Tuple2.of(type, val);
     }
 
     private List<String> parseDependencies(SequencedMap<String, ?> map) {
@@ -231,7 +217,7 @@ public class YamlDeserializer {
             .orElse(null);
     }
 
-    private Node parse(Map.Entry<String, Object> entry) {
+    private Node parse(Entry<String, Object> entry) {
         String type = entry.getKey();
         SequencedMap<String, Object> properties = asYamlMap(entry.getValue());
         Node node = new Node(type);
@@ -259,7 +245,7 @@ public class YamlDeserializer {
                     asMap.size()
                 );
 
-            Map.Entry<String, Object> asEntry = asMap.firstEntry();
+            Entry<String, Object> asEntry = asMap.firstEntry();
             Node childNode = parse(asEntry);
             node.getChildren().add(childNode);
             Logger.debug("Added child {} to node {}", childNode, node);

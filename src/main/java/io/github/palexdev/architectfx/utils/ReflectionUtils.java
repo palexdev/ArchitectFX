@@ -23,7 +23,7 @@ import java.util.*;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.model.Step;
+import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import org.joor.Reflect;
 import org.joor.ReflectException;
@@ -95,25 +95,17 @@ public class ReflectionUtils {
             String name = p.name();
             Logger.trace(p);
 
-            // Handle metadata (for now only .steps is relevant)
-            if (name.equals(STEPS_TAG)) {
-                List<Step> steps = CastUtils.asList(p.value(), Step.class);
+            // Handle metadata (for now only .config is relevant)
+            if (name.equals(CONFIG_TAG)) {
+                List<Config> configs = CastUtils.asList(p.value(), Config.class);
                 Optional<Object> opt = Optional.of(obj);
-                for (Step step : steps) {
+                for (Config config : configs) {
                     if (opt.isEmpty()) break;
-                    opt = step.run(opt.get());
+                    opt = config.run(opt.get());
                 }
                 continue;
             }
             if (p.type() == Type.METADATA) continue;
-
-            // Handle static
-            if (name.contains(".")) {
-                Logger.error("Static field or method detected for name {}", name); // TODO change this once supported
-                // TODO implement
-                System.err.println("Unsupported operation: static handling");
-                continue;
-            }
 
             switch (p.type()) {
                 case ENUM -> handleEnum(obj, p);
@@ -135,8 +127,8 @@ public class ReflectionUtils {
         String name = property.name();
         Object value = property.value();
         if (value instanceof Enum<?> eValue) {
-            // Do it via setter
             try {
+                // Do it via setter
                 String setter = resolveSetter(name);
                 Logger.debug("Attempting to set enum value {} via setter {}", value, setter);
                 Reflect.on(obj).call(setter, eValue);
@@ -166,7 +158,7 @@ public class ReflectionUtils {
         // The removals happen so that we avoid the parseProperties step if not necessary.
         // An example of this would be metadata such as .type and .args which are already used here
         //
-        // For metadata like .steps we rely on initialize(...)
+        // For metadata like .config we rely on initialize(...)
         SequencedMap<String, ?> tmp = new LinkedHashMap<>(map);
         String type = (String) tmp.remove(TYPE_TAG);
         if (type == null) return Optional.empty();
@@ -237,6 +229,44 @@ public class ReflectionUtils {
         List<Object> parsed = YamlDeserializer.instance().parseList(values);
         Logger.debug("Adding parsed elements {} to collection...", parsed);
         collection.addAll(parsed);
+    }
+
+    public static Tuple3<Class<?>, String, Object> getFieldInfo(Object obj) {
+        if (obj instanceof String s) {
+            try {
+                int lastDot = s.lastIndexOf('.');
+                String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
+                String sField = s.substring(lastDot + 1);
+
+                Class<?> klass = null;
+                if (sClass != null) {
+                    klass = ClassScanner.findClass(sClass);
+                    if (klass.isEnum()) return null;
+                }
+
+                Object val  = Reflect.onClass(klass).get(sField);
+                return Tuple3.of(klass, sField, val);
+            } catch (Exception ex) {
+                Logger.error("Failed to retrieve field info\n{}", ex);
+            }
+        }
+        return null;
+    }
+
+    public static Tuple2<Class<?>, String> getMethodInfo(Object obj) {
+        if (obj instanceof String s) {
+            try {
+                int lastDot = s.lastIndexOf('.');
+                String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
+                String sMethod = s.substring(lastDot + 1);
+                Class<?> klass = null;
+                if (sClass != null) klass = ClassScanner.findClass(sClass);
+                return Tuple2.of(klass, sMethod);
+            } catch (Exception ex) {
+                Logger.error("Failed to retrieve method info\n{}", ex);
+            }
+        }
+        return null;
     }
 
     public static String resolveGetter(String fieldName) {
