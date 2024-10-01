@@ -133,7 +133,8 @@ public class ClassScanner {
         ALL {
             @Override
             public ClassGraph build() {
-                return new ClassGraph();
+                return new ClassGraph()
+                    .enableSystemJarsAndModules();
             }
         },
         DEPS {
@@ -146,6 +147,7 @@ public class ClassScanner {
                 }
 
                 ClassGraph cg = new ClassGraph()
+                    .enableSystemJarsAndModules()
                     .overrideClasspath(deps.toArray());
 
                 if ("true".equals(System.getProperty("test.environment", "false"))) {
