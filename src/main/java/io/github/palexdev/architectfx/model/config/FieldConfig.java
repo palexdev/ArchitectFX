@@ -52,7 +52,7 @@ public class FieldConfig extends Config {
         value = YamlDeserializer.instance().parseValue(value);
         return (value == null) ?
             Optional.empty() :
-            Optional.of(new FieldConfig(null, null, null));
+            Optional.of(new FieldConfig(fieldInfo.a(), fieldInfo.b(), value));
     }
 
     //================================================================================
