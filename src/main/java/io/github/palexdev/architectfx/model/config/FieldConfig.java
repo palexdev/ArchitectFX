@@ -37,9 +37,9 @@ public class FieldConfig extends Config {
             return Optional.empty();
         }
 
-        Tuple3<Class<?>, String, Object> fieldInfo = ReflectionUtils.getFieldInfo(map.get(FIELD_TAG));
+        Tuple3<Class<?>, String, Object> fieldInfo = ReflectionUtils.getFieldInfo(map.get(FIELD_TAG), false);
         if (fieldInfo == null || fieldInfo.a() == null) {
-            Logger.warn("Skipping config...");
+            Logger.warn("Skipping config...\n{}", map);
             return Optional.empty();
         }
 

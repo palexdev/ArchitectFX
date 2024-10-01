@@ -36,7 +36,7 @@ public class MethodConfig extends Config {
     protected static Optional<MethodConfig> parse(SequencedMap<String, ?> map) {
         Tuple2<Class<?>, String> methodInfo = ReflectionUtils.getMethodInfo(map.get(METHOD_TAG));
         if (methodInfo == null) {
-            Logger.warn("Skipping config...");
+            Logger.warn("Skipping config...\n{}", map);
             return Optional.empty();
         }
 
