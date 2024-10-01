@@ -112,7 +112,10 @@ public class ClassScanner {
         try (ScanResult res = cg.scan()) {
             Logger.trace("ClassGraph scan terminated...");
             Logger.trace("Caching scan results...");
-            ClassInfoList list = res.getAllClasses();
+            ClassInfoList list = res.getAllClasses()
+                .filter(i -> !i.getPackageName().startsWith("java.awt") &&
+                             !i.getPackageName().startsWith("javax.swing")
+                );
             scanCache.put(className, list);
             return list;
         } catch (Exception ex) {
