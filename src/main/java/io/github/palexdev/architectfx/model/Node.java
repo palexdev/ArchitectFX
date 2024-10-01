@@ -55,10 +55,10 @@ public class Node {
     @Override
     public String toString() {
         return "Node{" +
-            "type='" + type + '\'' +
-            ", n.properties=" + properties.size() +
-            ", n.children=" + children.size() +
-            '}';
+               "type='" + type + '\'' +
+               ", n.properties=" + properties.size() +
+               ", n.children=" + children.size() +
+               '}';
     }
 
     //================================================================================
