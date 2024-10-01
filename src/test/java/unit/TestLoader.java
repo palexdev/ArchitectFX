@@ -178,8 +178,8 @@ public class TestLoader {
                 .type: "MFXFontIcon", .args: ["fas-user"],
                 color: { .type: "Color", .factory: "Color.web", .args: ["#845EC2"] }
               }
-              .steps: [
-                { .name: filled }
+              .config: [
+                { .method: filled }
               ]
             """;
 
@@ -228,8 +228,8 @@ public class TestLoader {
               ]
               alignment: "Pos.CENTER"
               padding: { .type: "Insets", .args: [10.0] }
-              .steps: [
-                { .name: setVariants, .varargs: [ButtonVariants.FILLED, ButtonVariants.TEXT] }
+              .config: [
+                { .method: setVariants, .varargs: [ButtonVariants.FILLED, ButtonVariants.TEXT] }
               ]
             """;
 

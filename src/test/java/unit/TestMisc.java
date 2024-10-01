@@ -1,6 +1,5 @@
 package unit;
 
-import java.io.ByteArrayInputStream;
 import java.util.List;
 
 import io.github.palexdev.architectfx.enums.Type;
@@ -20,7 +19,7 @@ public class TestMisc {
         String document = """
             list: [0, 1, 2, 3, "This is a string", "io.github.palexdev.architectfx.enums.Type.COLLECTION"]
             """;
-        Object yaml = asYamlMap(new Yaml().load(new ByteArrayInputStream(document.getBytes()))).get("list");
+        Object yaml = asYamlMap(new Yaml().load(document)).get("list");
         List<Object> parsed = YamlDeserializer.instance().parseList(yaml);
         assertEquals(6, parsed.size());
 
@@ -49,7 +48,7 @@ public class TestMisc {
               - {.type: User, .args: ["User 2", "01234"]}
               - {.type: User, .args: ["User 3", "password"]}
             """;
-        Object yaml = asYamlMap(new Yaml().load(new ByteArrayInputStream(document.getBytes()))).get("users");
+        Object yaml = asYamlMap(new Yaml().load(document)).get("users");
         List<User> parsed = YamlDeserializer.instance().parseList(yaml);
         assertEquals(4, parsed.size());
 
@@ -96,7 +95,7 @@ public class TestMisc {
               }
             """;
 
-        Object yaml = asYamlMap(new Yaml().load(new ByteArrayInputStream(document.getBytes()))).get("list");
+        Object yaml = asYamlMap(new Yaml().load(document)).get("list");
         List<UserWrapper> parsed = YamlDeserializer.instance().parseList(yaml);
         assertEquals(4, parsed.size());
 
@@ -130,20 +129,20 @@ public class TestMisc {
               - {
                  .type: User,
                  .args: ["User 2", "01234"],
-                 .steps: [
-                   {.name: setNumbers, .varargs: [9, 10]}
+                 .config: [
+                   {.method: setNumbers, .varargs: [9, 10]}
                  ]
                 }
               - {
                  .type: User,
                  .args: ["User 3", "password"],
-                 .steps: [
-                   {.name: setData, .args: ["Special User", "specialpass"], .varargs: [100, 200, 300, 400]}
+                 .config: [
+                   {.method: setData, .args: ["Special User", "specialpass"], .varargs: [100, 200, 300, 400]}
                  ]
                 }
             """;
 
-        Object yaml = asYamlMap(new Yaml().load(new ByteArrayInputStream(document.getBytes()))).get("list");
+        Object yaml = asYamlMap(new Yaml().load(document)).get("list");
         List<User> parsed = YamlDeserializer.instance().parseList(yaml);
         assertEquals(4, parsed.size());
 
