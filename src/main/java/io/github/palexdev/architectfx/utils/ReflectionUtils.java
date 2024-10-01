@@ -20,6 +20,8 @@ package io.github.palexdev.architectfx.utils;
 
 import java.util.*;
 
+import javax.lang.model.SourceVersion;
+
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Property;
@@ -234,6 +236,7 @@ public class ReflectionUtils {
     public static Tuple3<Class<?>, String, Object> getFieldInfo(Object obj, boolean allowEnums) {
         if (obj instanceof String s) {
             try {
+                if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s)) return null;
                 int lastDot = s.lastIndexOf('.');
                 String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
                 String sField = s.substring(lastDot + 1);
@@ -257,6 +260,7 @@ public class ReflectionUtils {
     public static Tuple2<Class<?>, String> getMethodInfo(Object obj) {
         if (obj instanceof String s) {
             try {
+                if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s)) return null;
                 int lastDot = s.lastIndexOf('.');
                 String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
                 String sMethod = s.substring(lastDot + 1);
