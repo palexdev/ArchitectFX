@@ -1,6 +1,7 @@
 package unit;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -19,13 +20,14 @@ import org.junit.jupiter.api.Test;
 import utils.TestUtils;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.as;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static utils.TestUtils.getProperty;
 
 public class TestLoader {
 
     @Test
-    void testSimpleLoad() {
+    void testSimpleLoad() throws IOException {
         String document = """
             .imports: [
               "javafx.geometry.*",
@@ -60,41 +62,37 @@ public class TestLoader {
               ]
             """;
 
-        try {
-            InputStream stream = new ByteArrayInputStream(document.getBytes());
-            GridPane root = as(YamlLoader.instance().load(stream), GridPane.class);
 
-            assertEquals(Pos.CENTER, root.getAlignment());
-            assertEquals(20.0, root.getHgap());
-            assertEquals(20.0, root.getVgap());
-            assertEquals(new Insets(20.0, 30.0, 20.0, 30.0), root.getInsets());
-            assertEquals(1, root.getStyleClass().size());
-            assertTrue(root.getStyleClass().contains("grid-pane"));
-            assertEquals(1, root.getStylesheets().size());
-            assertTrue(root.getStylesheets().contains("../css/TextFields.css"));
+        InputStream stream = new ByteArrayInputStream(document.getBytes());
+        GridPane root = as(new YamlLoader().load(stream), GridPane.class);
 
-            assertEquals(6, root.getColumnConstraints().size());
-            for (ColumnConstraints cc : root.getColumnConstraints()) {
-                assertEquals(HPos.CENTER, cc.getHalignment());
-            }
+        assertEquals(Pos.CENTER, root.getAlignment());
+        assertEquals(20.0, root.getHgap());
+        assertEquals(20.0, root.getVgap());
+        assertEquals(new Insets(20.0, 30.0, 20.0, 30.0), root.getInsets());
+        assertEquals(1, root.getStyleClass().size());
+        assertTrue(root.getStyleClass().contains("grid-pane"));
+        assertEquals(1, root.getStylesheets().size());
+        assertTrue(root.getStylesheets().contains("../css/TextFields.css"));
 
-            assertEquals(6, root.getRowConstraints().size());
-            double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
-            for (int i = 0; i < 6; i++) {
-                RowConstraints rc = root.getRowConstraints().get(i);
-                assertEquals(10.0, rc.getMinHeight());
-                assertEquals(params[i], rc.getPrefHeight());
-                if (i == 5)
-                    assertEquals(VPos.BASELINE, rc.getValignment());
-            }
-        } catch (AssertionError | Exception ex) {
-            ex.printStackTrace();
-            fail(ex);
+        assertEquals(6, root.getColumnConstraints().size());
+        for (ColumnConstraints cc : root.getColumnConstraints()) {
+            assertEquals(HPos.CENTER, cc.getHalignment());
+        }
+
+        assertEquals(6, root.getRowConstraints().size());
+        double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
+        for (int i = 0; i < 6; i++) {
+            RowConstraints rc = root.getRowConstraints().get(i);
+            assertEquals(10.0, rc.getMinHeight());
+            assertEquals(params[i], rc.getPrefHeight());
+            if (i == 5)
+                assertEquals(VPos.BASELINE, rc.getValignment());
         }
     }
 
     @Test
-    void testLoadWithoutDepsAndImports() {
+    void testLoadWithoutDepsAndImports() throws IOException {
         String document = """
             GridPane:
               alignment: "Pos.CENTER"
@@ -124,41 +122,36 @@ public class TestLoader {
               ]
             """;
 
-        try {
-            InputStream stream = new ByteArrayInputStream(document.getBytes());
-            GridPane root = as(YamlLoader.instance().load(stream), GridPane.class);
+        InputStream stream = new ByteArrayInputStream(document.getBytes());
+        GridPane root = as(new YamlLoader().load(stream), GridPane.class);
 
-            assertEquals(Pos.CENTER, root.getAlignment());
-            assertEquals(20.0, root.getHgap());
-            assertEquals(20.0, root.getVgap());
-            assertEquals(new Insets(20.0, 30.0, 20.0, 30.0), root.getInsets());
-            assertEquals(1, root.getStyleClass().size());
-            assertTrue(root.getStyleClass().contains("grid-pane"));
-            assertEquals(1, root.getStylesheets().size());
-            assertTrue(root.getStylesheets().contains("../css/TextFields.css"));
+        assertEquals(Pos.CENTER, root.getAlignment());
+        assertEquals(20.0, root.getHgap());
+        assertEquals(20.0, root.getVgap());
+        assertEquals(new Insets(20.0, 30.0, 20.0, 30.0), root.getInsets());
+        assertEquals(1, root.getStyleClass().size());
+        assertTrue(root.getStyleClass().contains("grid-pane"));
+        assertEquals(1, root.getStylesheets().size());
+        assertTrue(root.getStylesheets().contains("../css/TextFields.css"));
 
-            assertEquals(6, root.getColumnConstraints().size());
-            for (ColumnConstraints cc : root.getColumnConstraints()) {
-                assertEquals(HPos.CENTER, cc.getHalignment());
-            }
+        assertEquals(6, root.getColumnConstraints().size());
+        for (ColumnConstraints cc : root.getColumnConstraints()) {
+            assertEquals(HPos.CENTER, cc.getHalignment());
+        }
 
-            assertEquals(6, root.getRowConstraints().size());
-            double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
-            for (int i = 0; i < 6; i++) {
-                RowConstraints rc = root.getRowConstraints().get(i);
-                assertEquals(10.0, rc.getMinHeight());
-                assertEquals(params[i], rc.getPrefHeight());
-                if (i == 5)
-                    assertEquals(VPos.BASELINE, rc.getValignment());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail(ex);
+        assertEquals(6, root.getRowConstraints().size());
+        double[] params = new double[]{32.0, 64.0, 64.0, 10.0, 32.0, 150.0};
+        for (int i = 0; i < 6; i++) {
+            RowConstraints rc = root.getRowConstraints().get(i);
+            assertEquals(10.0, rc.getMinHeight());
+            assertEquals(params[i], rc.getPrefHeight());
+            if (i == 5)
+                assertEquals(VPos.BASELINE, rc.getValignment());
         }
     }
 
     @Test
-    void testLoadWithoutImports() {
+    void testLoadWithoutImports() throws IOException {
         // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
         DependencyManager.instance().cleanDeps();
 
@@ -183,30 +176,25 @@ public class TestLoader {
               ]
             """;
 
-        try {
-            InputStream stream = new ByteArrayInputStream(document.getBytes());
-            Object obj = YamlLoader.instance().load(stream);
-            assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
-            assertEquals(new Insets(10.0), getProperty(obj, "padding"));
-            assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
+        InputStream stream = new ByteArrayInputStream(document.getBytes());
+        Object obj = new YamlLoader().load(stream);
+        assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
+        assertEquals(new Insets(10.0), getProperty(obj, "padding"));
+        assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
 
-            // Test graphic
-            Object graphic = getProperty(obj, "graphic");
-            assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
-            assertEquals("fas-user", getProperty(graphic, "description"));
-            assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
+        // Test graphic
+        Object graphic = getProperty(obj, "graphic");
+        assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
+        assertEquals("fas-user", getProperty(graphic, "description"));
+        assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
 
-            // Test variant
-            List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
-            assertTrue(styleClass.contains("filled"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail(ex);
-        }
+        // Test variant
+        List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
+        assertTrue(styleClass.contains("filled"));
     }
 
     @Test
-    void testComplex() {
+    void testThirdParty() throws IOException {
         // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
         DependencyManager.instance().cleanDeps();
 
@@ -233,26 +221,21 @@ public class TestLoader {
               ]
             """;
 
-        try {
-            InputStream stream = new ByteArrayInputStream(document.getBytes());
-            Object obj = YamlLoader.instance().load(stream);
-            assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
-            assertEquals(new Insets(10.0), getProperty(obj, "padding"));
-            assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
+        InputStream stream = new ByteArrayInputStream(document.getBytes());
+        Object obj = new YamlLoader().load(stream);
+        assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
+        assertEquals(new Insets(10.0), getProperty(obj, "padding"));
+        assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
 
-            // Test graphic
-            Object graphic = getProperty(obj, "graphic");
-            assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
-            assertEquals("fas-user", getProperty(graphic, "description"));
-            assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
+        // Test graphic
+        Object graphic = getProperty(obj, "graphic");
+        assertEquals("MFXFontIcon", graphic.getClass().getSimpleName());
+        assertEquals("fas-user", getProperty(graphic, "description"));
+        assertEquals(Color.web("#845EC2"), getProperty(graphic, "color"));
 
-            // Test variant
-            List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
-            assertTrue(styleClass.contains("filled"));
-            assertTrue(styleClass.contains("text"));
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail(ex);
-        }
+        // Test variant
+        List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
+        assertTrue(styleClass.contains("filled"));
+        assertTrue(styleClass.contains("text"));
     }
 }

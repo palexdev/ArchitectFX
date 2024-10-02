@@ -1,13 +1,15 @@
 package io.github.palexdev.architectfx.model.config;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.utils.CastUtils;
+import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.tinylog.Logger;
 
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.FIELD_TAG;
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.METHOD_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.FIELD_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.METHOD_TAG;
 
 public abstract class Config {
     //================================================================================
@@ -27,12 +29,19 @@ public abstract class Config {
     //================================================================================
     // Static Methods
     //================================================================================
-    public static Optional<? extends Config> parse(Object obj) {
-        if (!(obj instanceof SequencedMap<?, ?>)) return Optional.empty();
-        SequencedMap<String, ?> map = CastUtils.asYamlMap(obj);
-        if (map.containsKey(FIELD_TAG)) return FieldConfig.parse(map);
-        if (map.containsKey(METHOD_TAG)) return MethodConfig.parse(map);
-        Logger.error("Config does not specify {} or {} tags.\n{}", FIELD_TAG, METHOD_TAG, map);
+
+    public static Optional<? extends Config> parse(YamlParser parser, Object obj) {
+        Logger.debug("Parsing config: {}", Objects.toString(obj));
+        if (!(obj instanceof SequencedMap<?, ?>)) {
+            Logger.error("Expected map for config but found: {}", obj.getClass());
+            return Optional.empty();
+        }
+
+        SequencedMap<String, Object> map = CastUtils.asYamlMap(obj);
+        if (map.containsKey(FIELD_TAG)) return FieldConfig.parse(parser, map);
+        if (map.containsKey(METHOD_TAG)) return MethodConfig.parse(parser, map);
+
+        Logger.error("Config does not specify {} tag nor {} tag", FIELD_TAG, METHOD_TAG);
         return Optional.empty();
     }
 

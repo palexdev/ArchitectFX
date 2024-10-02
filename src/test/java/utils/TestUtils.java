@@ -1,7 +1,7 @@
 package utils;
 
 import com.sun.javafx.application.PlatformImpl;
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
 import org.joor.Reflect;
 
 public class TestUtils {

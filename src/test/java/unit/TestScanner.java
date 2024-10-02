@@ -2,8 +2,8 @@ package unit;
 
 import io.github.classgraph.ClassInfoList;
 import io.github.palexdev.architectfx.deps.DependencyManager;
-import io.github.palexdev.architectfx.utils.ClassScanner;
-import io.github.palexdev.architectfx.utils.ClassScanner.ScanScope;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner.ScanScope;
 import javafx.scene.Node;
 import org.junit.jupiter.api.Test;
 

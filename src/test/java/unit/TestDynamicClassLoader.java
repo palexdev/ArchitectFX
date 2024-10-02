@@ -2,7 +2,7 @@ package unit;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.deps.DynamicClassLoader;
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
+import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
 import javafx.geometry.Insets;
 import org.joor.Reflect;
 import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
@@ -20,17 +20,12 @@ public class TestDynamicClassLoader {
     @Order(1)
     @Test
     void testSimple() {
-        try {
-            DynamicClassLoader dcl = new DynamicClassLoader();
-            Insets obj = Reflect.onClass(Insets.class.getName(), dcl).create(20.0).get();
-            assertEquals(20.0, obj.getTop());
-            assertEquals(20.0, obj.getRight());
-            assertEquals(20.0, obj.getBottom());
-            assertEquals(20.0, obj.getLeft());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            fail(ex);
-        }
+        DynamicClassLoader dcl = new DynamicClassLoader();
+        Insets obj = Reflect.onClass(Insets.class.getName(), dcl).create(20.0).get();
+        assertEquals(20.0, obj.getTop());
+        assertEquals(20.0, obj.getRight());
+        assertEquals(20.0, obj.getBottom());
+        assertEquals(20.0, obj.getLeft());
     }
 
     @Order(2)

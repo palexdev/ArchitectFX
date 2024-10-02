@@ -1,274 +1,161 @@
-/*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
- * This file is part of ArchitectFX (https://github.com/palexdev/MaterialFX)
- *
- * ArchitectFX is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 3 of the License,
- * or (at your option) any later version.
- *
- * ArchitectFX is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package io.github.palexdev.architectfx.yaml;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
-import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.model.Document;
-import io.github.palexdev.architectfx.model.Node;
+import io.github.palexdev.architectfx.model.Entity;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.config.Config;
-import io.github.palexdev.architectfx.utils.ClassScanner;
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
-import io.github.palexdev.architectfx.utils.Tuple2;
-import io.github.palexdev.architectfx.utils.Tuple3;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
+import static io.github.palexdev.architectfx.yaml.Tags.CONFIG_TAG;
 
 public class YamlDeserializer {
     //================================================================================
-    // Singleton
+    // Properties
     //================================================================================
-    private static final YamlDeserializer instance = new YamlDeserializer();
-
-    public static YamlDeserializer instance() {
-        return instance;
-    }
-
-    //================================================================================
-    // Constructors
-    //================================================================================
-    private YamlDeserializer() {}
+    private final YamlParser parser = new YamlParser(this);
+    private final Deque<Entity> loadQueue = new ArrayDeque<>();
+    private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
 
     //================================================================================
     // Methods
     //================================================================================
-    public Document parse(SequencedMap<String, Object> mappings) throws IOException {
-        if (mappings.isEmpty()) throw new IOException("Failed to parse document, cause: empty");
+    public Document parseDocument(SequencedMap<String, Object> map) throws IOException {
+        if (map.isEmpty())
+            throw new IOException("Failed to parse document because it appears to be empty");
 
         // Handle dependencies if present
-        List<String> deps = parseDependencies(mappings);
-        Logger.debug("Found {} dependencies:\n{}", deps.size(), deps);
-        if (!deps.isEmpty()) {
+        List<String> dependencies = parser.parseDependencies(map);
+        if (!dependencies.isEmpty()) {
+            Logger.info("Found {} dependencies:\n{}", dependencies.size(), dependencies);
             DependencyManager.instance()
-                .addDeps(deps.toArray(String[]::new))
+                .addDeps(dependencies.toArray(String[]::new))
                 .refresh();
         }
 
         // Handle imports if present
-        List<String> imports = parseImports(mappings);
-        Logger.debug("Found {} imports", imports.size());
-        ClassScanner.setImports(imports);
+        List<String> imports = parser.parseImports(map);
+        if (!imports.isEmpty()) {
+            // FIXME ClassScanner should not be static, imports are specific per document
+            ClassScanner.setImports(imports);
+            Logger.info("Found {} imports:\n{}", imports.size(), imports);
+        }
 
-        // Handle controller if present
-        String controller = parseController(mappings);
-        Logger.debug("Controller {}found", controller != null ? "" : "not ");
+        if (map.size() > 1)
+            Logger.warn(
+                "Document is probably malformed. {} root nodes detected, trying to parse anyway...",
+                map.size()
+            );
 
-        if (mappings.size() > 1)
-            Logger.warn("Document is probably malformed. {} root nodes detected, trying to parse anyway...", mappings.size());
+        // Create entities recursive
+        Entity root = createEntity(null, map.firstEntry());
 
-        Node root = parse(mappings.firstEntry());
+        // Last but not least, after everything has been parsed, handle the controller if present
+        Object controller = null;
+        try {
+            String name = parser.parseController(map);
+            if (name != null) {
+                Logger.debug("Trying to instantiate the controller {}", name);
+                Class<?> klass = ClassScanner.findClass(name);
+                controller = ReflectionUtils.create(klass);
+            }
+
+        } catch (ClassNotFoundException ex) {
+            Logger.error("Failed to instantiate the controller because:\n{}", ex);
+        }
+
         Document document = new Document(root, controller);
-        document.getDependencies().addAll(deps);
-        document.getImports().addAll(imports);
+        document.dependencies().addAll(dependencies);
+        document.imports().addAll(imports);
         return document;
     }
 
-    @SuppressWarnings("unchecked")
-    public SequencedMap<String, Property> parseProperties(SequencedMap<String, ?> map) {
-        if (map.isEmpty()) return new LinkedHashMap<>();
+    public void initializeTree() {
+        for (int i = 0; i < loadQueue.size(); i++) {
+            Entity entity = loadQueue.pop();
+            SequencedMap<String, Property> properties = parser.parseProperties(propertiesMap.get(entity));
+            if (properties != null) entity.properties().putAll(properties);
+            initialize(entity.instance(), entity.properties().values());
+        }
+    }
 
-        Logger.debug("Parsing properties...");
-        SequencedMap<String, Property> properties = new LinkedHashMap<>();
-        for (Entry<String, ?> e : map.entrySet()) {
-            String name = e.getKey();
-            Type type = null;
-            Object value;
+    protected void initialize(Object instance, Collection<Property> properties) {
+        Logger.debug("Initializing object {}", Objects.toString(instance));
+        for (Property p : properties) {
+            String name = p.name();
+            Logger.trace("Handling property: {}", p);
 
-            // Handle metadata
-            if (Type.isMetadata(name)) {
-                value = switch (name) {
-                    case ARGS_TAG, VARARGS_TAG -> parseList(e.getValue()).toArray();
-                    case CONFIG_TAG -> parseConfigs(asList(e.getValue(), Map.class));
-                    default -> e.getValue();
-                };
-                type = Type.METADATA;
-            } else if ((value = ReflectionUtils.getFieldInfo(e.getValue(), true)) != null) {
-                Tuple3<Class<?>, String, Object> tuple = (Tuple3<Class<?>, String, Object>) value;
-                if (tuple.a() != null) {
-                    type = Type.getType(tuple.c());
-                    value = tuple.c();
+            // Handle metadata (for now only .config is relevant)
+            if (name.equals(CONFIG_TAG)) {
+                List<Config> configs = asList(p.value(), Config.class);
+                Optional<Object> res = Optional.of(instance);
+                for (Config config : configs) {
+                    if (res.isEmpty())
+                        throw new IllegalStateException("Something went wrong, cannot run config on null instance");
+                    res = config.run(res.get());
                 }
-            } else {
-                value = e.getValue();
-                type = Property.getPropertyType(name, value);
-            }
-            if (type == null || value == null) {
-                Logger.warn("Skipping property: {}:{}:{}", name, type, value);
                 continue;
             }
 
-            Property property = Property.of(name, type, value);
-            properties.put(name, property);
-            Logger.debug("Parsed property {}", property);
-        }
-        return properties;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> List<T> parseList(Object obj) {
-        if (!(obj instanceof List<?>)) {
-            Logger.error("Object {} is not a list", Objects.toString(obj));
-            return List.of();
-        }
-
-        List<Object> list = asGenericList(obj);
-        Logger.debug("Value {} is a list, parsing each element...", list);
-        List<Object> parsed = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            Logger.debug("Parsing element at index {}", i);
-            Tuple2<Type, Object> val = parseValue(list.get(i));
-            if (val == null) {
-                Logger.warn("Parsing failed at index {}, skipping element...", i);
-                continue;
-            }
-            parsed.add(val.b());
-        }
-        return (List<T>) parsed;
-    }
-
-    public List<Config> parseConfigs(List<?> list) {
-        if (list == null || list.isEmpty()) return List.of();
-        List<Config> configs = new ArrayList<>();
-        for (Object o : list) {
-            Optional<? extends Config> config = Config.parse(o);
-            if (config.isEmpty()) {
-                Logger.error("Failed to parse configs...");
-                return List.of();
-            }
-            configs.add(config.get());
-        }
-        return configs;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Tuple2<Type, Object> parseValue(Object obj) {
-        Object val;
-
-        if ((val = ReflectionUtils.getFieldInfo(obj, true)) != null) {
-            Tuple3<Class<?>, String, Object> tuple = (Tuple3<Class<?>, String, Object>) val;
-            if (tuple.a() != null) {
-                Type type = Type.getType(tuple.c());
-                Logger.debug("Value {} is of type: {}", Objects.toString(obj), type);
-                return Tuple2.of(type, tuple.c());
-            }
-        }
-
-        Type type = Type.getType(obj);
-        val = switch (type) {
-            case COMPLEX -> {
-                SequencedMap<String, ?> map = asYamlMap(obj);
-                Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.COMPLEX);
-                if (!map.containsKey(TYPE_TAG)) {
-                    Logger.error("Could not parse complex value because {} tag is absent, skipping...", TYPE_TAG);
-                    yield null;
+            switch (p.type()) {
+                case METADATA -> Logger.trace("Skipping metadata...");
+                case PRIMITIVE, WRAPPER, STRING, ENUM -> ReflectionUtils.setProperty(instance, p);
+                case COMPLEX -> {
+                    Logger.trace("Parsing property's complex value...");
+                    Object value = parser.parseComplexValue(asYamlMap(p.value()));
+                    ReflectionUtils.setProperty(instance, Property.of(p.name(), p.type(), value));
                 }
-                yield ReflectionUtils.handleComplexType(map).orElse(null);
+                case COLLECTION -> {
+                    Logger.trace("Parsing property's collection value...");
+                    List<Object> list = parser.parseList(asGenericList(p.value()));
+                    ReflectionUtils.addToCollection(instance, p.name(), list);
+                }
             }
-            case PRIMITIVE, WRAPPER, STRING -> {
-                Logger.debug("Value {} is either of type {} or {} or {}",
-                    Objects.toString(obj), Type.PRIMITIVE, Type.WRAPPER, Type.STRING
-                );
-                yield obj;
-            }
-            case COLLECTION -> {
-                Logger.debug("Value {} is of type: {}", Objects.toString(obj), Type.COLLECTION);
-                yield parseList(obj);
-            }
-            default -> {
-                Logger.error("Unsupported value type {}", obj.getClass().getName());
-                yield null;
-            }
-        };
-        return (val == null) ? null : Tuple2.of(type, val);
-    }
-
-    private List<String> parseDependencies(SequencedMap<String, ?> map) {
-        Object depsObj = null;
-        if (map.containsKey(DEPS_TAG)) {
-            depsObj = map.remove(DEPS_TAG);
-        } else if (map.containsKey(DEPENDENCIES_TAG)) {
-            depsObj = map.remove(DEPENDENCIES_TAG);
         }
-        return Optional.ofNullable(depsObj)
-            .filter(List.class::isInstance)
-            .map(l -> asList(l, String.class))
-            .orElseGet(List::of);
     }
 
-    private List<String> parseImports(SequencedMap<String, ?> map) {
-        return Optional.ofNullable(map.remove(IMPORTS_TAG))
-            .filter(List.class::isInstance)
-            .map(l -> asList(l, String.class))
-            .orElseGet(List::of);
-    }
-
-    private String parseController(SequencedMap<String, ?> map) {
-        return Optional.ofNullable(map.remove(CONTROLLER_TAG))
-            .filter(String.class::isInstance)
-            .map(o -> as(o, String.class))
-            .orElse(null);
-    }
-
-    private Node parse(Entry<String, Object> entry) {
+    private Entity createEntity(Entity parent, Map.Entry<String, Object> entry) throws IOException {
+        // 1.Create the object and add entity to load queue (TODO factories/builders support)
         String type = entry.getKey();
-        SequencedMap<String, Object> properties = asYamlMap(entry.getValue());
-        Node node = new Node(type);
-        Logger.debug("Parsing node of type {}", type);
-        Logger.trace("Properties:\n{}", properties);
+        SequencedMap<String, Object> map = asYamlMap(entry.getValue());
+        Object[] args = parser.parseArgs(map);
+        Logger.debug("Creating object of type {} with args:\n{}", type, Arrays.toString(args));
+        Object instance = ReflectionUtils.create(type, args);
+        if (instance == null) {
+            throw new IOException("Failed to instantiate object for type " + type);
+        }
 
-        // Handle children if present
-        List<?> children = Optional.ofNullable(properties.remove("children"))
+        Entity entity = new Entity(parent, type, instance);
+        loadQueue.add(entity);
+
+        // 2.Handle children recursive
+        List<?> children = Optional.ofNullable(map.remove("children"))
             .filter(List.class::isInstance)
             .map(List.class::cast)
             .orElseGet(List::of);
-
-        if (!children.isEmpty()) Logger.debug("Parsing children...");
+        Logger.info("Found {} children, parsing...", children.size());
         for (Object child : children) {
-            SequencedMap<String, Object> asMap = asYamlMap(child);
-            // Each child is a map of length 1
-            // In case it's not issue a warning
-            if (asMap.isEmpty()) {
-                Logger.warn("Children map is empty");
-                continue;
+            SequencedMap<String, Object> childMap = asYamlMap(child);
+            if (childMap.size() != 1) {
+                Logger.warn("Expected size 1 for child map, found {}", childMap.size());
             }
-            if (asMap.size() > 1)
-                Logger.warn(
-                    "Expected size 1 for children collection, found {}. Trying to parse anyway.",
-                    asMap.size()
-                );
 
-            Entry<String, Object> asEntry = asMap.firstEntry();
-            Node childNode = parse(asEntry);
-            node.getChildren().add(childNode);
-            Logger.debug("Added child {} to node {}", childNode, node);
+            Entity childEntity = createEntity(entity, childMap.firstEntry());
+            entity.children().add(childEntity);
         }
 
-        // Handle properties
-        SequencedMap<String, Property> parsedProperties = parseProperties(properties);
-        node.getProperties().putAll(parsedProperties);
-        return node;
+        // 3.Save properties for later
+        if (!map.isEmpty()) {
+            Logger.trace("Saving properties for later:\n{}", map);
+            propertiesMap.put(entity, map);
+        }
+
+        return entity;
     }
 }

@@ -4,13 +4,15 @@ import java.util.List;
 
 import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
-import io.github.palexdev.architectfx.yaml.YamlFormatSpecs;
+import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import utils.User;
 import utils.UserWrapper;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.asYamlMap;
+import static io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestMisc {
@@ -29,7 +31,7 @@ public class TestMisc {
               - "Double.MAX_VALUE"
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<Object> parsed = YamlDeserializer.instance().parseList(yaml);
+        List<Object> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
         assertEquals(8, parsed.size());
 
         int i = 0;
@@ -66,7 +68,7 @@ public class TestMisc {
               - {.type: User, .args: ["User 3", "password"]}
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("users");
-        List<User> parsed = YamlDeserializer.instance().parseList(yaml);
+        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -113,7 +115,7 @@ public class TestMisc {
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<UserWrapper> parsed = YamlDeserializer.instance().parseList(yaml);
+        List<UserWrapper> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -160,7 +162,7 @@ public class TestMisc {
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<User> parsed = YamlDeserializer.instance().parseList(yaml);
+        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -194,12 +196,13 @@ public class TestMisc {
             list:
               - {.type: User, .args: ["User.PLACEHOLDER", "User.PLACEHOLDER"]}
               - {.type: User, .args: ["", ""],
-                 name: "YamlFormatSpecs.TYPE_TAG", password: "YamlFormatSpecs.VALUE_TAG"
+                 name: "io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG",
+                 password: "io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG"
                 }
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<User> parsed = YamlDeserializer.instance().parseList(yaml);
+        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
         assertEquals(2, parsed.size());
 
         // Test 0
@@ -209,7 +212,7 @@ public class TestMisc {
 
         // Test 1
         User o1 = parsed.get(1);
-        assertEquals(YamlFormatSpecs.TYPE_TAG, o1.name());
-        assertEquals(YamlFormatSpecs.VALUE_TAG, o1.password());
+        assertEquals(TYPE_TAG, o1.name());
+        assertEquals(VALUE_TAG, o1.password());
     }
 }

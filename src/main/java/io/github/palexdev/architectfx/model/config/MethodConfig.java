@@ -1,19 +1,18 @@
 package io.github.palexdev.architectfx.model.config;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.SequencedMap;
 
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import io.github.palexdev.architectfx.utils.Tuple2;
-import io.github.palexdev.architectfx.utils.VarArgsHandler;
-import io.github.palexdev.architectfx.yaml.YamlDeserializer;
+import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
+import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.*;
+import static io.github.palexdev.architectfx.yaml.Tags.METHOD_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.TRANSFORM_TAG;
 
 public class MethodConfig extends Config {
     //================================================================================
@@ -33,32 +32,18 @@ public class MethodConfig extends Config {
     //================================================================================
     // Static Methods
     //================================================================================
-    protected static Optional<MethodConfig> parse(SequencedMap<String, ?> map) {
-        Tuple2<Class<?>, String> methodInfo = ReflectionUtils.getMethodInfo(map.get(METHOD_TAG));
-        if (methodInfo == null) {
-            Logger.warn("Skipping config...\n{}", map);
+    protected static Optional<MethodConfig> parse(YamlParser parser, SequencedMap<String, Object> map) {
+        Tuple2<Class<?>, String> mInfo = ReflectionUtils.getMethodInfo(map.get(METHOD_TAG));
+        if (mInfo == null) {
+            Logger.warn("Method config does not specify the {} tag\n{}", METHOD_TAG, map);
             return Optional.empty();
         }
 
-        Object[] args = Optional.ofNullable(map.get(ARGS_TAG))
-            .map(YamlDeserializer.instance()::parseList)
-            .map(List::toArray)
-            .orElseGet(() -> new Object[0]);
-        Object varargs = Optional.ofNullable(map.get(VARARGS_TAG))
-            .map(YamlDeserializer.instance()::parseList)
-            .map(VarArgsHandler::generateArray)
-            .orElse(null);
-        args = VarArgsHandler.combine(args, varargs);
-
-
+        Object[] args = parser.parseArgs(map);
         boolean transform = Optional.ofNullable(map.get(TRANSFORM_TAG))
             .map(o -> Boolean.parseBoolean(o.toString()))
             .orElse(false);
-        return Optional.of(new MethodConfig(
-            methodInfo.a(),
-            methodInfo.b(),
-            args
-        ).setTransform(transform));
+        return Optional.of(new MethodConfig(mInfo.a(), mInfo.b(), args).transform(transform));
     }
 
     //================================================================================
@@ -102,11 +87,11 @@ public class MethodConfig extends Config {
         return args;
     }
 
-    public boolean transform() {
+    public boolean isTransform() {
         return transform;
     }
 
-    public MethodConfig setTransform(boolean transform) {
+    public MethodConfig transform(boolean transform) {
         this.transform = transform;
         return this;
     }

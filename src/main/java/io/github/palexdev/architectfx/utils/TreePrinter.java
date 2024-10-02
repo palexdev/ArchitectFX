@@ -18,25 +18,33 @@
 
 package io.github.palexdev.architectfx.utils;
 
-import io.github.palexdev.architectfx.model.Node;
+import io.github.palexdev.architectfx.model.Entity;
 
 
 public class TreePrinter {
 
-    public static void printNode(Node node, boolean printTypes) {
-        printNode(node, 0, printTypes);
+    //================================================================================
+    // Constructors
+    //================================================================================
+    private TreePrinter() {}
+
+    //================================================================================
+    // Static Methods
+    //================================================================================
+    public static void printEntity(Entity Entity, boolean printTypes) {
+        printEntity(Entity, 0, printTypes);
     }
 
-    private static void printNode(Node node, int indent, boolean printTypes) {
-        // Print the current node with indentation
+    private static void printEntity(Entity Entity, int indent, boolean printTypes) {
+        // Print the current Entity with indentation
         printIndent(indent);
-        System.out.println("Node: " + node.getType());
+        System.out.println("Entity: " + Entity.type());
 
-        // Print the properties of the node
-        if (!node.getProperties().isEmpty()) {
+        // Print the properties of the Entity
+        if (!Entity.properties().isEmpty()) {
             printIndent(indent + 1);
             System.out.println("Properties:");
-            node.getProperties().values().forEach(p -> {
+            Entity.properties().values().forEach(p -> {
                 printIndent(indent + 2);
                 if (printTypes) {
                     System.out.printf(p.name() + ": " + p.value() + " [%s]%n", p.type());
@@ -47,11 +55,11 @@ public class TreePrinter {
         }
 
         // Recursively print children
-        if (!node.getChildren().isEmpty()) {
+        if (!Entity.children().isEmpty()) {
             printIndent(indent + 1);
             System.out.println("Children:");
-            for (Node child : node.getChildren()) {
-                printNode(child, indent + 2, printTypes);
+            for (Entity child : Entity.children()) {
+                printEntity(child, indent + 2, printTypes);
             }
         }
     }

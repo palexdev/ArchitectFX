@@ -4,16 +4,17 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.SequencedMap;
 
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import io.github.palexdev.architectfx.utils.Tuple3;
-import io.github.palexdev.architectfx.yaml.YamlDeserializer;
+import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
+import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.FIELD_TAG;
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.VALUE_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.FIELD_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
 
+// TODO allow instance fields eventually
 public class FieldConfig extends Config {
     //================================================================================
     // Properties
@@ -23,36 +24,37 @@ public class FieldConfig extends Config {
     //================================================================================
     // Constructors
     //================================================================================
-    public FieldConfig(Class<?> klass, String field, Object value) {
-        super(klass, field);
+    public FieldConfig(Class<?> owner, String field, Object value) {
+        super(owner, field);
         this.value = value;
     }
 
     //================================================================================
     // Static Methods
     //================================================================================
-    protected static Optional<FieldConfig> parse(SequencedMap<String, ?> map) {
-        if (!map.containsKey(VALUE_TAG)) {
-            Logger.error("Field config does not specify {} tag.\n{}", VALUE_TAG, map);
-            return Optional.empty();
-        }
-
-        Tuple3<Class<?>, String, Object> fieldInfo = ReflectionUtils.getFieldInfo(map.get(FIELD_TAG), false);
-        if (fieldInfo == null || fieldInfo.a() == null) {
-            Logger.warn("Skipping config...\n{}", map);
-            return Optional.empty();
-        }
-
+    protected static Optional<FieldConfig> parse(YamlParser parser, SequencedMap<String, Object> map) {
         Object value = map.get(VALUE_TAG);
         if (value == null) {
-            Logger.error("Field config does not specify {} tag.\n{}", VALUE_TAG, map);
+            Logger.warn("Field config does not specify the {} tag\n{}", VALUE_TAG, map);
             return Optional.empty();
         }
 
-        value = YamlDeserializer.instance().parseValue(value);
-        return (value == null) ?
-            Optional.empty() :
-            Optional.of(new FieldConfig(fieldInfo.a(), fieldInfo.b(), value));
+        Object fObj = map.get(FIELD_TAG);
+        Tuple3<Class<?>, String, Object> fInfo = ReflectionUtils.getFieldInfo(fObj, false);
+        if (fInfo == null || fInfo.a() == null) {
+            Logger.warn(
+                "Invalid config, either because field info is null or because field is not static, skipping..."
+            );
+            return Optional.empty();
+        }
+
+        // TODO allow null values eventually
+        value = parser.parseValue(value);
+        if (value == null) {
+            Logger.warn("Config value is null, skipping...");
+            return Optional.empty();
+        }
+        return Optional.of(new FieldConfig(fInfo.a(), fInfo.b(), value));
     }
 
     //================================================================================

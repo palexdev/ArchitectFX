@@ -20,20 +20,18 @@ package io.github.palexdev.architectfx.model;
 
 import java.util.*;
 
-// TODO think about another name
-public class Node {
-    //================================================================================
-    // Properties
-    //================================================================================
-    private final String type;
-    private final SequencedMap<String, Property> properties = new LinkedHashMap<>();
-    private final List<Node> children = new ArrayList<>();
-
+public record Entity(
+    Entity parent,
+    String type,
+    Object instance,
+    SequencedMap<String, Property> properties,
+    List<Entity> children
+) {
     //================================================================================
     // Constructors
     //================================================================================
-    public Node(String type) {
-        this.type = type;
+    public Entity(Entity parent, String type, Object instance) {
+        this(parent, type, instance, new LinkedHashMap<>(), new ArrayList<>());
     }
 
     //================================================================================
@@ -52,6 +50,23 @@ public class Node {
     // Overridden Methods
     //================================================================================
 
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entity entity = (Entity) o;
+        return Objects.equals(type, entity.type) &&
+               Objects.equals(instance, entity.instance) &&
+               Objects.equals(children, entity.children) &&
+               Objects.equals(properties, entity.properties);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, instance, properties, children);
+    }
+
     @Override
     public String toString() {
         return "Node{" +
@@ -59,20 +74,5 @@ public class Node {
                ", n.properties=" + properties.size() +
                ", n.children=" + children.size() +
                '}';
-    }
-
-    //================================================================================
-    // Getters
-    //================================================================================
-    public String getType() {
-        return type;
-    }
-
-    public SequencedMap<String, Property> getProperties() {
-        return properties;
-    }
-
-    public List<Node> getChildren() {
-        return children;
     }
 }

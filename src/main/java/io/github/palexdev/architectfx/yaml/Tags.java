@@ -1,17 +1,17 @@
 //@formatter:off
 package io.github.palexdev.architectfx.yaml;
 
-public class YamlFormatSpecs {
+public class Tags {
     //================================================================================
     // Static Properties
     //================================================================================
 
-    // Tags
+    // Document tags
     public static final String CONTROLLER_TAG =   ".controller";
     public static final String DEPS_TAG =         ".deps";
-    public static final String DEPENDENCIES_TAG = ".dependencies";
     public static final String IMPORTS_TAG =      ".imports";
 
+    // Metadata tags
     public static final String ARGS_TAG =         ".args";
     public static final String CONFIG_TAG =       ".config";
     public static final String FACTORY_TAG =      ".factory";
@@ -25,5 +25,5 @@ public class YamlFormatSpecs {
     //================================================================================
     // Constructors
     //================================================================================
-    private YamlFormatSpecs() {}
+    private Tags() {}
 }

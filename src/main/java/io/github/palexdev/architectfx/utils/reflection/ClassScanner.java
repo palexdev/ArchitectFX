@@ -16,7 +16,7 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.utils;
+package io.github.palexdev.architectfx.utils.reflection;
 
 import java.io.File;
 import java.util.*;
@@ -25,8 +25,10 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.deps.DependencyManager;
+import io.github.palexdev.architectfx.utils.ImportsSet;
 import org.tinylog.Logger;
 
+// TODO this should not be static! Neither the DependencyManager
 public class ClassScanner {
     //================================================================================
     // Static Properties

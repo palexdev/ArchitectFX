@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
- * This file is part of ArchitectFX (https://github.com/palexdev/MaterialFX)
- *
- * ArchitectFX is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 3 of the License,
- * or (at your option) any later version.
- *
- * ArchitectFX is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package io.github.palexdev.architectfx.yaml;
 
 import java.io.File;
@@ -26,40 +8,30 @@ import java.net.URL;
 import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.model.Document;
-import io.github.palexdev.architectfx.model.Node;
-import io.github.palexdev.architectfx.model.Property;
-import io.github.palexdev.architectfx.utils.ReflectionUtils;
 import javafx.scene.Parent;
 import org.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
-import static io.github.palexdev.architectfx.yaml.YamlFormatSpecs.ARGS_TAG;
-
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {
-    //================================================================================
-    // Singleton
-    //================================================================================
-    private static final YamlLoader instance = new YamlLoader();
-
-    public static YamlLoader instance() {
-        return instance;
-    }
-
-    //================================================================================
-    // Constructors
-    //================================================================================
-    private YamlLoader() {}
+    private YamlDeserializer deserializer; // TODO dispose old one? (traverse disposal)
 
     //================================================================================
     // Methods
     //================================================================================
-
     public Parent load(InputStream stream) throws IOException {
         try {
-            SequencedMap<String, Object> mappings = new Yaml().load(stream);
-            Document document = YamlDeserializer.instance().parse(mappings);
-            return doLoad(document);
+            // Load YAML
+            SequencedMap<String, Object> map = new Yaml().load(stream);
+
+            // Pre-load document
+            deserializer = new YamlDeserializer();
+            Document document = deserializer.parseDocument(map);
+
+            // Initialization stage
+            deserializer.initializeTree();
+
+            return (Parent) document.root().instance();
         } catch (Exception ex) {
             throw new IOException(ex);
         }
@@ -76,36 +48,10 @@ public class YamlLoader {
 
     public Parent load(URL url) throws IOException {
         try {
-            Logger.debug("Loading file from url {}", url);
+            Logger.debug("Loading from URL {}", url);
             return load(url.openStream());
         } catch (Exception ex) {
-            throw new IOException("Failed to load file", ex);
+            throw new IOException("Failed to load from URL", ex);
         }
     }
-
-    private Parent doLoad(Document document) throws IOException {
-        Node root = document.getRoot();
-        Object[] args = root.getProperty(ARGS_TAG)
-            .map(Property::value)
-            .map(o -> ((Object[]) o))
-            .orElseGet(() -> new Object[0]);
-        Parent parent = ReflectionUtils.create(root.getType(), args);
-        if (parent == null)
-            throw new IOException("Failed to create root node!");
-
-        ReflectionUtils.initialize(parent, root.getProperties().values());
-        //handleChildren(document, root, parent);
-        return parent;
-    }
-
-/*    private void handleChildren(Document document, Node node, Parent parent) throws IOException {
-        // TODO handle Group too
-        if (parent instanceof Pane pane) {
-            for (Node childNode : node.getChildren()) {
-                Parent child = init(document, childNode);
-                handleChildren(document, childNode, child);
-                pane.getChildren().add(child);
-            }
-        }
-    }*/
 }
