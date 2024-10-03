@@ -120,7 +120,7 @@ public class ClassScanner {
                 .filter(i -> !i.getPackageName().startsWith("java.awt") &&
                              !i.getPackageName().startsWith("javax.swing")
                 );
-            scanCache.put(className, list);
+            if (!list.isEmpty()) scanCache.put(className, list);
             return list;
         } catch (Exception ex) {
             Logger.error("Error occurred during ClassGraph scan: {}", ex.getMessage());
