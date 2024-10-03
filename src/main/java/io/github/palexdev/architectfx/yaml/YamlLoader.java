@@ -31,7 +31,8 @@ public class YamlLoader {
             // Initialization stage
             deserializer.initializeTree();
 
-            return (Parent) document.root().instance();
+            // Finally, build the scene graph
+            return deserializer.buildSceneGraph(document);
         } catch (Exception ex) {
             throw new IOException(ex);
         }

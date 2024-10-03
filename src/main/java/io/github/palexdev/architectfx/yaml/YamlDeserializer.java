@@ -10,6 +10,9 @@ import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.layout.Pane;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -20,8 +23,10 @@ public class YamlDeserializer {
     // Properties
     //================================================================================
     private final YamlParser parser = new YamlParser(this);
-    private final Deque<Entity> loadQueue = new ArrayDeque<>();
+    private final List<Entity> loadQueue = new ArrayList<>();
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
+
+    private Entity current;
 
     //================================================================================
     // Methods
@@ -75,12 +80,27 @@ public class YamlDeserializer {
     }
 
     public void initializeTree() {
-        for (int i = 0; i < loadQueue.size(); i++) {
-            Entity entity = loadQueue.pop();
+        // Initialize all nodes
+        for (Entity entity : loadQueue) {
+            current = entity;
             SequencedMap<String, Property> properties = parser.parseProperties(propertiesMap.get(entity));
             if (properties != null) entity.properties().putAll(properties);
             initialize(entity.instance(), entity.properties().values());
         }
+        current = null;
+    }
+
+    public Parent buildSceneGraph(Document document) throws IOException {
+        // The queue is top-down (flattened tree structure)
+        for (Entity entity : queue()) {
+            Object currentInstance = entity.instance();
+            if (entity.parent() != null) {
+                Object parentInstance = entity.parent().instance();
+                attachToParent(parentInstance, currentInstance);
+            }
+        }
+        loadQueue.clear();
+        return (Parent) document.root().instance();
     }
 
     protected void initialize(Object instance, Collection<Property> properties) {
@@ -155,5 +175,26 @@ public class YamlDeserializer {
         }
 
         return entity;
+    }
+
+    private void attachToParent(Object pInstance, Object cInstance) throws IOException {
+        try {
+            Pane pane = (Pane) pInstance;
+            Node node = (Node) cInstance;
+            pane.getChildren().add(node);
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    //================================================================================
+    // Getters
+    //================================================================================
+    public List<Entity> queue() {
+        return Collections.unmodifiableList(loadQueue);
+    }
+
+    public Entity currentLoading() {
+        return current;
     }
 }
