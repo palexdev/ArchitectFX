@@ -47,11 +47,12 @@ public class ClassScanner {
     //================================================================================
 
     public static Class<?> findClass(String className) throws ClassNotFoundException {
+        DependencyManager dm = DependencyManager.instance();
         // Check if it's a fully qualified name
         // (naive approach, contains dot)
         // In such case no need to cache
         if (className.contains(".")) {
-            Class<?> klass = DependencyManager.instance().loadClass(className);
+            Class<?> klass = dm.loadClass(className);
             if (klass != null) return klass;
             throw new ClassNotFoundException("Class not found: " + className);
         }
@@ -64,10 +65,10 @@ public class ClassScanner {
         for (String imp : imports) {
             try {
                 Class<?> klass = switch (imp) {
-                    case String s when s.endsWith(className) -> Class.forName(s);
+                    case String s when s.endsWith(className) -> dm.loadClass(s);
                     case String s when s.endsWith("*") -> {
                         String pkg = s.substring(0, s.lastIndexOf('.'));
-                        yield Class.forName(pkg + "." + className);
+                        yield dm.loadClass(pkg + "." + className);
                     }
                     default -> null;
                 };
@@ -77,7 +78,7 @@ public class ClassScanner {
                     return klass;
                 }
             } catch (ClassNotFoundException ex) {
-                Logger.trace("Invalid name or class not found: {}", ex.getMessage());
+                Logger.trace("Invalid name or class not found: {}", ex);
             }
         }
 
@@ -90,7 +91,7 @@ public class ClassScanner {
         );
 
         String fqName = results.getFirst().getName();
-        Class<?> klass = DependencyManager.instance().loadClass(fqName);
+        Class<?> klass = dm.loadClass(fqName);
         if (klass == null)
             throw new ClassNotFoundException("Failed to load class: " + fqName);
         Logger.trace("Found class: {}", fqName);
@@ -151,16 +152,10 @@ public class ClassScanner {
                     return ALL.build();
                 }
 
-                ClassGraph cg = new ClassGraph()
+                return new ClassGraph()
                     .enableSystemJarsAndModules()
-                    .overrideClasspath(deps.toArray());
-
-                if ("true".equals(System.getProperty("test.environment", "false"))) {
-                    Logger.trace("Test environment detected, adding project classpath to ClassGraph...");
-                    cg.overrideClasspath(System.getProperty("java.class.path"));
-                }
-
-                return cg;
+                    .overrideClasspath(deps.toArray())
+                    .overrideClasspath(System.getProperty("java.class.path"));
             }
         },
         ;
