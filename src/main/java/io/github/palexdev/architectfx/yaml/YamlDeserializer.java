@@ -47,16 +47,7 @@ public class YamlDeserializer {
             Logger.info("Found {} imports:\n{}", imports.size(), imports);
         }
 
-        if (map.size() > 1)
-            Logger.warn(
-                "Document is probably malformed. {} root nodes detected, trying to parse anyway...",
-                map.size()
-            );
-
-        // Create entities recursive
-        Entity root = createEntity(null, map.firstEntry());
-
-        // Last but not least, after everything has been parsed, handle the controller if present
+        // Handle the controller if present
         Object controller = null;
         try {
             String name = parser.parseController(map);
@@ -65,11 +56,18 @@ public class YamlDeserializer {
                 Class<?> klass = ClassScanner.findClass(name);
                 controller = ReflectionUtils.create(klass);
             }
-
         } catch (ClassNotFoundException ex) {
             Logger.error("Failed to instantiate the controller because:\n{}", ex);
         }
 
+        if (map.size() > 1)
+            Logger.warn(
+                "Document is probably malformed. {} root nodes detected, trying to parse anyway...",
+                map.size()
+            );
+
+        // Create entities recursive
+        Entity root = createEntity(null, map.firstEntry());
         Document document = new Document(root, controller);
         document.dependencies().addAll(dependencies);
         document.imports().addAll(imports);
