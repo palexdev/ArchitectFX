@@ -100,6 +100,11 @@ public class YamlParser {
         if ((value = parseStaticField(obj, true)) != null) {
             Tuple2<Type, Object> tuple = (Tuple2<Type, Object>) value;
             Logger.debug("Parsed static value {}:\n{}", obj, tuple);
+            if (Type.KEYWORD == tuple.a()) {
+                Logger.debug("Value is a keyword...");
+                Object parsed = parseKeyword(tuple.b());
+                return (parsed != null) ? Tuple2.of(tuple.a(), parsed) : null;
+            }
             return tuple;
         }
 
@@ -197,6 +202,14 @@ public class YamlParser {
             Type.getType(fInfo.c()),
             fInfo.c()
         );
+    }
+
+    private Object parseKeyword(Object obj) {
+        if (Keyword.THIS == obj) {
+            return deserializer.currentLoading().instance();
+        }
+        Logger.error("Unknown keyword: {}", Objects.toString(obj));
+        return null;
     }
 
     protected List<String> parseDependencies(SequencedMap<String, Object> map) {

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import io.github.palexdev.architectfx.yaml.Keyword;
 import org.tinylog.Logger;
 
 public enum Type {
@@ -14,6 +15,7 @@ public enum Type {
     ENUM,
     COMPLEX,
     COLLECTION,
+    KEYWORD,
     UNKNOWN,
     ;
 
@@ -40,6 +42,7 @@ public enum Type {
             case Class<?> k when k.isEnum() -> ENUM;
             case Class<?> k when Map.class.isAssignableFrom(k) -> COMPLEX;
             case Class<?> k when Collection.class.isAssignableFrom(k) -> COLLECTION;
+            case Class<?> k when k == Keyword.class -> KEYWORD;
             default -> {
                 Logger.warn("Could not determine type for class: " + klass);
                 yield UNKNOWN;
