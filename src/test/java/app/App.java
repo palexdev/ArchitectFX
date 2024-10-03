@@ -5,6 +5,7 @@ import java.net.URL;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.application.Application;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 public class App extends Application {
@@ -13,5 +14,14 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         URL res = Launcher.class.getClassLoader().getResource("assets/TextFields.yaml");
         Parent root = new YamlLoader().load(res);
+
+        // Stylesheets are not yet supported
+        root.getStylesheets().add(
+            Launcher.class.getClassLoader().getResource("assets/TextFields.css").toExternalForm()
+        );
+
+        Scene scene = new Scene(root, 800, 600);
+        stage.setScene(scene);
+        stage.show();
     }
 }

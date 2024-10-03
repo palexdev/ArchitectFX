@@ -8,7 +8,8 @@
   "io.github.palexdev.materialfx.controls.*",
   "javafx.geometry.*",
   "javafx.scene.control.Label",
-  "javafx.scene.layout.*"
+  "javafx.scene.layout.*",
+  "javafx.scene.paint.Color"
 ]
 
 .deps: [
@@ -44,6 +45,16 @@ GridPane:
     { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
     { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
   ]
+
+   # Global config (TODO this could be moved outside root)
+  .config:
+    - {.method: "UserAgentBuilder.builder", .transform: true}
+    - {.method: "themes", .varargs: [JavaFXThemes.MODENA]}
+    - {.method: "themes", .varargs: [MaterialFXStylesheets.DEFAULT]}
+    - {.method: "setDeploy", .args: [true]}
+    - {.method: "setResolveAssets", .args: [true]}
+    - {.method: "build", .transform: true}
+    - {.method: "setGlobal"}
 
   children:
     # First section
@@ -99,7 +110,7 @@ GridPane:
         floatingText: "Custom"
         promptText: "Prompt Text"
         .config:
-          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 3]}
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 4]}
           - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 1]}
 
     - MFXTextField:
@@ -146,7 +157,7 @@ GridPane:
           - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
-        disable: true,
+        disable: true
         floatingText: "Disabled"
         text: "Text"
         .config:
@@ -173,7 +184,7 @@ GridPane:
         styleClass:
           - "header-label"
         .config:
-          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 4]}
           - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
 
     - MFXTextField:
@@ -189,11 +200,11 @@ GridPane:
         floatingText: "As Label"
         text: "Label's text"
         .config:
-          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
+          - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 1]}
           - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 5]}
 
     - MFXTextField:
-        fx.id: "textField"
+        .cid: "textField"
         floatingText: "Characters Limit"
         .config:
           - {.method: "GridPane.setColumnIndex", .args: ["Keyword.THIS", 2]}
@@ -210,15 +221,15 @@ GridPane:
         children:
           - MFXPasswordField:
               id: "validatedField"
-              fx.id: "passwordField"
+              .cid: "passwordField"
               floatingText: "Validated"
               maxWidth: 200.0
 
           - Label:
               id: "validationLabel"
-              fx.id: "validationLabel"
+              .cid: "validationLabel"
               visible: false
-              textFill: "#ef6e6b"
+              textFill: {.type: Color, .factory: Color.web, .args: ["#ef6e6b"]}
               wrapText: true
               maxWidth: 1.7976931348623157E308
-              minHeight: "-Infinity"
+              minHeight: "Double.NEGATIVE_INFINITY"
