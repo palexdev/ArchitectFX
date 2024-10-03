@@ -22,14 +22,13 @@ public class YamlDeserializer {
     //================================================================================
     // Properties
     //================================================================================
-    private DependencyManager dm = new DependencyManager();
-    private ClassScanner scanner = new ClassScanner(dm);
-    private Reflector reflector = new Reflector(dm, scanner);
+    private DependencyManager dm;
+    private ClassScanner scanner;
+    private Reflector reflector;
+    private YamlParser parser;
 
-    private final YamlParser parser = new YamlParser(this, reflector);
     private final List<Entity> loadQueue = new ArrayList<>();
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
-
     private Entity current;
 
     //================================================================================
@@ -39,11 +38,18 @@ public class YamlDeserializer {
         if (map.isEmpty())
             throw new IOException("Failed to parse document because it appears to be empty");
 
+        // Initialize dependencies
+        dm = new DependencyManager();
+        scanner = new ClassScanner(dm);
+        reflector = new Reflector(dm, scanner);
+        parser = new YamlParser(this, reflector);
+
         // Handle dependencies if present
         List<String> dependencies = parser.parseDependencies(map);
         if (!dependencies.isEmpty()) {
             Logger.info("Found {} dependencies:\n{}", dependencies.size(), dependencies);
             dm.addDeps(dependencies.toArray(String[]::new));
+            dm.refresh();
         }
 
         // Handle imports if present
@@ -190,14 +196,15 @@ public class YamlDeserializer {
     }
 
     public void dispose() {
-        dm.close();
         scanner.dispose();
         reflector.dispose();
+        parser.dispose();
+
         dm = null;
         scanner = null;
         reflector = null;
+        parser = null;
 
-        parser.dispose();
         loadQueue.clear();
         propertiesMap.clear();
 
