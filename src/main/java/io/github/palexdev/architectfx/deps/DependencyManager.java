@@ -51,13 +51,8 @@ public class DependencyManager {
     // Methods
     //================================================================================
 
-    public Class<?> loadClass(String fqName) {
-        try {
-            return classLoader.loadClass(fqName);
-        } catch (ClassNotFoundException ex) {
-            Logger.error(ex, "Failed to load class {}", fqName);
-            return null;
-        }
+    public Class<?> loadClass(String fqName) throws ClassNotFoundException {
+        return classLoader.loadClass(fqName);
     }
 
     public DependencyManager addDeps(String... artifacts) {
@@ -92,11 +87,11 @@ public class DependencyManager {
     //================================================================================
     // Getters
     //================================================================================
-    public Set<File> getDependencies() {
+    public Set<File> dependencies() {
         return Collections.unmodifiableSet(dependencies);
     }
 
-    public DynamicClassLoader getClassLoader() {
+    public DynamicClassLoader loader() {
         return classLoader;
     }
 }

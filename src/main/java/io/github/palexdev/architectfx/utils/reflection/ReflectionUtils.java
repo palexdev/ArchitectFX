@@ -28,7 +28,7 @@ public class ReflectionUtils {
 
     public static <T> T create(Class<?> klass, Object... args) {
         try {
-            return Reflect.onClass(klass.getName(), DependencyManager.instance().getClassLoader())
+            return Reflect.onClass(klass.getName(), DependencyManager.instance().loader())
                 .create(args)
                 .get();
         } catch (ReflectException ex) {
@@ -61,7 +61,7 @@ public class ReflectionUtils {
             if (mInfo.a() == null)
                 throw new IllegalArgumentException("Factory class not defined");
             Logger.trace("Invoking factory {} with args {}", mInfo, args);
-            return Reflect.onClass(mInfo.a().getName(), DependencyManager.instance().getClassLoader())
+            return Reflect.onClass(mInfo.a().getName(), DependencyManager.instance().loader())
                 .call(mInfo.b(), args)
                 .get();
         } catch (Exception ex) {

@@ -145,7 +145,7 @@ public class ClassScanner {
         DEPS {
             @Override
             public ClassGraph build() {
-                Set<File> deps = DependencyManager.instance().getDependencies();
+                Set<File> deps = DependencyManager.instance().dependencies();
                 if (deps.isEmpty()) {
                     Logger.error("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
                     return ALL.build();

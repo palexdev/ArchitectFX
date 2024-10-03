@@ -51,7 +51,7 @@ public class TestDynamicClassLoader {
     void testCleanup() {
         DependencyManager dm = DependencyManager.instance();
         dm.cleanDeps().refresh();
-        assertEquals(0, dm.getDependencies().size());
+        assertEquals(0, dm.dependencies().size());
 
         Object obj = ReflectionUtils.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNull(obj);
