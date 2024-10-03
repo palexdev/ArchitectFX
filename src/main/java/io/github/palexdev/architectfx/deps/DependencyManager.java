@@ -30,6 +30,7 @@ public class DependencyManager {
     private final Set<File> dependencies = new HashSet<>();
     private final MavenHelper mavenHelper = new MavenHelper();
     private DynamicClassLoader classLoader = new DynamicClassLoader();
+    private boolean needsRefresh = false;
 
     //================================================================================
     // Methods
@@ -43,23 +44,29 @@ public class DependencyManager {
         if (artifacts.length != 0) {
             File[] deps = mavenHelper.downloadFiles(artifacts);
             Collections.addAll(dependencies, deps);
+            needsRefresh = true;
         }
         return this;
     }
 
     public DependencyManager addDeps(File... deps) {
         Collections.addAll(dependencies, deps);
+        needsRefresh = true;
         return this;
     }
 
     public DependencyManager cleanDeps() {
         dependencies.clear();
+        needsRefresh = true;
         return this;
     }
 
-    public DependencyManager refresh() {
-        classLoader = new DynamicClassLoader();
-        classLoader.addJars(dependencies);
+    public DependencyManager refresh(boolean force) {
+        if (needsRefresh || force) {
+            classLoader = new DynamicClassLoader();
+            classLoader.addJars(dependencies);
+        }
+        needsRefresh = false;
         return this;
     }
 
