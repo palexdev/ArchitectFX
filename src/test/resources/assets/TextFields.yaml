@@ -19,6 +19,17 @@
 # There can be only one controller per view, special handle like for imports
 .controller: "TextFieldsController"
 
+# Global config, in this case setting a global theme
+# Needless to say, global configs only support static methods and fields
+.config:
+  - {.method: "UserAgentBuilder.builder", .transform: true}
+  - {.method: "themes", .varargs: [JavaFXThemes.MODENA]}
+  - {.method: "themes", .varargs: [MaterialFXStylesheets.DEFAULT]}
+  - {.method: "setDeploy", .args: [true]}
+  - {.method: "setResolveAssets", .args: [true]}
+  - {.method: "build", .transform: true}
+  - {.method: "setGlobal"}
+
 GridPane:
   alignment: "Pos.CENTER"
   hgap: 20.0
@@ -45,16 +56,6 @@ GridPane:
     { .type: "RowConstraints", minHeight: 10.0, prefHeight: 32.0 },
     { .type: "RowConstraints", minHeight: 10.0, prefHeight: 150.0, valignment: "VPos.BASELINE" }
   ]
-
-   # Global config (TODO this could be moved outside root)
-  .config:
-    - {.method: "UserAgentBuilder.builder", .transform: true}
-    - {.method: "themes", .varargs: [JavaFXThemes.MODENA]}
-    - {.method: "themes", .varargs: [MaterialFXStylesheets.DEFAULT]}
-    - {.method: "setDeploy", .args: [true]}
-    - {.method: "setResolveAssets", .args: [true]}
-    - {.method: "build", .transform: true}
-    - {.method: "setGlobal"}
 
   children:
     # First section

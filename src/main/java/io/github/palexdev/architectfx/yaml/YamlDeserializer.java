@@ -49,7 +49,7 @@ public class YamlDeserializer {
         if (!dependencies.isEmpty()) {
             Logger.info("Found {} dependencies:\n{}", dependencies.size(), dependencies);
             dm.addDeps(dependencies.toArray(String[]::new));
-            dm.refresh();
+            dm.refresh(false);
         }
 
         // Handle imports if present
@@ -70,6 +70,15 @@ public class YamlDeserializer {
             }
         } catch (ClassNotFoundException ex) {
             Logger.error("Failed to instantiate the controller because:\n{}", ex);
+        }
+
+        // Handle global configs if present
+        Optional<Object> cObj = Optional.empty();
+        List<Config> globalConfigs = Optional.ofNullable(map.remove(CONFIG_TAG))
+            .map(parser::parseConfigs)
+            .orElseGet(List::of);
+        for (Config c : globalConfigs) {
+            cObj = c.run(cObj.orElse(null));
         }
 
         if (map.size() > 1)

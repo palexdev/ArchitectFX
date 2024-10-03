@@ -29,10 +29,9 @@ public class TestScanner {
     @Test
     void testSearchDeps() {
         DependencyManager dm = new DependencyManager().addDeps(
-                artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-            )
-            .refresh();
+            artifact("io.github.palexdev", "materialfx", "11.17.0"),
+            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+        ).refresh(true);
         ClassScanner scanner = new ClassScanner(dm);
         ClassInfoList l = scanner.searchClasses("io.github.palexdev.mfxcore.base.beans.Size", ScanScope.DEPS);
         assertEquals(1, l.size());
@@ -41,10 +40,9 @@ public class TestScanner {
     @Test
     void testMultipleResults() {
         DependencyManager dm = new DependencyManager().addDeps(
-                artifact("io.github.palexdev", "materialfx", "11.17.0"),
-                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-            )
-            .refresh();
+            artifact("io.github.palexdev", "materialfx", "11.17.0"),
+            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+        ).refresh(true);
         ClassScanner scanner = new ClassScanner(dm);
         ClassInfoList l = scanner.searchClasses("Label", ScanScope.DEPS)
             .filter(i -> i.extendsSuperclass(Node.class));
