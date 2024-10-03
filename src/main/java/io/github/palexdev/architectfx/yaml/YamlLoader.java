@@ -14,7 +14,6 @@ import org.yaml.snakeyaml.Yaml;
 
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {
-    private YamlDeserializer deserializer; // TODO dispose old one? (traverse disposal)
 
     //================================================================================
     // Methods
@@ -25,14 +24,16 @@ public class YamlLoader {
             SequencedMap<String, Object> map = new Yaml().load(stream);
 
             // Pre-load document
-            deserializer = new YamlDeserializer();
+            YamlDeserializer deserializer = new YamlDeserializer();
             Document document = deserializer.parseDocument(map);
 
             // Initialization stage
             deserializer.initializeTree();
 
             // Finally, build the scene graph
-            return deserializer.buildSceneGraph(document);
+            Parent root = deserializer.buildSceneGraph(document);
+            deserializer.dispose();
+            return root;
         } catch (Exception ex) {
             throw new IOException(ex);
         }

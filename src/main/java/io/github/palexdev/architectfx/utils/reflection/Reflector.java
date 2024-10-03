@@ -18,8 +18,8 @@ public class Reflector {
     //================================================================================
     // Properties
     //================================================================================
-    private final DependencyManager dm;
-    private final ClassScanner scanner;
+    private DependencyManager dm;
+    private ClassScanner scanner;
     
     // ================================================================================
     // Constructors
@@ -115,6 +115,11 @@ public class Reflector {
             }
         }
         return null;
+    }
+
+    public void dispose() {
+        dm = null;
+        scanner = null;
     }
 
     //================================================================================

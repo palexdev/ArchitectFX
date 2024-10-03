@@ -18,8 +18,8 @@ public class YamlParser {
     //================================================================================
     // Properties
     //================================================================================
-    private final YamlDeserializer deserializer;
-    private final Reflector reflector;
+    private YamlDeserializer deserializer;
+    private Reflector reflector;
 
     //================================================================================
     // Constructors
@@ -233,6 +233,11 @@ public class YamlParser {
             .filter(String.class::isInstance)
             .map(o -> as(o, String.class))
             .orElse(null);
+    }
+
+    public void dispose() {
+        deserializer = null;
+        reflector = null;
     }
 
     //================================================================================

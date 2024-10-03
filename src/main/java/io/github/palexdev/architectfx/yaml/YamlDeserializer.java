@@ -22,9 +22,9 @@ public class YamlDeserializer {
     //================================================================================
     // Properties
     //================================================================================
-    private final DependencyManager dm = new DependencyManager();
-    private final ClassScanner scanner = new ClassScanner(dm);
-    private final Reflector reflector = new Reflector(dm, scanner);
+    private DependencyManager dm = new DependencyManager();
+    private ClassScanner scanner = new ClassScanner(dm);
+    private Reflector reflector = new Reflector(dm, scanner);
 
     private final YamlParser parser = new YamlParser(this, reflector);
     private final List<Entity> loadQueue = new ArrayList<>();
@@ -179,6 +179,7 @@ public class YamlDeserializer {
     }
 
     private void attachToParent(Object pInstance, Object cInstance) throws IOException {
+        // TODO this may need to improved by allowing to add nodes in Parent classes too
         try {
             Pane pane = (Pane) pInstance;
             Node node = (Node) cInstance;
@@ -186,6 +187,21 @@ public class YamlDeserializer {
         } catch (Exception ex) {
             throw new IOException(ex);
         }
+    }
+
+    public void dispose() {
+        dm.close();
+        scanner.dispose();
+        reflector.dispose();
+        dm = null;
+        scanner = null;
+        reflector = null;
+
+        parser.dispose();
+        loadQueue.clear();
+        propertiesMap.clear();
+
+        current = null;
     }
 
     //================================================================================

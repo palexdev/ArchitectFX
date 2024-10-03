@@ -60,14 +60,18 @@ public class DependencyManager {
     }
 
     public DependencyManager refresh() {
+        close();
+        classLoader = new DynamicClassLoader();
+        classLoader.addJars(dependencies);
+        return this;
+    }
+
+    public void close() {
         try {
             classLoader.close();
         } catch (Exception ex) {
             Logger.warn(ex, "Failed to dispose old class loader");
         }
-        classLoader = new DynamicClassLoader();
-        classLoader.addJars(dependencies);
-        return this;
     }
 
     //================================================================================

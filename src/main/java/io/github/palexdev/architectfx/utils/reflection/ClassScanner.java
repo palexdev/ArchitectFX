@@ -32,7 +32,7 @@ public class ClassScanner {
     //================================================================================
     // Properties
     //================================================================================
-    private final DependencyManager dm;
+    private DependencyManager dm;
     private final Set<String> imports = new ImportsSet();
     private final Map<String, ClassInfoList> scanCache = new HashMap<>();
     private final Map<String, Class<?>> searchCache = new HashMap<>();
@@ -131,6 +131,13 @@ public class ClassScanner {
     public void setImports(Collection<String> imports) {
         this.imports.clear();
         this.imports.addAll(imports);
+    }
+
+    public void dispose() {
+        dm = null;
+        imports.clear();
+        scanCache.clear();
+        searchCache.clear();
     }
 
     //================================================================================
