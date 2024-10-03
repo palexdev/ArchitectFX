@@ -3,8 +3,6 @@ package unit;
 import java.util.List;
 
 import io.github.palexdev.architectfx.enums.Type;
-import io.github.palexdev.architectfx.yaml.YamlDeserializer;
-import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import utils.User;
@@ -14,6 +12,7 @@ import static io.github.palexdev.architectfx.utils.CastUtils.asYamlMap;
 import static io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG;
 import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
 import static org.junit.jupiter.api.Assertions.*;
+import static utils.TestUtils.parser;
 
 public class TestMisc {
 
@@ -31,7 +30,7 @@ public class TestMisc {
               - "Double.MAX_VALUE"
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<Object> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
+        List<Object> parsed = parser().parseList(yaml);
         assertEquals(8, parsed.size());
 
         int i = 0;
@@ -68,7 +67,7 @@ public class TestMisc {
               - {.type: User, .args: ["User 3", "password"]}
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("users");
-        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
+        List<User> parsed = parser().parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -115,7 +114,7 @@ public class TestMisc {
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<UserWrapper> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
+        List<UserWrapper> parsed = parser().parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -162,7 +161,7 @@ public class TestMisc {
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
+        List<User> parsed = parser().parseList(yaml);
         assertEquals(4, parsed.size());
 
         // Test 0
@@ -202,7 +201,7 @@ public class TestMisc {
             """;
 
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
-        List<User> parsed = new YamlParser(new YamlDeserializer()).parseList(yaml);
+        List<User> parsed = parser().parseList(yaml);
         assertEquals(2, parsed.size());
 
         // Test 0

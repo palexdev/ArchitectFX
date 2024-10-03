@@ -7,14 +7,13 @@ import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.model.config.MethodConfig;
-import io.github.palexdev.architectfx.yaml.YamlDeserializer;
-import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
 import static io.github.palexdev.architectfx.yaml.Tags.CONFIG_TAG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static utils.TestUtils.parser;
 
 public class TestConfigs {
 
@@ -60,7 +59,7 @@ public class TestConfigs {
         SequencedMap<String, Object> map = new Yaml().load(yaml);
         assertTrue(map.containsKey(CONFIG_TAG));
         assertEquals(ArrayList.class, map.get(CONFIG_TAG).getClass());
-        List<Config> configs = new YamlParser(new YamlDeserializer()).parseConfigs(map.get(CONFIG_TAG));
+        List<Config> configs = parser().parseConfigs(map.get(CONFIG_TAG));
 
         Optional<List<String>> res = Optional.of(new ArrayList<>());
         for (Config config : configs) {

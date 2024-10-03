@@ -27,25 +27,11 @@ import org.tinylog.Logger;
 
 public class DependencyManager {
     //================================================================================
-    // Singleton
-    //================================================================================
-    private static final DependencyManager instance = new DependencyManager();
-
-    public static DependencyManager instance() {
-        return instance;
-    }
-
-    //================================================================================
     // Properties
     //================================================================================
     private final Set<File> dependencies = new HashSet<>();
     private final MavenHelper mavenHelper = new MavenHelper();
     private DynamicClassLoader classLoader = new DynamicClassLoader();
-
-    //================================================================================
-    // Constructors
-    //================================================================================
-    private DependencyManager() {}
 
     //================================================================================
     // Methods

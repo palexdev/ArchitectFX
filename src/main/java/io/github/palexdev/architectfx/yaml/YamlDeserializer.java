@@ -9,7 +9,7 @@ import io.github.palexdev.architectfx.model.Entity;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
-import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
+import io.github.palexdev.architectfx.utils.reflection.Reflector;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
@@ -22,7 +22,11 @@ public class YamlDeserializer {
     //================================================================================
     // Properties
     //================================================================================
-    private final YamlParser parser = new YamlParser(this);
+    private final DependencyManager dm = new DependencyManager();
+    private final ClassScanner scanner = new ClassScanner(dm);
+    private final Reflector reflector = new Reflector(dm, scanner);
+
+    private final YamlParser parser = new YamlParser(this, reflector);
     private final List<Entity> loadQueue = new ArrayList<>();
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
 
@@ -39,16 +43,13 @@ public class YamlDeserializer {
         List<String> dependencies = parser.parseDependencies(map);
         if (!dependencies.isEmpty()) {
             Logger.info("Found {} dependencies:\n{}", dependencies.size(), dependencies);
-            DependencyManager.instance()
-                .addDeps(dependencies.toArray(String[]::new))
-                .refresh();
+            dm.addDeps(dependencies.toArray(String[]::new));
         }
 
         // Handle imports if present
         List<String> imports = parser.parseImports(map);
         if (!imports.isEmpty()) {
-            // FIXME ClassScanner should not be static, imports are specific per document
-            ClassScanner.setImports(imports);
+            scanner.setImports(imports);
             Logger.info("Found {} imports:\n{}", imports.size(), imports);
         }
 
@@ -58,8 +59,8 @@ public class YamlDeserializer {
             String name = parser.parseController(map);
             if (name != null) {
                 Logger.debug("Trying to instantiate the controller {}", name);
-                Class<?> klass = ClassScanner.findClass(name);
-                controller = ReflectionUtils.create(klass);
+                Class<?> klass = scanner.findClass(name);
+                controller = reflector.create(klass);
             }
         } catch (ClassNotFoundException ex) {
             Logger.error("Failed to instantiate the controller because:\n{}", ex);
@@ -123,16 +124,16 @@ public class YamlDeserializer {
 
             switch (p.type()) {
                 case METADATA -> Logger.trace("Skipping metadata...");
-                case PRIMITIVE, WRAPPER, STRING, ENUM -> ReflectionUtils.setProperty(instance, p);
+                case PRIMITIVE, WRAPPER, STRING, ENUM -> Reflector.setProperty(instance, p);
                 case COMPLEX -> {
                     Logger.trace("Parsing property's complex value...");
                     Object value = parser.parseComplexValue(asYamlMap(p.value()));
-                    ReflectionUtils.setProperty(instance, Property.of(p.name(), p.type(), value));
+                    Reflector.setProperty(instance, Property.of(p.name(), p.type(), value));
                 }
                 case COLLECTION -> {
                     Logger.trace("Parsing property's collection value...");
                     List<Object> list = parser.parseList(asGenericList(p.value()));
-                    ReflectionUtils.addToCollection(instance, p.name(), list);
+                    Reflector.addToCollection(instance, p.name(), list);
                 }
             }
         }
@@ -144,7 +145,7 @@ public class YamlDeserializer {
         SequencedMap<String, Object> map = asYamlMap(entry.getValue());
         Object[] args = parser.parseArgs(map);
         Logger.debug("Creating object of type {} with args:\n{}", type, Arrays.toString(args));
-        Object instance = ReflectionUtils.create(type, args);
+        Object instance = reflector.create(type, args);
         if (instance == null) {
             throw new IOException("Failed to instantiate object for type " + type);
         }

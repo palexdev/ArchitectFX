@@ -28,26 +28,27 @@ import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.ImportsSet;
 import org.tinylog.Logger;
 
-// TODO this should not be static! Neither the DependencyManager
 public class ClassScanner {
     //================================================================================
-    // Static Properties
+    // Properties
     //================================================================================
-    private static final Set<String> imports = new ImportsSet();
-    private static final Map<String, ClassInfoList> scanCache = new HashMap<>();
-    private static final Map<String, Class<?>> searchCache = new HashMap<>();
+    private final DependencyManager dm;
+    private final Set<String> imports = new ImportsSet();
+    private final Map<String, ClassInfoList> scanCache = new HashMap<>();
+    private final Map<String, Class<?>> searchCache = new HashMap<>();
 
     //================================================================================
     // Constructors
     //================================================================================
-    private ClassScanner() {}
+    public ClassScanner(DependencyManager dm) {
+        this.dm = dm;
+    }
 
     //================================================================================
     // Static Methods
     //================================================================================
 
-    public static Class<?> findClass(String className) throws ClassNotFoundException {
-        DependencyManager dm = DependencyManager.instance();
+    public Class<?> findClass(String className) throws ClassNotFoundException {
         // Check if it's a fully qualified name
         // (naive approach, contains dot)
         // In such case no need to cache
@@ -99,7 +100,7 @@ public class ClassScanner {
         return klass;
     }
 
-    public static ClassInfoList searchClasses(String className, ScanScope scope) {
+    public ClassInfoList searchClasses(String className, ScanScope scope) {
         // Check cache first
         if (scanCache.containsKey(className)) return scanCache.get(className);
 
@@ -110,7 +111,7 @@ public class ClassScanner {
             "*." + className;
         Logger.trace("Scan query: {}", query);
 
-        ClassGraph cg = scope.build()
+        ClassGraph cg = scope.build(dm)
             .acceptClasses(query);
         try (ScanResult res = cg.scan()) {
             Logger.trace("ClassGraph scan terminated...");
@@ -127,9 +128,9 @@ public class ClassScanner {
         }
     }
 
-    public static void setImports(Collection<String> imports) {
-        ClassScanner.imports.clear();
-        ClassScanner.imports.addAll(imports);
+    public void setImports(Collection<String> imports) {
+        this.imports.clear();
+        this.imports.addAll(imports);
     }
 
     //================================================================================
@@ -138,18 +139,18 @@ public class ClassScanner {
     public enum ScanScope {
         ALL {
             @Override
-            public ClassGraph build() {
+            public ClassGraph build(DependencyManager dm) {
                 return new ClassGraph()
                     .enableSystemJarsAndModules();
             }
         },
         DEPS {
             @Override
-            public ClassGraph build() {
-                Set<File> deps = DependencyManager.instance().dependencies();
+            public ClassGraph build(DependencyManager dm) {
+                Set<File> deps = dm.dependencies();
                 if (deps.isEmpty()) {
                     Logger.error("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
-                    return ALL.build();
+                    return ALL.build(dm);
                 }
 
                 return new ClassGraph()
@@ -160,6 +161,6 @@ public class ClassScanner {
         },
         ;
 
-        public abstract ClassGraph build();
+        public abstract ClassGraph build(DependencyManager dm);
     }
 }

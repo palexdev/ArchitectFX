@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.utils.Tuple3;
-import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
 import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.joor.Reflect;
 import org.joor.ReflectException;
@@ -40,7 +39,7 @@ public class FieldConfig extends Config {
         }
 
         Object fObj = map.get(FIELD_TAG);
-        Tuple3<Class<?>, String, Object> fInfo = ReflectionUtils.getFieldInfo(fObj, false);
+        Tuple3<Class<?>, String, Object> fInfo = parser.reflector().getFieldInfo(fObj, false);
         if (fInfo == null || fInfo.a() == null) {
             Logger.warn(
                 "Invalid config, either because field info is null or because field is not static, skipping..."

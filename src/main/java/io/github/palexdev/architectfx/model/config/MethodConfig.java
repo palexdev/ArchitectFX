@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.utils.Tuple2;
-import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
 import io.github.palexdev.architectfx.yaml.YamlParser;
 import org.joor.Reflect;
 import org.joor.ReflectException;
@@ -33,7 +32,7 @@ public class MethodConfig extends Config {
     // Static Methods
     //================================================================================
     protected static Optional<MethodConfig> parse(YamlParser parser, SequencedMap<String, Object> map) {
-        Tuple2<Class<?>, String> mInfo = ReflectionUtils.getMethodInfo(map.get(METHOD_TAG));
+        Tuple2<Class<?>, String> mInfo = parser.reflector().getMethodInfo(map.get(METHOD_TAG));
         if (mInfo == null) {
             Logger.warn("Method config does not specify the {} tag\n{}", METHOD_TAG, map);
             return Optional.empty();

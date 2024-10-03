@@ -14,33 +14,39 @@ public class TestScanner {
 
     @Test
     void testSearchSimpleName() {
-        ClassInfoList l = ClassScanner.searchClasses("GridPane", ClassScanner.ScanScope.ALL);
+        DependencyManager dm = new DependencyManager();
+        ClassInfoList l = new ClassScanner(dm).searchClasses("GridPane", ClassScanner.ScanScope.ALL);
         assertEquals(1, l.size());
     }
 
     @Test
     void testSearchFullName() {
-        ClassInfoList l = ClassScanner.searchClasses("javafx.scene.layout.GridPane", ClassScanner.ScanScope.ALL);
+        DependencyManager dm = new DependencyManager();
+        ClassInfoList l = new ClassScanner(dm).searchClasses("javafx.scene.layout.GridPane", ClassScanner.ScanScope.ALL);
         assertEquals(1, l.size());
     }
 
     @Test
     void testSearchDeps() {
-        DependencyManager.instance().addDeps(
-            artifact("io.github.palexdev", "materialfx", "11.17.0"),
-            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-        ).refresh();
-        ClassInfoList l = ClassScanner.searchClasses("io.github.palexdev.mfxcore.base.beans.Size", ScanScope.DEPS);
+        DependencyManager dm = new DependencyManager().addDeps(
+                artifact("io.github.palexdev", "materialfx", "11.17.0"),
+                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            )
+            .refresh();
+        ClassScanner scanner = new ClassScanner(dm);
+        ClassInfoList l = scanner.searchClasses("io.github.palexdev.mfxcore.base.beans.Size", ScanScope.DEPS);
         assertEquals(1, l.size());
     }
 
     @Test
     void testMultipleResults() {
-        DependencyManager.instance().addDeps(
-            artifact("io.github.palexdev", "materialfx", "11.17.0"),
-            artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-        ).refresh();
-        ClassInfoList l = ClassScanner.searchClasses("Label", ScanScope.DEPS)
+        DependencyManager dm = new DependencyManager().addDeps(
+                artifact("io.github.palexdev", "materialfx", "11.17.0"),
+                artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
+            )
+            .refresh();
+        ClassScanner scanner = new ClassScanner(dm);
+        ClassInfoList l = scanner.searchClasses("Label", ScanScope.DEPS)
             .filter(i -> i.extendsSuperclass(Node.class));
         assertEquals(2, l.size());
         assertEquals("io.github.palexdev.mfxcore.controls.Label", l.getFirst().getName());

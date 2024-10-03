@@ -14,21 +14,27 @@ import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
-public class ReflectionUtils {
-
+public class Reflector {
+    //================================================================================
+    // Properties
+    //================================================================================
+    private final DependencyManager dm;
+    private final ClassScanner scanner;
+    
     // ================================================================================
     // Constructors
     // ================================================================================
-    private ReflectionUtils() {
+    public Reflector(DependencyManager dm, ClassScanner scanner) {
+        this.dm = dm;
+        this.scanner = scanner;
     }
 
     // ================================================================================
     // Static Methods
     // ================================================================================
-
-    public static <T> T create(Class<?> klass, Object... args) {
+    public <T> T create(Class<?> klass, Object... args) {
         try {
-            return Reflect.onClass(klass.getName(), DependencyManager.instance().loader())
+            return Reflect.onClass(klass.getName(), dm.loader())
                 .create(args)
                 .get();
         } catch (ReflectException ex) {
@@ -37,9 +43,9 @@ public class ReflectionUtils {
         }
     }
 
-    public static <T> T create(String className, Object... args) {
+    public <T> T create(String className, Object... args) {
         try {
-            Class<?> klass = ClassScanner.findClass(className);
+            Class<?> klass = scanner.findClass(className);
             return create(klass, args);
         } catch (ClassNotFoundException | IllegalStateException ex) {
             Logger.error("Failed to create class {}:\n{}", className, ex);
@@ -47,7 +53,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static <T> T invokeFactory(Object obj, Object... args) {
+    public <T> T invokeFactory(Object obj, Object... args) {
         if (obj instanceof String s) {
             return invokeFactory(s, args);
         }
@@ -55,13 +61,13 @@ public class ReflectionUtils {
         return null;
     }
 
-    public static <T> T invokeFactory(String factoryName, Object... args) {
+    public <T> T invokeFactory(String factoryName, Object... args) {
         try {
-            Tuple2<Class<?>, String> mInfo = ReflectionUtils.getMethodInfo(factoryName);
+            Tuple2<Class<?>, String> mInfo = getMethodInfo(factoryName);
             if (mInfo.a() == null)
                 throw new IllegalArgumentException("Factory class not defined");
             Logger.trace("Invoking factory {} with args {}", mInfo, args);
-            return Reflect.onClass(mInfo.a().getName(), DependencyManager.instance().loader())
+            return Reflect.onClass(mInfo.a().getName(), dm.loader())
                 .call(mInfo.b(), args)
                 .get();
         } catch (Exception ex) {
@@ -70,7 +76,7 @@ public class ReflectionUtils {
         }
     }
 
-    public static Tuple3<Class<?>, String, Object> getFieldInfo(Object obj, boolean allowEnums) {
+    public Tuple3<Class<?>, String, Object> getFieldInfo(Object obj, boolean allowEnums) {
         if (obj instanceof String s) {
             try {
                 if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s))
@@ -81,7 +87,7 @@ public class ReflectionUtils {
 
                 Class<?> klass;
                 if (sClass == null ||
-                    (klass = ClassScanner.findClass(sClass)) == null ||
+                    (klass = scanner.findClass(sClass)) == null ||
                     (klass.isEnum() && !allowEnums))
                     return Tuple3.of(null, sField, null);
 
@@ -94,7 +100,7 @@ public class ReflectionUtils {
         return null;
     }
 
-    public static Tuple2<Class<?>, String> getMethodInfo(Object obj) {
+    public Tuple2<Class<?>, String> getMethodInfo(Object obj) {
         if (obj instanceof String s) {
             try {
                 if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s)) return null;
@@ -102,7 +108,7 @@ public class ReflectionUtils {
                 String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
                 String sMethod = s.substring(lastDot + 1);
                 Class<?> klass = null;
-                if (sClass != null) klass = ClassScanner.findClass(sClass);
+                if (sClass != null) klass = scanner.findClass(sClass);
                 return Tuple2.of(klass, sMethod);
             } catch (Exception ex) {
                 Logger.error("Failed to retrieve method info\n{}", ex);
@@ -111,6 +117,9 @@ public class ReflectionUtils {
         return null;
     }
 
+    //================================================================================
+    // Static Methods
+    //================================================================================
     public static void addToCollection(Object obj, String name, List<?> list) {
         // Retrieve collection via getter
         Collection<? super Object> collection;

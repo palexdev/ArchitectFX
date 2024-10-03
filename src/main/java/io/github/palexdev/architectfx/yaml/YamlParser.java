@@ -8,7 +8,7 @@ import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.Tuple2;
 import io.github.palexdev.architectfx.utils.Tuple3;
 import io.github.palexdev.architectfx.utils.VarArgsHandler;
-import io.github.palexdev.architectfx.utils.reflection.ReflectionUtils;
+import io.github.palexdev.architectfx.utils.reflection.Reflector;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
@@ -19,12 +19,14 @@ public class YamlParser {
     // Properties
     //================================================================================
     private final YamlDeserializer deserializer;
+    private final Reflector reflector;
 
     //================================================================================
     // Constructors
     //================================================================================
-    public YamlParser(YamlDeserializer deserializer) {
+    public YamlParser(YamlDeserializer deserializer, Reflector reflector) {
         this.deserializer = deserializer;
+        this.reflector = reflector;
     }
 
     //================================================================================
@@ -172,7 +174,7 @@ public class YamlParser {
         // Parse args and varargs
         Object[] args = parseArgs(copy);
         String factory = (String) copy.remove(FACTORY_TAG);
-        Object instance = (factory != null) ? ReflectionUtils.invokeFactory(factory, args) : ReflectionUtils.create(type, args);
+        Object instance = (factory != null) ? reflector.invokeFactory(factory, args) : reflector.create(type, args);
         if (instance != null) {
             Logger.debug("Parsing properties for complex type...");
             SequencedMap<String, Property> properties = parseProperties(copy);
@@ -196,7 +198,7 @@ public class YamlParser {
 
 
     private Tuple2<Type, Object> parseStaticField(Object obj, boolean allowEnum) {
-        Tuple3<Class<?>, String, Object> fInfo = ReflectionUtils.getFieldInfo(obj, allowEnum);
+        Tuple3<Class<?>, String, Object> fInfo = reflector.getFieldInfo(obj, allowEnum);
         if (fInfo == null || fInfo.a() == null) return null;
         return Tuple2.of(
             Type.getType(fInfo.c()),
@@ -231,5 +233,12 @@ public class YamlParser {
             .filter(String.class::isInstance)
             .map(o -> as(o, String.class))
             .orElse(null);
+    }
+
+    //================================================================================
+    // Getters
+    //================================================================================
+    public Reflector reflector() {
+        return reflector;
     }
 }

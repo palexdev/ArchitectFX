@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.CastUtils;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.geometry.HPos;
@@ -152,9 +151,6 @@ public class TestLoader {
 
     @Test
     void testLoadWithoutImports() throws IOException {
-        // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
-        DependencyManager.instance().cleanDeps();
-
         // Almost without
         // There are several classes named Color
         TestUtils.forceInitFX();
@@ -195,9 +191,6 @@ public class TestLoader {
 
     @Test
     void testThirdParty() throws IOException {
-        // We need to clean for this one because MFXComponents clashes with older versions of the MaterialFX
-        DependencyManager.instance().cleanDeps();
-
         // Almost without
         // There are several classes named Color
         TestUtils.forceInitFX();
