@@ -11,13 +11,13 @@ import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import io.github.palexdev.architectfx.utils.reflection.Reflector;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
+import org.joor.Reflect;
+import org.joor.ReflectException;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
-import static io.github.palexdev.architectfx.yaml.Tags.CONFIG_TAG;
-import static io.github.palexdev.architectfx.yaml.Tags.FACTORY_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.*;
 
 public class YamlDeserializer {
     //================================================================================
@@ -30,6 +30,7 @@ public class YamlDeserializer {
 
     private final List<Entity> loadQueue = new ArrayList<>();
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
+    private final Map<String, Object> controllerFields = new HashMap<>();
     private Entity current;
 
     //================================================================================
@@ -107,7 +108,7 @@ public class YamlDeserializer {
         current = null;
     }
 
-    public Parent buildSceneGraph(Document document) throws IOException {
+    public void buildSceneGraph() throws IOException {
         // The queue is top-down (flattened tree structure)
         for (Entity entity : queue()) {
             Object currentInstance = entity.instance();
@@ -117,7 +118,29 @@ public class YamlDeserializer {
             }
         }
         loadQueue.clear();
-        return (Parent) document.root().instance();
+    }
+
+    public void handleController(Document document) {
+        Object controller = document.controller();
+        if (controller != null) {
+            // Populate controller
+            for (Map.Entry<String, Object> e : controllerFields.entrySet()) {
+                String name = e.getKey();
+                Object value = e.getValue();
+                try {
+                    Reflect.on(controller).set(name, value);
+                } catch (ReflectException ex) {
+                    Logger.error("Failed to inject ID {} into controller", name);
+                }
+            }
+
+            // Call initialize if present
+            try {
+                Reflect.on(controller).call("initialize");
+            } catch (ReflectException ex) {
+                Logger.warn("Controller initialization failed because:\n{}", ex);
+            }
+        }
     }
 
     protected void initialize(Object instance, Collection<Property> properties) {
@@ -126,16 +149,22 @@ public class YamlDeserializer {
             String name = p.name();
             Logger.trace("Handling property: {}", p);
 
-            // Handle metadata (for now only .config is relevant)
-            if (name.equals(CONFIG_TAG)) {
-                List<Config> configs = asList(p.value(), Config.class);
-                Optional<Object> res = Optional.of(instance);
-                for (Config config : configs) {
-                    if (res.isEmpty())
-                        throw new IllegalStateException("Something went wrong, cannot run config on null instance");
-                    res = config.run(res.get());
+            // Handle metadata
+            switch (name) {
+                case CONFIG_TAG -> {
+                    List<Config> configs = asList(p.value(), Config.class);
+                    Optional<Object> res = Optional.of(instance);
+                    for (Config config : configs) {
+                        if (res.isEmpty())
+                            throw new IllegalStateException("Something went wrong, cannot run config on null instance");
+                        res = config.run(res.get());
+                    }
+                    continue;
                 }
-                continue;
+                case CONTROLLER_ID -> {
+                    controllerFields.put((String) p.value(), instance);
+                    continue;
+                }
             }
 
             switch (p.type()) {
@@ -195,7 +224,7 @@ public class YamlDeserializer {
     }
 
     private void attachToParent(Object pInstance, Object cInstance) throws IOException {
-        // TODO this may need to improved by allowing to add nodes in Parent classes too
+        // TODO this may need to be improved by allowing to add nodes in Parent classes too
         try {
             Pane pane = (Pane) pInstance;
             Node node = (Node) cInstance;
@@ -217,6 +246,7 @@ public class YamlDeserializer {
 
         loadQueue.clear();
         propertiesMap.clear();
+        controllerFields.clear();
 
         current = null;
     }

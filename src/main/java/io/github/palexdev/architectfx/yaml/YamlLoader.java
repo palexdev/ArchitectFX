@@ -8,7 +8,6 @@ import java.net.URL;
 import java.util.SequencedMap;
 
 import io.github.palexdev.architectfx.model.Document;
-import javafx.scene.Parent;
 import org.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -18,7 +17,7 @@ public class YamlLoader {
     //================================================================================
     // Methods
     //================================================================================
-    public Parent load(InputStream stream) throws IOException {
+    public Document load(InputStream stream) throws IOException {
         try {
             // Load YAML
             SequencedMap<String, Object> map = new Yaml().load(stream);
@@ -30,16 +29,18 @@ public class YamlLoader {
             // Initialization stage
             deserializer.initializeTree();
 
-            // Finally, build the scene graph
-            Parent root = deserializer.buildSceneGraph(document);
+            // Finally, build the scene graph and populate the controller if present
+            deserializer.buildSceneGraph();
+            deserializer.handleController(document);
+
             deserializer.dispose();
-            return root;
+            return document;
         } catch (Exception ex) {
             throw new IOException(ex);
         }
     }
 
-    public Parent load(File file) throws IOException {
+    public Document load(File file) throws IOException {
         try {
             Logger.debug("Loading file {}", file.toString());
             return load(new FileInputStream(file));
@@ -48,7 +49,7 @@ public class YamlLoader {
         }
     }
 
-    public Parent load(URL url) throws IOException {
+    public Document load(URL url) throws IOException {
         try {
             Logger.debug("Loading from URL {}", url);
             return load(url.openStream());

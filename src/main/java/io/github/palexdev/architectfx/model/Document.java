@@ -18,10 +18,10 @@
 
 package io.github.palexdev.architectfx.model;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 import io.github.palexdev.architectfx.utils.ImportsSet;
+import javafx.scene.Parent;
 
 public record Document(
     Entity root,
@@ -35,5 +35,12 @@ public record Document(
     //================================================================================
     public Document(Entity root, Object controller) {
         this(root, controller, new LinkedHashSet<>(), new ImportsSet());
+    }
+
+    //================================================================================
+    // Methods
+    //================================================================================
+    public Parent rootNode() {
+        return (Parent) root.instance();
     }
 }
