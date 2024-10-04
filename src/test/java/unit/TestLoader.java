@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.utils.CastUtils;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.geometry.HPos;
@@ -15,13 +16,14 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
+import org.joor.Reflect;
 import org.junit.jupiter.api.Test;
-import utils.TestUtils;
+import misc.TestUtils;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.as;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static utils.TestUtils.getProperty;
+import static misc.TestUtils.forceInitFX;
+import static org.junit.jupiter.api.Assertions.*;
+import static misc.TestUtils.getProperty;
 
 public class TestLoader {
 
@@ -63,7 +65,7 @@ public class TestLoader {
 
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        GridPane root = as(new YamlLoader().load(stream), GridPane.class);
+        GridPane root = as(new YamlLoader().load(stream).rootNode(), GridPane.class);
 
         assertEquals(Pos.CENTER, root.getAlignment());
         assertEquals(20.0, root.getHgap());
@@ -122,7 +124,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        GridPane root = as(new YamlLoader().load(stream), GridPane.class);
+        GridPane root = as(new YamlLoader().load(stream).rootNode(), GridPane.class);
 
         assertEquals(Pos.CENTER, root.getAlignment());
         assertEquals(20.0, root.getHgap());
@@ -173,7 +175,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        Object obj = new YamlLoader().load(stream);
+        Object obj = new YamlLoader().load(stream).rootNode();
         assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
         assertEquals(new Insets(10.0), getProperty(obj, "padding"));
         assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
@@ -215,7 +217,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        Object obj = new YamlLoader().load(stream);
+        Object obj = new YamlLoader().load(stream).rootNode();
         assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
         assertEquals(new Insets(10.0), getProperty(obj, "padding"));
         assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
@@ -230,5 +232,36 @@ public class TestLoader {
         List<String> styleClass = CastUtils.asList(getProperty(obj, "styleClass"), String.class);
         assertTrue(styleClass.contains("filled"));
         assertTrue(styleClass.contains("text"));
+    }
+
+    @Test
+    void testController() throws IOException {
+        String document = """
+            .imports: [
+              "javafx.scene.control.Label"
+            ]
+            
+            .controller: TestController
+            
+            VBox:
+              .cid: "box"
+              children:
+                - Label:
+                    .cid: "label1"
+                - Label:
+                    .cid: "label2"
+                - Button:
+                    .cid: "btn"
+                    .args: ["Change Text"]
+            """;
+
+        forceInitFX();
+        Document doc = new YamlLoader().load(new ByteArrayInputStream(document.getBytes()));
+        Object controller = doc.controller();
+        assertNotNull(controller);
+        assertNotNull(Reflect.on(controller).get("box"));
+        assertNotNull(Reflect.on(controller).get("label1"));
+        assertNotNull(Reflect.on(controller).get("label2"));
+        assertNotNull(Reflect.on(controller).get("btn"));
     }
 }

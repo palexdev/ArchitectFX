@@ -1,4 +1,4 @@
-package utils;
+package misc;
 
 import com.sun.javafx.application.PlatformImpl;
 import io.github.palexdev.architectfx.deps.DependencyManager;

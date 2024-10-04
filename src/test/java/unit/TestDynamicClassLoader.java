@@ -10,7 +10,7 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import utils.TestUtils;
+import misc.TestUtils;
 
 import static io.github.palexdev.architectfx.deps.MavenHelper.artifact;
 import static org.junit.jupiter.api.Assertions.*;

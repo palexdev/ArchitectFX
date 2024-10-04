@@ -1,4 +1,4 @@
-package utils;
+package misc;
 
 public class UserWrapper {
     private final User user;

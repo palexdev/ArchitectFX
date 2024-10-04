@@ -13,7 +13,7 @@ import org.yaml.snakeyaml.Yaml;
 import static io.github.palexdev.architectfx.yaml.Tags.CONFIG_TAG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static utils.TestUtils.parser;
+import static misc.TestUtils.parser;
 
 public class TestConfigs {
 

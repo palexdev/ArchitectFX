@@ -1,4 +1,4 @@
-package utils;
+package misc;
 
 public final class User {
     public static final String PLACEHOLDER = "@placeholder";

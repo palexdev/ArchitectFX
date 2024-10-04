@@ -10,15 +10,15 @@ import javafx.scene.Parent;
 import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
-import utils.User;
-import utils.UserWrapper;
+import misc.User;
+import misc.UserWrapper;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.asYamlMap;
 import static io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG;
 import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
 import static org.junit.jupiter.api.Assertions.*;
-import static utils.TestUtils.getProperty;
-import static utils.TestUtils.parser;
+import static misc.TestUtils.getProperty;
+import static misc.TestUtils.parser;
 
 public class TestMisc {
 
@@ -241,7 +241,7 @@ public class TestMisc {
                 - {.method: setSize, .args: [64.0]}
                 - {.method: wrapIcon, .args: [64.0, true, true], .transform: true}
             """;
-        Parent icon = new YamlLoader().load(new ByteArrayInputStream(document.getBytes()));
+        Parent icon = new YamlLoader().load(new ByteArrayInputStream(document.getBytes())).rootNode();
         assertNotNull(icon);
         assertEquals("MFXIconWrapper", icon.getClass().getSimpleName());
 
