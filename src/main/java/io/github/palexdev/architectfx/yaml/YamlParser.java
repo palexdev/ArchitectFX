@@ -166,15 +166,11 @@ public class YamlParser {
             return null;
         }
 
-        /*
-         * FIXME
-         *  By changing how .steps/.config works I messed up the factories
-         *  Expand the .factory metadata to be essentially a map of configs with the .name of the factory
-         */
-        // Parse args and varargs
+        // Parse args and create instance
         Object[] args = parseArgs(copy);
-        String factory = (String) copy.remove(FACTORY_TAG);
-        Object instance = (factory != null) ? reflector.invokeFactory(factory, args) : reflector.create(type, args);
+        Object instance = copy.containsKey(FACTORY_TAG) ? handleFactory(copy, args) : reflector.create(type, args);
+
+        // Init properties
         if (instance != null) {
             Logger.debug("Parsing properties for complex type...");
             SequencedMap<String, Property> properties = parseProperties(copy);
@@ -182,6 +178,26 @@ public class YamlParser {
             deserializer.initialize(instance, properties.values());
         }
         return instance;
+    }
+
+    protected Object handleFactory(SequencedMap<String, Object> map, Object[] args) {
+        Object oFactory = map.remove(FACTORY_TAG);
+        if (oFactory instanceof String s) {
+            return reflector.invokeFactory(s, args);
+        } else if (oFactory instanceof List<?> l) {
+            List<Config> steps = parseConfigs(l);
+            Optional<Object> instance = Optional.empty();
+            for (Config step : steps) {
+                instance = step.run(instance.orElse(null));
+            }
+
+            if (instance.isEmpty())
+                Logger.error("Factory block is probably invalid, no object was created...\n{}", oFactory);
+            return instance.orElse(null);
+        }
+
+        Logger.error("Factory is of unexpected type:\n{}", oFactory);
+        return null;
     }
 
     public Object[] parseArgs(SequencedMap<String, Object> map) {

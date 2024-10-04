@@ -1,8 +1,13 @@
 package unit;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.List;
 
 import io.github.palexdev.architectfx.enums.Type;
+import io.github.palexdev.architectfx.yaml.YamlLoader;
+import javafx.scene.Parent;
+import javafx.scene.paint.Color;
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 import utils.User;
@@ -12,6 +17,7 @@ import static io.github.palexdev.architectfx.utils.CastUtils.asYamlMap;
 import static io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG;
 import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
 import static org.junit.jupiter.api.Assertions.*;
+import static utils.TestUtils.getProperty;
 import static utils.TestUtils.parser;
 
 public class TestMisc {
@@ -213,5 +219,40 @@ public class TestMisc {
         User o1 = parsed.get(1);
         assertEquals(TYPE_TAG, o1.name());
         assertEquals(VALUE_TAG, o1.password());
+    }
+
+    @Test
+    void testFactory() throws IOException {
+        String document = """
+            .imports: [
+              "io.github.palexdev.materialfx.builders.control.IconBuilder",
+              "javafx.scene.paint.Color"
+            ]
+            
+            .deps: [
+              "io.github.palexdev:materialfx:11.17.0"
+            ]
+            
+            MFXIconWrapper:
+              .factory:
+                - {.method: IconBuilder.icon, .transform: true}
+                - {.method: setColor, .args: [Color.RED]}
+                - {.method: setDescription, .args: ["fas-user"]}
+                - {.method: setSize, .args: [64.0]}
+                - {.method: wrapIcon, .args: [64.0, true, true], .transform: true}
+            """;
+        Parent icon = new YamlLoader().load(new ByteArrayInputStream(document.getBytes()));
+        assertNotNull(icon);
+        assertEquals("MFXIconWrapper", icon.getClass().getSimpleName());
+
+        assertEquals(64.0, getProperty(icon, "size"));
+
+        Object fIcon = getProperty(icon, "icon");
+        assertNotNull(fIcon);
+        assertEquals("MFXFontIcon", fIcon.getClass().getSimpleName());
+
+        assertEquals(64.0, getProperty(fIcon, "size"));
+        assertEquals(Color.RED, getProperty(fIcon, "color"));
+        assertEquals("fas-user", getProperty(fIcon, "description"));
     }
 }

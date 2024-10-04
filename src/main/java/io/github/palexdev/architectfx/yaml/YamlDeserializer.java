@@ -17,6 +17,7 @@ import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.*;
 import static io.github.palexdev.architectfx.yaml.Tags.CONFIG_TAG;
+import static io.github.palexdev.architectfx.yaml.Tags.FACTORY_TAG;
 
 public class YamlDeserializer {
     //================================================================================
@@ -155,12 +156,12 @@ public class YamlDeserializer {
     }
 
     private Entity createEntity(Entity parent, Map.Entry<String, Object> entry) throws IOException {
-        // 1.Create the object and add entity to load queue (TODO factories/builders support)
+        // 1.Create the object and add entity to load queue
         String type = entry.getKey();
         SequencedMap<String, Object> map = asYamlMap(entry.getValue());
         Object[] args = parser.parseArgs(map);
         Logger.debug("Creating object of type {} with args:\n{}", type, Arrays.toString(args));
-        Object instance = reflector.create(type, args);
+        Object instance = map.containsKey(FACTORY_TAG) ? parser.handleFactory(map, args) : reflector.create(type, args);
         if (instance == null) {
             throw new IOException("Failed to instantiate object for type " + type);
         }

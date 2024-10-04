@@ -19,7 +19,7 @@ public class Tags {
     public static final String METHOD_TAG =       ".method";
     public static final String TRANSFORM_TAG =    ".transform";
     public static final String TYPE_TAG =         ".type";
-    public static final String VALUE_TAG =         ".val";
+    public static final String VALUE_TAG =        ".val";
     public static final String VARARGS_TAG =      ".varargs";
 
     //================================================================================
