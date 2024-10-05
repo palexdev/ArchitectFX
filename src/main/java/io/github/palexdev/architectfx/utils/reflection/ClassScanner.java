@@ -29,6 +29,7 @@ import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.ImportsSet;
+import io.github.palexdev.architectfx.yaml.Keyword;
 import org.tinylog.Logger;
 
 public class ClassScanner {
@@ -36,6 +37,36 @@ public class ClassScanner {
     // Static Properties
     //================================================================================
     public static final String RESOURCES_PREFIX = "@";
+    public static final Class<?>[] CORE_CLASS_CACHE = new Class<?>[]{
+        // ArchitectFX
+        Keyword.class,
+        // Wrappers
+        Boolean.class,
+        Byte.class,
+        Character.class,
+        Double.class,
+        Float.class,
+        Integer.class,
+        Long.class,
+        Short.class,
+        // "Utility"
+        Class.class,
+        Enum.class,
+        Objects.class,
+        Optional.class,
+        Math.class,
+        String.class,
+        System.class,
+        // Collections
+        Arrays.class,
+        Collections.class,
+        List.class,
+        Map.class,
+        Set.class
+    };
+    public static final String[] PROJECT_CLASSPATH = Arrays.stream(System.getProperty("java.class.path").split(";"))
+        .toArray(String[]::new);
+
     //================================================================================
     // Properties
     //================================================================================
@@ -50,6 +81,7 @@ public class ClassScanner {
     //================================================================================
     public ClassScanner(DependencyManager dm) {
         this.dm = dm;
+        addToScanCache(CORE_CLASS_CACHE);
     }
 
     //================================================================================
@@ -162,12 +194,19 @@ public class ClassScanner {
         }
     }
 
+    public void addToScanCache(Class<?>... classes) {
+        for (Class<?> klass : classes) {
+            searchCache.put(klass.getSimpleName(), klass);
+        }
+    }
+
     public void setImports(Collection<String> imports) {
         this.imports.clear();
         this.imports.addAll(imports);
     }
 
     public void dispose() {
+        ScanResult.closeAll();
         dm = null;
         imports.clear();
         scanCache.clear();
@@ -181,8 +220,7 @@ public class ClassScanner {
         ALL {
             @Override
             public ClassGraph build(DependencyManager dm) {
-                return new ClassGraph()
-                    .enableSystemJarsAndModules();
+                return new ClassGraph();
             }
         },
         DEPS {
@@ -195,9 +233,8 @@ public class ClassScanner {
                 }
 
                 return new ClassGraph()
-                    .enableSystemJarsAndModules()
                     .overrideClasspath(deps.toArray())
-                    .overrideClasspath(System.getProperty("java.class.path"));
+                    .overrideClasspath((Object[]) PROJECT_CLASSPATH);
             }
         },
         ;

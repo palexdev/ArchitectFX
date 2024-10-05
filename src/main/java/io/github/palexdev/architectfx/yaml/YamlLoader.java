@@ -5,25 +5,40 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.SequencedMap;
+import java.util.*;
 
 import io.github.palexdev.architectfx.model.Document;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import org.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {
+    //================================================================================
+    // Properties
+    //================================================================================
+    private YamlDeserializer deserializer;
+
+    //================================================================================
+    // Constructors
+    //================================================================================
+    public YamlLoader() {
+        deserializer = new YamlDeserializer();
+    }
 
     //================================================================================
     // Methods
     //================================================================================
     public Document load(InputStream stream) throws IOException {
+        if (deserializer == null) {
+            throw new IllegalStateException("This loader has been closed, use a new one");
+        }
+
         try {
             // Load YAML
             SequencedMap<String, Object> map = new Yaml().load(stream);
 
             // Pre-load document
-            YamlDeserializer deserializer = new YamlDeserializer();
             Document document = deserializer.parseDocument(map);
 
             // Initialization stage
@@ -34,6 +49,7 @@ public class YamlLoader {
             deserializer.handleController(document);
 
             deserializer.dispose();
+            deserializer = null;
             return document;
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -56,5 +72,11 @@ public class YamlLoader {
         } catch (Exception ex) {
             throw new IOException("Failed to load from URL", ex);
         }
+    }
+
+    public YamlLoader addToScanCache(Class<?>... classes) {
+        ClassScanner scanner = deserializer.getScanner();
+        scanner.addToScanCache(classes);
+        return this;
     }
 }
