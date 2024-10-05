@@ -1,5 +1,7 @@
 package io.github.palexdev.architectfx.yaml;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 import io.github.palexdev.architectfx.enums.Type;
@@ -8,6 +10,7 @@ import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.Tuple2;
 import io.github.palexdev.architectfx.utils.Tuple3;
 import io.github.palexdev.architectfx.utils.VarArgsHandler;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import io.github.palexdev.architectfx.utils.reflection.Reflector;
 import org.tinylog.Logger;
 
@@ -19,13 +22,15 @@ public class YamlParser {
     // Properties
     //================================================================================
     private YamlDeserializer deserializer;
+    private ClassScanner scanner;
     private Reflector reflector;
 
     //================================================================================
     // Constructors
     //================================================================================
-    public YamlParser(YamlDeserializer deserializer, Reflector reflector) {
+    public YamlParser(YamlDeserializer deserializer, ClassScanner scanner, Reflector reflector) {
         this.deserializer = deserializer;
+        this.scanner = scanner;
         this.reflector = reflector;
     }
 
@@ -117,7 +122,25 @@ public class YamlParser {
                 Logger.debug("Parsing complex value:\n{}", map);
                 yield parseComplexValue(map);
             }
-            case PRIMITIVE, WRAPPER, STRING -> {
+            case STRING -> {
+                String s = ((String) obj);
+                Logger.debug("Value {} is of type: {}\nChecking whether is is a resource...", s, Type.STRING);
+                if (s.startsWith(ClassScanner.RESOURCES_PREFIX)) {
+                    yield Optional.ofNullable(scanner.findResource(s.substring(1), ClassScanner.ScanScope.DEPS))
+                        .flatMap(u -> {
+                            try {
+                                return Optional.of(u.toURL());
+                            } catch (MalformedURLException ex) {
+                                Logger.error(ex);
+                            }
+                            return Optional.empty();
+                        })
+                        .map(URL::toExternalForm)
+                        .orElse(null);
+                }
+                yield s;
+            }
+            case PRIMITIVE, WRAPPER -> {
                 Logger.debug("Value {} is either of type {} or {} or {}",
                     Objects.toString(obj), Type.PRIMITIVE, Type.WRAPPER, Type.STRING
                 );
@@ -253,6 +276,7 @@ public class YamlParser {
 
     public void dispose() {
         deserializer = null;
+        scanner = null;
         reflector = null;
     }
 

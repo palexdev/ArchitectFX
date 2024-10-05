@@ -34,17 +34,21 @@ public class YamlDeserializer {
     private Entity current;
 
     //================================================================================
+    // Constructors
+    //================================================================================
+    public YamlDeserializer() {
+        dm = new DependencyManager();
+        scanner = new ClassScanner(dm);
+        reflector = new Reflector(dm, scanner);
+        parser = new YamlParser(this, scanner, reflector);
+    }
+
+    //================================================================================
     // Methods
     //================================================================================
     public Document parseDocument(SequencedMap<String, Object> map) throws IOException {
         if (map.isEmpty())
             throw new IOException("Failed to parse document because it appears to be empty");
-
-        // Initialize dependencies
-        dm = new DependencyManager();
-        scanner = new ClassScanner(dm);
-        reflector = new Reflector(dm, scanner);
-        parser = new YamlParser(this, reflector);
 
         // Handle dependencies if present
         List<String> dependencies = parser.parseDependencies(map);
@@ -254,6 +258,10 @@ public class YamlDeserializer {
     //================================================================================
     // Getters
     //================================================================================
+    public ClassScanner getScanner() {
+        return scanner;
+    }
+
     public List<Entity> queue() {
         return Collections.unmodifiableList(loadQueue);
     }

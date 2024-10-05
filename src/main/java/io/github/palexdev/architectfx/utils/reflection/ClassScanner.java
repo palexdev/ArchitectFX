@@ -19,10 +19,13 @@
 package io.github.palexdev.architectfx.utils.reflection;
 
 import java.io.File;
+import java.net.URI;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ResourceList;
 import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.utils.ImportsSet;
@@ -30,12 +33,17 @@ import org.tinylog.Logger;
 
 public class ClassScanner {
     //================================================================================
+    // Static Properties
+    //================================================================================
+    public static final String RESOURCES_PREFIX = "@";
+    //================================================================================
     // Properties
     //================================================================================
     private DependencyManager dm;
     private final Set<String> imports = new ImportsSet();
     private final Map<String, ClassInfoList> scanCache = new HashMap<>();
     private final Map<String, Class<?>> searchCache = new HashMap<>();
+    private final Map<String, URI> resourceCache = new HashMap<>();
 
     //================================================================================
     // Constructors
@@ -45,7 +53,7 @@ public class ClassScanner {
     }
 
     //================================================================================
-    // Static Methods
+    // Methods
     //================================================================================
 
     public Class<?> findClass(String className) throws ClassNotFoundException {
@@ -98,6 +106,32 @@ public class ClassScanner {
         Logger.trace("Found class: {}", fqName);
         searchCache.put(className, klass);
         return klass;
+    }
+
+    public URI findResource(String resource, ScanScope scope) {
+        // Check cache first
+        if (resourceCache.containsKey(resource)) return resourceCache.get(resource);
+
+        // Scan
+        ClassGraph cg = scope.build(dm);
+        try (ScanResult res = cg.scan()) {
+            Logger.trace("ClassGraph scan terminated...");
+            Pattern pattern = Pattern.compile(".*" + Pattern.quote(resource) + "$");
+            Logger.debug("Filtering resources by pattern: {}", pattern);
+            ResourceList resources = res.getResourcesMatchingPattern(pattern);
+            if (resources.size() == 1) {
+                URI uri = resources.getFirst().getURI();
+                resourceCache.put(resource, uri);
+                return uri;
+            }
+
+            if (resources.isEmpty()) {
+                Logger.warn("Resource {} not found", resource);
+            } else {
+                Logger.warn("More than one resource found for name {}", resource);
+            }
+            return null;
+        }
     }
 
     public ClassInfoList searchClasses(String className, ScanScope scope) {
