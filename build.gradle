@@ -28,6 +28,11 @@ dependencies {
     testImplementation "org.testfx:openjfx-monocle:$testfxMonocle"
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 javafx {
     // Workaround for Linux ARM64 because JavaFX is not updated as often for this architecture
     var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
