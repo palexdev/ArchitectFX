@@ -29,6 +29,7 @@ public class TestUtils {
         ClassScanner scanner = new ClassScanner(dm);
         return new YamlParser(
             new YamlDeserializer(),
+            scanner,
             new Reflector(dm, scanner)
         );
     }

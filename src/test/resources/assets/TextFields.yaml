@@ -38,7 +38,7 @@ GridPane:
   styleClass:
     - "grid-pane"
   stylesheets:
-    - "../css/TextFields.css"
+    - "@css/TextFields.css"
 
   columnConstraints: [
     { .type: ColumnConstraints, halignment: "HPos.CENTER" },
