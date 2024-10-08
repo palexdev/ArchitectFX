@@ -27,8 +27,8 @@ import org.yaml.snakeyaml.Yaml;
 /// documents from various sources
 /// - The actual work is done by two other core classes: the [YamlDeserializer] and the [YamlParser]
 /// 1) The _first phase_ parses document-specific properties, such as imports, dependencies, global configs,...
-/// Also, it parses and instantiates every "top-level" node in the tree structure (see [Entity])
-/// 2) This recursive instantiation produces a queue containing all the "top-level" nodes from the top/root.
+/// Also, it parses and instantiates every entity/node in the tree structure (see [Entity])
+/// 2) This recursive instantiation produces a queue containing all the entities from the top/root.
 /// It's basically a flat-view of the tree. The _second phase_ initializes every entity of the queue with the respective
 /// properties gathered during the previous step (emphasis on _gathered_, the properties are actually handled/parsed in
 /// this step). This phase is also responsible for collecting all the entities that need to be injected in the controller

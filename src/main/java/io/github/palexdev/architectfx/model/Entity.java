@@ -20,11 +20,15 @@ package io.github.palexdev.architectfx.model;
 
 import java.util.*;
 
+import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 
-/// Record which represent any "top-level" node in the YAML document. In simple terms, a "top-level" entity is a node which
-/// can have other entities in it, its `children`.
+/// Record which represent a structured node in the YAML document hierarchy. An entity may or may not contain other
+/// entities, its `children`.
+///
+/// Complex values as described by [Type#COMPLEX], are not considered entities (they are not part of the tree hierarchy)
+/// and can appear in any of the entity's properties.
 ///
 /// Any entity stores these list of information:
 /// 1) The parent entity, `null` in case it's the root entity

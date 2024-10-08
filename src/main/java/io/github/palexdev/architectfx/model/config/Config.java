@@ -19,7 +19,7 @@ import static io.github.palexdev.architectfx.yaml.Tags.METHOD_TAG;
 /// They can appear in different places:
 /// 1) At document-level, which means outside any node. These are considered global-configs
 /// 2) In factories, see [YamlParser#handleFactory(SequencedMap, Object\[\])]
-/// 3) In "top-level" nodes, can be very useful to run extra config on instantiated nodes, see [Entity]
+/// 3) In entities ([Entity]), can be very useful to run extra config on instantiated nodes
 /// 4) In complex values, which means that even properties which expect objects as values can have config steps,
 /// see [Type]
 ///

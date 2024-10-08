@@ -21,7 +21,7 @@ package io.github.palexdev.architectfx.model;
 import io.github.palexdev.architectfx.enums.Type;
 import org.tinylog.Logger;
 
-/// Record which represents any property of a "top-level" node, [Entity].
+/// Record which represents any property of an [Entity].
 ///
 /// A property is composed by three values:
 /// 1) The name, which usually if not always corresponds to a field in the entity instance
