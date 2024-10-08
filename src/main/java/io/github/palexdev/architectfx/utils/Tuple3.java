@@ -1,5 +1,6 @@
 package io.github.palexdev.architectfx.utils;
 
+/// A simple record, wrapper for three types of data, `A`, `B` and `C`.
 public record Tuple3<A, B, C>(A a, B b, C c) {
 
     //================================================================================

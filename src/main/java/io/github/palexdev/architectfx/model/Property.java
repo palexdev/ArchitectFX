@@ -21,19 +21,30 @@ package io.github.palexdev.architectfx.model;
 import io.github.palexdev.architectfx.enums.Type;
 import org.tinylog.Logger;
 
+/// Record which represents any property of a "top-level" node, [Entity].
+///
+/// A property is composed by three values:
+/// 1) The name, which usually if not always corresponds to a field in the entity instance
+/// 2) The type of data, expressed through the [Type] enum
+/// 3) The value parsed from the YAML document
 public record Property(String name, Type type, Object value) {
 
     //================================================================================
     // Static Methods
     //================================================================================
+
+    /// Equivalent to `new Property(...)`.
     public static Property of(String name, Type type, Object value) {
         return new Property(name, type, value);
     }
 
+    /// Determines the [Type] of the given `value`.
+    ///
+    /// The `name` parameter is irrelevant, useful just for logging.
     public static Type getPropertyType(String name, Object value) {
         Logger.trace("Determining property type for Name:{} Value:{}", name, value);
         Type type = Type.getType(value);
-        Logger.trace("Found type {} for property {}", type, name);
+        Logger.trace("Found type: {}", type);
         return type;
     }
 }

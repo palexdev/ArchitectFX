@@ -24,6 +24,10 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolvedArtifact;
 import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 
+/// Facade class which allows to download Maven artifacts through [Shrinkwrap](https://github.com/shrinkwrap/resolver).
+/// To be precise, this awesome third-party library also handles dependencies and transitivity.
+///
+/// @see DependencyManager
 public class MavenHelper {
     //================================================================================
     // Properties
@@ -40,6 +44,8 @@ public class MavenHelper {
     //================================================================================
     // Static Methods
     //================================================================================
+
+    /// Convenience method to combine a Maven artifact's group, name and version into a single string.
     public static String artifact(String group, String name, String version) {
         return group + ":" + name + ":" + version;
     }
@@ -47,12 +53,17 @@ public class MavenHelper {
     //================================================================================
     // Methods
     //================================================================================
+
+    /// Downloads a series of Maven artifacts given their coordinates and returns the retrieved artifacts and dependencies
+    /// as files. Transitivity is enabled.
     public File[] downloadFiles(String... artifacts) {
         return resolver.resolve(artifacts)
             .withTransitivity()
             .asFile();
     }
 
+    /// Downloads a series of Maven artifacts given their coordinates and returns the retrieved artifacts and dependencies
+    /// as [MavenResolvedArtifact]. Transitivity is enabled.
     public MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
         return resolver.resolve(artifacts)
             .withTransitivity()

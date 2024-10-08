@@ -23,6 +23,13 @@ import java.util.*;
 import io.github.palexdev.architectfx.utils.ImportsSet;
 import javafx.scene.Parent;
 
+/// Record which represents a YAML document.
+///
+/// Here's what it contains:
+/// 1) The root of the three structure
+/// 2) The controller if any was specified
+/// 3) The dependencies
+/// 4) The imports
 public record Document(
     Entity root,
     Object controller,
@@ -40,6 +47,8 @@ public record Document(
     //================================================================================
     // Methods
     //================================================================================
+
+    /// Convenience method to retrieve the root node from the entity.
     public Parent rootNode() {
         return (Parent) root.instance();
     }

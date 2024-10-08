@@ -20,7 +20,8 @@ package io.github.palexdev.architectfx.utils;
 
 import io.github.palexdev.architectfx.model.Entity;
 
-
+/// A simple utility to print an [Entity] and all of its children recursively to the console,
+/// useful for debugging.
 public class TreePrinter {
 
     //================================================================================

@@ -20,6 +20,8 @@ package io.github.palexdev.architectfx.utils;
 
 import java.util.TreeSet;
 
+/// A specialized [TreeSet] which sort Java imports as follows:
+/// fully qualified imports come first, then star imports, otherwise alphabetically.
 public class ImportsSet extends TreeSet<String> {
 
     //================================================================================

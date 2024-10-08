@@ -1,5 +1,6 @@
 package io.github.palexdev.architectfx.utils;
 
+/// A simple record, wrapper for two copied of data, `A` and `B`.
 public record Tuple2<A, B>(A a, B b) {
 
     //================================================================================

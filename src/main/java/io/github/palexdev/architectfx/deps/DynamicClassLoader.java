@@ -25,6 +25,11 @@ import java.util.Collection;
 
 import org.tinylog.Logger;
 
+/// A simple extension of [URLClassLoader] which by default extends the system class loader
+/// ([#getSystemClassLoader()]) and allows adding JARs even at runtime. This way you can load classes that are not even
+/// part of your project/environment.
+///
+/// @see DependencyManager
 public class DynamicClassLoader extends URLClassLoader {
 
     //================================================================================
@@ -38,6 +43,11 @@ public class DynamicClassLoader extends URLClassLoader {
         super(new URL[0], parent);
     }
 
+    //================================================================================
+    // Methods
+    //================================================================================
+
+    /// Delegates to [#addJar(File)]
     public DynamicClassLoader addJars(Collection<File> files) {
         for (File f : files) {
             addJar(f);
@@ -45,6 +55,7 @@ public class DynamicClassLoader extends URLClassLoader {
         return this;
     }
 
+    /// Delegates to [#addJar(File)]
     public DynamicClassLoader addJars(File... files) {
         for (File f : files) {
             addJar(f);
@@ -52,6 +63,7 @@ public class DynamicClassLoader extends URLClassLoader {
         return this;
     }
 
+    /// Expects a JAR file as input, which is converted to a [URL] and added to the class loader through [#addURL(URL)].
     public DynamicClassLoader addJar(File file) {
         try {
             URL jar = file.toURI().toURL();

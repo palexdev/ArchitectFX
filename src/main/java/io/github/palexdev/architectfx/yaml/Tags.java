@@ -1,6 +1,14 @@
 //@formatter:off
 package io.github.palexdev.architectfx.yaml;
 
+/// This class stores all the system's metadata tags.
+///
+/// These special Strings are crucial, they give valuable information to the system such as
+/// what type of data we are dealing with, markers for particular properties, extra steps to run...
+///
+/// Not only these are a way to standardize the format, but also offer a good improvement in performance
+/// (since tags tell the system what and how to do certain things, it doesn't need to figure it out by itself.
+/// That would lead to inconsistencies, unmaintainable code and probably bad performance).
 public class Tags {
     //================================================================================
     // Static Properties

@@ -18,12 +18,16 @@
 
 package io.github.palexdev.architectfx.utils;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+/// Utility class which serves mainly two purposes:
+///  1) Offers common cast operations that are needed by the deserialization process
+///  2) Hiding Java warnings because I know what I'm doing...right?
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class CastUtils {
 
@@ -35,6 +39,10 @@ public class CastUtils {
     //================================================================================
     // Static Methods
     //================================================================================
+
+    /// Casts the given object to the given type.
+    ///
+    /// @throws IllegalArgumentException if the object is not of the given type
     public static <T> T as(Object obj, Class<T> type) {
         if (type.isInstance(obj)) {
             return type.cast(obj);
@@ -42,26 +50,39 @@ public class CastUtils {
         throw new IllegalArgumentException("Expected type %s but found: %s".formatted(type, obj));
     }
 
+    /// Casts the given type to a generic enum type.
     public static Class<? extends Enum> asEnumClass(Class<?> klass) {
         return (Class<? extends Enum>) klass;
     }
 
+    /// Casts each element of the given list to the given type and then collects the results in a new list.
     public static <T> List<T> asList(List<?> src, Class<T> type) {
         return src.stream()
             .map(type::cast)
             .toList();
     }
 
+
+    /// Casts the given object to `List<Object>`.
+    ///
+    /// @throws IllegalArgumentException if the given object is not a list
     public static List<Object> asGenericList(Object obj) {
-        return asList(obj, Object.class);
+        if (!(obj instanceof List<?>))
+            throw new IllegalArgumentException("Expected list but found: %s".formatted(obj));
+        return (List<Object>) obj;
     }
 
+    /// If the given object is a list calls [#asList(List,Class)].
+    ///
+    /// @throws IllegalArgumentException if the given object is not a list
     public static <T> List<T> asList(Object obj, Class<T> type) {
         if (!(obj instanceof List<?>))
             throw new IllegalArgumentException("Expected list but found: %s".formatted(obj));
         return asList((List<?>) obj, type);
     }
 
+    /// Creates a new map by casting every key and value in the given map respectively to: `kType` and `vType`.
+    /// The `mapBuilder` parameter lets you decide what map type to create.
     public static <M extends Map<K, V>, K, V> M asMap(Map<?, ?> map, Class<K> kType, Class<V> vType, Supplier<M> mapBuilder) {
         return map.entrySet().stream()
             .collect(Collectors.toMap(
@@ -72,16 +93,21 @@ public class CastUtils {
             ));
     }
 
+    /// If the given object is a map, calls [#asMap(Map,Class,Class,Supplier)].
+    ///
+    /// @throws IllegalArgumentException if the given object is not a map
     public static <M extends Map<K, V>, K, V> M asMap(Object obj, Class<K> kType, Class<V> vType, Supplier<M> mapBuilder) {
         if (!(obj instanceof Map<?, ?>))
             throw new IllegalArgumentException("Expected map but found: %s".formatted(obj));
         return asMap(((Map<?, ?>) obj), kType, vType, mapBuilder);
     }
 
+    /// `SnakeYaml` uses maps of type [LinkedHashMap], this method casts the given object to a generic
+    /// [SequencedMap] of type `SequencedMap<String, Object>`.
     public static SequencedMap<String, Object> asYamlMap(Object obj) {
-        if (obj instanceof SequencedMap<?, ?>) {
-            return (SequencedMap<String, Object>) obj;
+        if (!(obj instanceof SequencedMap<?, ?>)) {
+            throw new IllegalArgumentException("Expected SequencedMap but found: %s".formatted(obj));
         }
-        throw new IllegalArgumentException("Expected SequencedMap but found: %s".formatted(obj));
+        return (SequencedMap<String, Object>) obj;
     }
 }

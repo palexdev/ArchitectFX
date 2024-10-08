@@ -20,6 +20,20 @@ package io.github.palexdev.architectfx.model;
 
 import java.util.*;
 
+import io.github.palexdev.architectfx.yaml.YamlDeserializer;
+import io.github.palexdev.architectfx.yaml.YamlLoader;
+
+/// Record which represent any "top-level" node in the YAML document. In simple terms, a "top-level" entity is a node which
+/// can have other entities in it, its `children`.
+///
+/// Any entity stores these list of information:
+/// 1) The parent entity, `null` in case it's the root entity
+/// 2) The type, which is just the key String parsed from YAML
+/// 3) The instance object. Every entity is created only once it's type has been instantiated. More on how the load
+/// process works here [YamlLoader] and here [YamlDeserializer]
+/// 4) Its properties stored in a map of type `[String -> Property]`, where keys are the property's name, and the values
+/// are records which represent the property
+/// 5) Its `children` as a List of entities
 public record Entity(
     Entity parent,
     String type,
@@ -38,10 +52,12 @@ public record Entity(
     // Methods
     //================================================================================
 
+    /// Convenience method to add a property to the properties map.
     public void addProperty(Property property) {
         properties.put(property.name(), property);
     }
 
+    /// @return an `Optional` that may or may not wrap a property for the given name
     public Optional<Property> getProperty(String name) {
         return Optional.ofNullable(properties.get(name));
     }
@@ -49,8 +65,6 @@ public record Entity(
     //================================================================================
     // Overridden Methods
     //================================================================================
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
