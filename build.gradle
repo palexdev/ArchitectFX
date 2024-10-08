@@ -21,7 +21,7 @@ dependencies {
     implementation "org.tinylog:tinylog-impl:$tinylog"
     //implementation "org.tinylog:slf4j-tinylog:$tinylog"
 
-    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation platform("org.junit:junit-bom:$junit")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation "org.testfx:testfx-core:$testfx"
     testImplementation "org.testfx:testfx-junit5:$testfx"
@@ -29,6 +29,8 @@ dependencies {
 }
 
 java {
+    sourceCompatibility = "$jdk"
+    targetCompatibility = "$jdk"
     withJavadocJar()
     withSourcesJar()
 }
@@ -49,6 +51,14 @@ test {
     ]
 
     systemProperty('test.environment', 'true')
+}
+
+tasks.withType(Javadoc) {
+    javadocTool.set(
+            javaToolchains.javadocToolFor(
+                    java.toolchain
+            )
+    )
 }
 
 tasks.register('testRun', JavaExec) {
