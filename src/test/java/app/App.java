@@ -13,12 +13,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         URL res = Launcher.class.getClassLoader().getResource("assets/TextFields.yaml");
-        Parent root = new YamlLoader().load(res);
-
-        // Stylesheets are not yet supported
-        root.getStylesheets().add(
-            Launcher.class.getClassLoader().getResource("assets/TextFields.css").toExternalForm()
-        );
+        Parent root = new YamlLoader().load(res).rootNode();
 
         Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);
