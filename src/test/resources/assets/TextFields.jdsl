@@ -3,7 +3,6 @@
 # The following imports are not really necessary, I'm adding them just to test the parser
 # Although it has to be said, adding imports makes the parsing much faster
 # because we do not have to rely on the ClassGraph scan
-# (Improve this! especially now that we have DynamicClassLoader)
 .imports: [
   "io.github.palexdev.materialfx.controls.*",
   "javafx.geometry.*",
@@ -19,7 +18,7 @@
 # There can be only one controller per view, special handle like for imports
 .controller: "TextFieldsController"
 
-# Global config, in this case setting a global theme
+# Global config, in this case, setting a global theme
 # Needless to say, global configs only support static methods and fields
 .config:
   - {.method: "UserAgentBuilder.builder", .transform: true}
