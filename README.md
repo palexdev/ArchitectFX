@@ -19,7 +19,14 @@ I absolutely **despise** XML in any of its forms.
 I know that XML is technically better for tree structures, but I don't care one bit. I really can't stand its syntax. Not only that, I think XML parsing is stupidly complicated, probably because it's **old**.
 
 Which is why this project currently uses YAML instead (I also did try TOML and I quite like it but [this](https://github.com/toml-lang/toml/pull/904) feature is critial but not yet available).  
-At this stage, the format is evolving constantly. Documentation is still not available, but examples are available as test assets.  
+At this stage, the format is evolving constantly.
+
+After quite some time, I decided to name my format JDSL (with extension .jdsl) which stands for
+Java Deserialization Language (yeah it's the best I came up with, don't judge lol).  
+For now, documentation is not really available because I don't know yet what would be the best way to document a file
+format such as this, and also because soon there should be a JSON schema available for it at
+[SchemaStore](https://schemastore.org).
+
 ## Current Goals
 
 In terms of functionality, the current goal is not to create an exact copy of SceneBuilder...yet.  
