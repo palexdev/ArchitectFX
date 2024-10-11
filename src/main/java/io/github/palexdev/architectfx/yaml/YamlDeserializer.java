@@ -66,8 +66,9 @@ public class YamlDeserializer {
     /// But most importantly, calls [#createEntity(Entity, Map.Entry)] to recursively instantiate the tree nodes before
     /// returning the document.
     ///
+    /// If the document appears to be malformed, issues a warning but still tries to parse it.
+    ///
     /// @throws IOException if the YAML map is empty
-    /// @implNote issues a warning if the document seems malformed, but still tries to parse it
     public Document parseDocument(SequencedMap<String, Object> map) throws IOException {
         if (map.isEmpty())
             throw new IOException("Failed to parse document because it appears to be empty");

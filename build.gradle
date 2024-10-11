@@ -59,6 +59,7 @@ tasks.withType(Javadoc) {
                     java.toolchain
             )
     )
+    options.addBooleanOption('Xdoclint:all,-missing', true)
 }
 
 tasks.register('testRun', JavaExec) {
