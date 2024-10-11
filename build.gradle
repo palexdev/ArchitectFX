@@ -63,5 +63,5 @@ tasks.withType(Javadoc) {
 
 tasks.register('testRun', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'app.TestApp'
+    mainClass = 'app.Launcher'
 }
