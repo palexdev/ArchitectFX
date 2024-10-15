@@ -30,16 +30,14 @@ import org.jboss.shrinkwrap.resolver.api.maven.MavenResolverSystem;
 /// @see DependencyManager
 public class MavenHelper {
     //================================================================================
-    // Properties
+    // Static Properties
     //================================================================================
-    private final MavenResolverSystem resolver;
+    private static final MavenResolverSystem resolver = Maven.resolver();
 
     //================================================================================
     // Constructors
     //================================================================================
-    public MavenHelper() {
-        this.resolver = Maven.resolver();
-    }
+    private MavenHelper() {}
 
     //================================================================================
     // Static Methods
@@ -50,13 +48,9 @@ public class MavenHelper {
         return group + ":" + name + ":" + version;
     }
 
-    //================================================================================
-    // Methods
-    //================================================================================
-
     /// Downloads a series of Maven artifacts given their coordinates and returns the retrieved artifacts and dependencies
     /// as files. Transitivity is enabled.
-    public File[] downloadFiles(String... artifacts) {
+    public static File[] downloadFiles(String... artifacts) {
         return resolver.resolve(artifacts)
             .withTransitivity()
             .asFile();
@@ -64,7 +58,7 @@ public class MavenHelper {
 
     /// Downloads a series of Maven artifacts given their coordinates and returns the retrieved artifacts and dependencies
     /// as [MavenResolvedArtifact]. Transitivity is enabled.
-    public MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
+    public static MavenResolvedArtifact[] downloadArtifacts(String... artifacts) {
         return resolver.resolve(artifacts)
             .withTransitivity()
             .asResolvedArtifact();

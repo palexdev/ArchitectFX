@@ -39,7 +39,6 @@ public class DependencyManager {
     // Properties
     //================================================================================
     private final Set<File> dependencies = new HashSet<>();
-    private final MavenHelper mavenHelper = new MavenHelper();
     private DynamicClassLoader classLoader = new DynamicClassLoader();
 
     //================================================================================
@@ -55,7 +54,7 @@ public class DependencyManager {
     /// Downloads the given Maven coordinates as Files and stores them.
     public DependencyManager addDeps(String... artifacts) {
         if (artifacts.length != 0) {
-            File[] deps = mavenHelper.downloadFiles(artifacts);
+            File[] deps = MavenHelper.downloadFiles(artifacts);
             Collections.addAll(dependencies, deps);
             refresh();
         }
