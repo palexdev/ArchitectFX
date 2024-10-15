@@ -111,6 +111,7 @@ public class DependencyManager {
     }
 
     public DynamicClassLoader loader() {
+        if (needsRefresh()) refresh(false);
         return classLoader;
     }
 
