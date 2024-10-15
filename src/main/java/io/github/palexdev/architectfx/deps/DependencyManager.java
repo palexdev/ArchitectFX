@@ -31,12 +31,9 @@ import java.util.Set;
 /// Through various `add` methods, you can specify Maven coordinates as inputs (you can also use [MavenHelper#artifact(String, String, String)]),
 /// which are downloaded by the [MavenHelper] and stored here as Files in a Set.
 ///
-/// Every time the dependencies change, one must call the [#refresh(boolean)] method to create a new [DynamicClassLoader]
-/// with the updated dependencies.
-///
 /// When developing an app that uses this system to load views from YAML documents, such functionality can be considered superfluous.
 /// However, it can still be quite useful in some contexts. You can load a view without even adding the dependency to
-/// you app, mind-blowing. And of course, this is still an important sub-system in the road to _the new Scene Builder._
+/// your app, mind-blowing. And of course, this is still an important sub-system in the road to _the new Scene Builder._
 public class DependencyManager {
     //================================================================================
     // Properties
@@ -44,7 +41,6 @@ public class DependencyManager {
     private final Set<File> dependencies = new HashSet<>();
     private final MavenHelper mavenHelper = new MavenHelper();
     private DynamicClassLoader classLoader = new DynamicClassLoader();
-    private boolean needsRefresh = false;
 
     //================================================================================
     // Methods
@@ -57,50 +53,33 @@ public class DependencyManager {
     }
 
     /// Downloads the given Maven coordinates as Files and stores them.
-    ///
-    /// After such operation, the [#needsRefresh] flag is going to be true, which means that [#refresh(boolean)] must be
-    /// called for the changes to take effect.
     public DependencyManager addDeps(String... artifacts) {
         if (artifacts.length != 0) {
             File[] deps = mavenHelper.downloadFiles(artifacts);
             Collections.addAll(dependencies, deps);
-            needsRefresh = true;
+            refresh();
         }
         return this;
     }
 
     /// Adds the given Files to the dependencies Set.
-    ///
-    /// After such operation, the [#needsRefresh] flag is going to be true, which means that [#refresh(boolean)] must be
-    /// called for the changes to take effect.
     public DependencyManager addDeps(File... deps) {
         Collections.addAll(dependencies, deps);
-        needsRefresh = true;
+        refresh();
         return this;
     }
 
     /// Removes all the dependencies.
-    ///
-    /// After such operation, the [#needsRefresh] flag is going to be true, which means that [#refresh(boolean)] must be
-    /// called for the changes to take effect.
     public DependencyManager cleanDeps() {
         dependencies.clear();
-        needsRefresh = true;
+        refresh();
         return this;
     }
 
-    /// This method is responsible for creating a new [DynamicClassLoader] when:
-    /// 1) The [#needsRefresh] flag is true
-    /// 2) Or if the `force` parameter is true
-    ///
-    /// At the end, the [#needsRefresh] flag is reset to false.
-    public DependencyManager refresh(boolean force) {
-        if (needsRefresh || force) {
-            classLoader = new DynamicClassLoader();
-            classLoader.addJars(dependencies);
-        }
-        needsRefresh = false;
-        return this;
+    /// This method is responsible for creating a new [DynamicClassLoader] with all the dependencies in [#dependencies()].
+    protected void refresh() {
+        classLoader = new DynamicClassLoader();
+        classLoader.addJars(dependencies);
     }
 
     //================================================================================
@@ -111,11 +90,6 @@ public class DependencyManager {
     }
 
     public DynamicClassLoader loader() {
-        if (needsRefresh()) refresh(false);
         return classLoader;
-    }
-
-    public boolean needsRefresh() {
-        return needsRefresh;
     }
 }

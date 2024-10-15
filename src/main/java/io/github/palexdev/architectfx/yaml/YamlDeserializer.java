@@ -78,7 +78,6 @@ public class YamlDeserializer {
         if (!dependencies.isEmpty()) {
             Logger.info("Found {} dependencies:\n{}", dependencies.size(), dependencies);
             dm.addDeps(dependencies.toArray(String[]::new));
-            dm.refresh(false);
         }
 
         // Handle imports if present
