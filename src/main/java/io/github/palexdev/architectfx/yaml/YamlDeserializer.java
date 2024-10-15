@@ -2,6 +2,7 @@ package io.github.palexdev.architectfx.yaml;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.deps.DynamicClassLoader;
@@ -10,6 +11,7 @@ import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Entity;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.config.Config;
+import io.github.palexdev.architectfx.utils.Async;
 import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import io.github.palexdev.architectfx.utils.reflection.Reflector;
 import javafx.scene.Node;
@@ -69,7 +71,7 @@ public class YamlDeserializer {
     /// If the document appears to be malformed, issues a warning but still tries to parse it.
     ///
     /// @throws IOException if the YAML map is empty
-    public Document parseDocument(SequencedMap<String, Object> map) throws IOException {
+    public Document parseDocument(SequencedMap<String, Object> map) throws Exception {
         if (map.isEmpty())
             throw new IOException("Failed to parse document because it appears to be empty");
 
@@ -88,26 +90,30 @@ public class YamlDeserializer {
         }
 
         // Handle the controller if present
-        Object controller = null;
-        try {
-            String name = parser.parseController(map);
-            if (name != null) {
-                Logger.debug("Trying to instantiate the controller {}", name);
-                Class<?> klass = scanner.findClass(name);
-                controller = reflector.create(klass);
+        CompletableFuture<Object> controller = Async.call(() -> {
+            try {
+                String name = parser.parseController(map);
+                if (name != null) {
+                    Logger.debug("Trying to instantiate the controller {}", name);
+                    Class<?> klass = scanner.findClass(name);
+                    return reflector.create(klass);
+                }
+            } catch (IllegalArgumentException | ClassNotFoundException ex) {
+                Logger.error("Failed to instantiate the controller because:\n{}", ex);
             }
-        } catch (IllegalArgumentException | ClassNotFoundException ex) {
-            Logger.error("Failed to instantiate the controller because:\n{}", ex);
-        }
+            return null;
+        });
 
         // Handle global configs if present
-        Optional<Object> cObj = Optional.empty();
-        List<Config> globalConfigs = Optional.ofNullable(map.remove(CONFIG_TAG))
-            .map(parser::parseConfigs)
-            .orElseGet(List::of);
-        for (Config c : globalConfigs) {
-            cObj = c.run(cObj.orElse(null));
-        }
+        Async.run(() -> {
+            Optional<Object> cObj = Optional.empty();
+            List<Config> globalConfigs = Optional.ofNullable(map.remove(CONFIG_TAG))
+                .map(parser::parseConfigs)
+                .orElseGet(List::of);
+            for (Config c : globalConfigs) {
+                cObj = c.run(cObj.orElse(null));
+            }
+        });
 
         if (map.size() > 1)
             Logger.warn(
@@ -117,7 +123,7 @@ public class YamlDeserializer {
 
         // Create entities recursive
         Entity root = createEntity(null, map.firstEntry());
-        Document document = new Document(root, controller);
+        Document document = new Document(root, controller.get());
         document.dependencies().addAll(dependencies);
         document.imports().addAll(imports);
         return document;
