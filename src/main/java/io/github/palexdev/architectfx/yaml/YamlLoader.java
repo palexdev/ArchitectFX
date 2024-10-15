@@ -76,7 +76,7 @@ public class YamlLoader {
             deserializer.initializeTree();
 
             // Finally, build the scene graph and populate the controller if present
-            deserializer.buildTree();
+            deserializer.linkTree();
             deserializer.handleController(document);
 
             deserializer.dispose();
