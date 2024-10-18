@@ -2,7 +2,6 @@ package io.github.palexdev.architectfx.enums;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import io.github.palexdev.architectfx.yaml.Keyword;
 import org.tinylog.Logger;
@@ -38,15 +37,15 @@ public enum Type {
     UNKNOWN,
     ;
 
-    private static final Set<Class<?>> wrappers = Set.of(
-        Boolean.class,
-        Character.class,
-        Byte.class,
-        Short.class,
-        Integer.class,
-        Long.class,
-        Float.class,
-        Double.class
+    private static final Map<Class<?>, Class<?>> wrappers = Map.of(
+        Boolean.class, boolean.class,
+        Character.class, char.class,
+        Byte.class, byte.class,
+        Short.class, short.class,
+        Integer.class, int.class,
+        Long.class, long.class,
+        Float.class, float.class,
+        Double.class, double.class
     );
 
     /// Delegates to [#getType(Class)].
@@ -60,7 +59,7 @@ public enum Type {
     public static Type getType(Class<?> klass) {
         return switch (klass) {
             case Class<?> k when k.isPrimitive() -> PRIMITIVE;
-            case Class<?> k when wrappers.contains(k) -> WRAPPER;
+            case Class<?> k when wrappers.containsKey(k) -> WRAPPER;
             case Class<?> k when k == String.class -> STRING;
             case Class<?> k when k.isEnum() -> ENUM;
             case Class<?> k when Map.class.isAssignableFrom(k) -> COMPLEX;
@@ -81,5 +80,10 @@ public enum Type {
     /// legal in YAML.
     public static boolean isMetadata(String val) {
         return val.startsWith(".");
+    }
+
+    /// @return the given class' corresponding primitive time, or `null` if that is not a wrapper type
+    public static Class<?> primitiveOf(Class<?> klass) {
+        return wrappers.get(klass);
     }
 }
