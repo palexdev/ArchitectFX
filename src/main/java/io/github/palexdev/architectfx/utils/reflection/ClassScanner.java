@@ -299,7 +299,7 @@ public class ClassScanner {
             public ClassGraph build(DependencyManager dm) {
                 Set<File> deps = dm.dependencies();
                 if (deps.isEmpty()) {
-                    Logger.error("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
+                    Logger.warn("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
                     return ALL.build(dm);
                 }
 

@@ -24,16 +24,16 @@ import io.github.palexdev.architectfx.enums.Type;
 import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 
-/// Record which represent a structured node in the YAML document hierarchy. An entity may or may not contain other
+/// Record that represents a structured node in the YAML document hierarchy. An entity may or may not contain other
 /// entities, its `children`.
 ///
-/// Complex values as described by [Type#COMPLEX], are not considered entities (they are not part of the tree hierarchy)
+/// Complex values, as described by [Type#COMPLEX], are not considered entities (they are not part of the tree hierarchy)
 /// and can appear in any of the entity's properties.
 ///
-/// Any entity stores these list of information:
+/// Any entity stores the following list of information:
 /// 1) The parent entity, `null` in case it's the root entity
 /// 2) The type, which is just the key String parsed from YAML
-/// 3) The instance object. Every entity is created only once it's type has been instantiated. More on how the load
+/// 3) The instance object. Every entity is created only once its type has been instantiated. More on how the load
 /// process works here [YamlLoader] and here [YamlDeserializer]
 /// 4) Its properties stored in a map of type `[String -> Property]`, where keys are the property's name, and the values
 /// are records which represent the property

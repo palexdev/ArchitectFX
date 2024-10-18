@@ -42,7 +42,7 @@ public class Reflector {
     /// @see Reflect
     public <T> T create(Class<?> klass, Object... args) {
         try {
-            return Reflect.onClass(klass.getName(), dm.loader())
+            return Reflect.onClass(klass)
                 .create(args)
                 .get();
         } catch (ReflectException ex) {
