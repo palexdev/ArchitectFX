@@ -1,5 +1,7 @@
 package io.github.palexdev.architectfx.utils;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.*;
 
 public class Async {
@@ -17,12 +19,12 @@ public class Async {
     // Static Methods
     //================================================================================
 
-    /// Executes the given action in a [ExecutorService] which uses virtual threads.
+    /// Executes the given action in an [ExecutorService] which uses virtual threads.
     public static CompletableFuture<Void> run(Runnable action) {
         return CompletableFuture.runAsync(action, executor);
     }
 
-    /// Executes the given action in a [ExecutorService] which uses virtual threads, and returns the result of the
+    /// Executes the given action in an [ExecutorService] which uses virtual threads and returns the result of the
     /// action once finished.
     public static <T> CompletableFuture<T> call(Callable<T> action) {
         return CompletableFuture.supplyAsync(() -> {
@@ -32,5 +34,18 @@ public class Async {
                 throw new CompletionException(ex);
             }
         }, executor);
+    }
+
+    /// Sends all the given actions to an [ExecutorService] which uses virtual threads and returns the result of
+    /// [ExecutorService#invokeAll(Collection)].
+    public static <T> List<Future<T>> callAll(Collection<Callable<T>> actions) throws InterruptedException {
+        return executor.invokeAll(actions);
+    }
+
+    /// Calls [Future#get()] on all the given actions, thus making the current thread wait until all features are done.
+    public static <T> void await(Collection<Future<T>> actions) throws InterruptedException, ExecutionException {
+        for (Future<?> future : actions) {
+            future.get();
+        }
     }
 }
