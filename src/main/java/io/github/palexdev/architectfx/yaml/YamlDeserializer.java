@@ -2,7 +2,10 @@ package io.github.palexdev.architectfx.yaml;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.deps.DynamicClassLoader;
@@ -12,8 +15,10 @@ import io.github.palexdev.architectfx.model.Entity;
 import io.github.palexdev.architectfx.model.Property;
 import io.github.palexdev.architectfx.model.config.Config;
 import io.github.palexdev.architectfx.utils.Async;
+import io.github.palexdev.architectfx.utils.Tuple2;
 import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import io.github.palexdev.architectfx.utils.reflection.Reflector;
+import io.github.palexdev.architectfx.yaml.YamlTreeIterator.TreeEntry;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import org.joor.Reflect;
@@ -42,20 +47,22 @@ public class YamlDeserializer {
     private ClassScanner scanner;
     private Reflector reflector;
     private YamlParser parser;
+    private final boolean parallel;
 
     private final List<Entity> loadQueue = new ArrayList<>();
-    private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new HashMap<>();
+    private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new IdentityHashMap<>();
     private final Map<String, Object> controllerFields = new HashMap<>();
     private Entity current;
 
     //================================================================================
     // Constructors
     //================================================================================
-    public YamlDeserializer() {
+    public YamlDeserializer(boolean parallel) {
         dm = new DependencyManager();
         scanner = new ClassScanner(dm);
         reflector = new Reflector(dm, scanner);
         parser = new YamlParser(this, scanner, reflector);
+        this.parallel = parallel;
     }
 
     //================================================================================
@@ -65,12 +72,14 @@ public class YamlDeserializer {
     /// Entry point and first phase of the deserialization process.
     ///
     /// This is responsible for parsing the dependencies, the imports, global configs and instantiating the controller.
-    /// But most importantly, calls [#buildTree(Entity, Map.Entry)] to recursively instantiate the tree nodes before
-    /// returning the document.
+    /// But most importantly, instantiates the tree nodes before returning the document. Depending on the configuration
+    /// these action may be executed sequentially or asynchronously.
     ///
     /// If the document appears to be malformed, issues a warning but still tries to parse it.
     ///
     /// @throws IOException if the YAML map is empty
+    /// @see #buildTree(Entity, Entry)
+    /// @see #buildTreeConcurrent(Entry)
     public Document parseDocument(SequencedMap<String, Object> map) throws Exception {
         if (map.isEmpty())
             throw new IOException("Failed to parse document because it appears to be empty");
@@ -90,30 +99,33 @@ public class YamlDeserializer {
         }
 
         // Handle the controller if present
-        CompletableFuture<Object> controller = Async.call(() -> {
-            try {
-                String name = parser.parseController(map);
-                if (name != null) {
-                    Logger.debug("Trying to instantiate the controller {}", name);
-                    Class<?> klass = scanner.findClass(name);
-                    return reflector.create(klass);
-                }
-            } catch (IllegalArgumentException | ClassNotFoundException ex) {
-                Logger.error("Failed to instantiate the controller because:\n{}", ex);
-            }
-            return null;
-        });
+        CompletableFuture<Object> controller = parser.parseController(map)
+            .map(name -> {
+                Callable<Object> task = () -> {
+                    try {
+                        Logger.debug("Trying to instantiate the controller {}", name);
+                        Class<?> klass = scanner.findClass(name);
+                        return reflector.create(klass);
+                    } catch (IllegalArgumentException | ClassNotFoundException ex) {
+                        Logger.error("Failed to instantiate the controller because:\n{}", ex);
+                    }
+                    return null;
+                };
+                return parallel ? Async.call(task) : Async.wrap(task);
+            })
+            .orElse(Async.EMPTY_FUTURE);
 
         // Handle global configs if present
-        Async.run(() -> {
+        Optional<Object> _tags = Optional.ofNullable(map.remove(CONFIG_TAG));
+        Runnable configsTask = () -> {
             Optional<Object> cObj = Optional.empty();
-            List<Config> globalConfigs = Optional.ofNullable(map.remove(CONFIG_TAG))
-                .map(parser::parseConfigs)
-                .orElseGet(List::of);
+            List<Config> globalConfigs = _tags.map(parser::parseConfigs).orElseGet(List::of);
             for (Config c : globalConfigs) {
                 cObj = c.run(cObj.orElse(null));
             }
-        });
+        };
+        if (parallel) Async.run(configsTask);
+        else configsTask.run();
 
         if (map.size() > 1)
             Logger.warn(
@@ -122,7 +134,7 @@ public class YamlDeserializer {
             );
 
         // Create entities recursive
-        Entity root = buildTree(null, map.firstEntry());
+        Entity root = parallel ? buildTreeConcurrent(map.firstEntry()) : buildTree(null, map.firstEntry());
         Document document = new Document(root, controller.get());
         document.dependencies().addAll(dependencies);
         document.imports().addAll(imports);
@@ -130,7 +142,7 @@ public class YamlDeserializer {
     }
 
     /// This should be called after [#parseDocument(SequencedMap)], which means after the tree nodes have been
-    /// instantiated and queued for initialization by [#buildTree(Entity, Map.Entry)].
+    /// instantiated and queued for initialization by [#buildTree(Entity, Entry)].
     ///
     /// This method is the second phase described here [YamlLoader]. All the properties previously collected for an
     /// [Entity] in the queue are parsed by [YamlParser#parseProperties(SequencedMap)] and then set on the entity's instance
@@ -148,8 +160,8 @@ public class YamlDeserializer {
 
     /// This method should be called after [#initializeTree()]. It's the third phase described here [YamlLoader].
     ///
-    /// This is responsible for building the tree structure from the load queue generated by [#buildTree(Entity, Map.Entry)]
-    /// using the [Entity#parent()] information.
+    /// This is responsible for building the tree structure from the load queue generated during the tree instantiation
+    /// phase using the [Entity#parent()] information.
     ///
     /// At the end of this operation the load queue is cleared.
     public void linkTree() throws IOException {
@@ -173,7 +185,7 @@ public class YamlDeserializer {
         Object controller = document.controller();
         if (controller != null) {
             // Populate controller
-            for (Map.Entry<String, Object> e : controllerFields.entrySet()) {
+            for (Entry<String, Object> e : controllerFields.entrySet()) {
                 String name = e.getKey();
                 Object value = e.getValue();
                 try {
@@ -252,9 +264,9 @@ public class YamlDeserializer {
     ///
     /// At the end, the remaining properties are saved for later in a map `[Entity -> Properties]`. These will be handled
     /// at initialization time ([#initializeTree()]).
-    /// 
-    /// @see YamlParser#handleFactory(SequencedMap, Object[]) 
-    private Entity buildTree(Entity parent, Map.Entry<String, Object> entry) throws IOException {
+    ///
+    /// @see YamlParser#handleFactory(SequencedMap, Object[])
+    private Entity buildTree(Entity parent, Entry<String, Object> entry) throws IOException {
         // 1.Create the object and add entity to load queue
         String type = entry.getKey();
         SequencedMap<String, Object> map = asYamlMap(entry.getValue());
@@ -293,6 +305,92 @@ public class YamlDeserializer {
         return entity;
     }
 
+    /// The most heavy operation when loading a YAML tree is actually instantiating its nodes. Since during these phase
+    /// we still do not initialize them with their properties, we can parallelize the job by iterating over all the nodes
+    /// and running the instantiation in separate threads.
+    ///
+    /// An issue in doing so is that unlike the sequential, recursive version [#buildTree(Entity, Entry)], we can't
+    /// link the children nodes to the respective parents. For this reason, the methods is organized in three phases:
+    /// 1) During the first phase it iterates over the tree in pre-order by using [YamlTreeIterator], builds all the tasks
+    /// which will instantiate the nodes and finally sends all of them at once to an executor with [Async#callAll(Collection)].
+    /// Before proceeding to the second phase we must wait for all objects to be created, so we also block the thread with
+    /// [Async#await(Collection)].
+    /// It's worth noting that since [Entity] cannot be created without the parent entity, it wraps the type and the instance
+    /// in [Tuple2] objects. These are stored in a map of type `[TreeEntry -> Tuple2]`.
+    /// 2) The second phase is responsible for re-linking the tree's nodes. To avoid re-iterating over the entire tree,
+    /// the [YamlTreeIterator] has been optimized to register the relationships between parents and their children.
+    /// A simple loop on [YamlTreeIterator#relationships()] creates all the entities and links them.
+    /// 3) Another issue with this approach is that we can't create the load queue until all nodes have been instantiated.
+    /// Before returning the root entity, the load queue is filled with all the entities created during phase two.
+    ///
+    /// Despite the complexity, this approach can still reveal to be much faster than instantiating objects sequentially.
+    private Entity buildTreeConcurrent(Entry<String, Object> root) throws IOException {
+        // Instantiates all nodes asynchronously
+        YamlTreeIterator it = new YamlTreeIterator(root);
+        List<Callable<Void>> tasks = new ArrayList<>();
+        Map<TreeEntry, Tuple2<String, Object>> tuples = new HashMap<>();
+        while (it.hasNext()) {
+            TreeEntry next = it.next();
+            tasks.add(() -> {
+                String type = next.entry().getKey();
+                SequencedMap<String, Object> map = asYamlMap(next.entry().getValue());
+                Object[] args = parser.parseArgs(map);
+                Logger.debug("Creating object of type {} with args:\n{}", type, Arrays.toString(args));
+                Object instance = map.containsKey(FACTORY_TAG) ? parser.handleFactory(map, args) : reflector.create(type, args);
+                if (instance == null) {
+                    throw new IOException("Failed to instantiate object for type " + type);
+                }
+                synchronized (tuples) {
+                    tuples.put(next, Tuple2.of(type, instance));
+                }
+                return null;
+            });
+        }
+
+        try {
+            List<Future<Void>> futures = Async.callAll(tasks);
+            Async.await(futures);
+        } catch (Exception ex) {
+            throw new IOException("Failed to build tree concurrently", ex);
+        }
+
+        // Re-link the tree's nodes
+        SequencedMap<TreeEntry, Entity> entities = new LinkedHashMap<>();
+
+        // Root handling (needs to be handled here for empty relationships)
+        Tuple2<String, Object> rTuple = tuples.get(it.root());
+        Entity rEntity = new Entity(null, rTuple.a(), rTuple.b());
+        entities.put(it.root(), rEntity);
+        propertiesMap.put(rEntity, asYamlMap(it.root().entry().getValue()));
+
+        for (Entry<TreeEntry, List<TreeEntry>> relationship : it.relationships().entrySet()) {
+            // Handle parent
+            TreeEntry parent = relationship.getKey();
+            Entity pEntity = entities.get(parent);
+            if (pEntity == null) {
+                Tuple2<String, Object> tuple = tuples.get(parent);
+                pEntity = new Entity(null, tuple.a(), tuple.b());
+                entities.put(parent, pEntity);
+                propertiesMap.put(pEntity, asYamlMap(parent.entry().getValue()));
+            }
+
+            // Handle children
+            for (TreeEntry child : relationship.getValue()) {
+                Tuple2<String, Object> tuple = tuples.get(child);
+                Entity cEntity = new Entity(pEntity, tuple.a(), tuple.b());
+                pEntity.children().add(cEntity);
+                entities.put(child, cEntity);
+                propertiesMap.put(cEntity, asYamlMap(child.entry().getValue()));
+            }
+        }
+
+        // Fill the load queue
+        loadQueue.addAll(entities.values());
+
+        // Finally return the root node
+        return entities.firstEntry().getValue();
+    }
+
     /// Adds the given child instance to the given parent instance.
     ///
     /// This method is specific to JavaFX. Used by [#linkTree()].
@@ -305,6 +403,12 @@ public class YamlDeserializer {
         } catch (Exception ex) {
             throw new IOException(ex);
         }
+    }
+
+    /// Delegate for [ClassScanner#addToScanCache(Class\[\])].
+    public YamlDeserializer addToScanCache(Class<?>... classes) {
+        scanner.addToScanCache(classes);
+        return this;
     }
 
     /// Cleans all references and data structures used by the deserializer.

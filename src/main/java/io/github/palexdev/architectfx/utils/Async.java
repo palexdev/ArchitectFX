@@ -9,6 +9,7 @@ public class Async {
     // Static Properties
     //================================================================================
     private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    public static final CompletableFuture<Object> EMPTY_FUTURE = CompletableFuture.completedFuture(null);
 
     //================================================================================
     // Constructors
@@ -34,6 +35,15 @@ public class Async {
                 throw new CompletionException(ex);
             }
         }, executor);
+    }
+
+    /// Convenience method to wrap a [Callable] in a [CompletableFuture]. The action is not run asynchronously!
+    public static <T> CompletableFuture<T> wrap(Callable<T> action) {
+        try {
+            return CompletableFuture.completedFuture(action.call());
+        } catch (Exception ex) {
+            return CompletableFuture.failedFuture(ex);
+        }
     }
 
     /// Sends all the given actions to an [ExecutorService] which uses virtual threads and returns the result of

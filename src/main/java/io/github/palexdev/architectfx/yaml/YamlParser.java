@@ -360,11 +360,10 @@ public class YamlParser {
     }
 
     /// Responsible for retrieving the document's controller name under the [Tags#CONTROLLER_TAG] tag, or `null` if absent.
-    protected String parseController(SequencedMap<String, Object> map) {
+    protected Optional<String> parseController(SequencedMap<String, Object> map) {
         return Optional.ofNullable(map.remove(CONTROLLER_TAG))
             .filter(String.class::isInstance)
-            .map(o -> as(o, String.class))
-            .orElse(null);
+            .map(o -> as(o, String.class));
     }
 
     /// Clears all references to its dependencies.
