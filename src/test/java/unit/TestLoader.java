@@ -7,6 +7,7 @@ import java.util.List;
 
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.utils.CastUtils;
+import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -16,14 +17,15 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
+import misc.TestController;
+import misc.TestUtils;
 import org.joor.Reflect;
 import org.junit.jupiter.api.Test;
-import misc.TestUtils;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.as;
 import static misc.TestUtils.forceInitFX;
-import static org.junit.jupiter.api.Assertions.*;
 import static misc.TestUtils.getProperty;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestLoader {
 
@@ -257,6 +259,42 @@ public class TestLoader {
 
         forceInitFX();
         Document doc = new YamlLoader().load(new ByteArrayInputStream(document.getBytes()));
+        Object controller = doc.controller();
+        assertNotNull(controller);
+        assertNotNull(Reflect.on(controller).get("box"));
+        assertNotNull(Reflect.on(controller).get("label1"));
+        assertNotNull(Reflect.on(controller).get("label2"));
+        assertNotNull(Reflect.on(controller).get("btn"));
+    }
+
+    @Test
+    void testControllerFactory() throws IOException {
+        String document = """
+            .imports: [
+              "javafx.scene.control.Label"
+            ]
+            
+            .controller: TestController
+            
+            VBox:
+              .cid: "box"
+              children:
+                - Label:
+                    .cid: "label1"
+                - Label:
+                    .cid: "label2"
+                - Button:
+                    .cid: "btn"
+                    .args: ["Change Text"]
+            """;
+
+        forceInitFX();
+        Document doc = new YamlLoader()
+            .setDeserializerFactory(p ->
+                new YamlDeserializer(p)
+                    .setControllerFactory(c -> new TestController())
+            )
+            .load(new ByteArrayInputStream(document.getBytes()));
         Object controller = doc.controller();
         assertNotNull(controller);
         assertNotNull(Reflect.on(controller).get("box"));

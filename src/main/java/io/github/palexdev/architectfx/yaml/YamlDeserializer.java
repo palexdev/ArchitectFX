@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 
 import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.deps.DynamicClassLoader;
@@ -53,6 +54,8 @@ public class YamlDeserializer {
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new IdentityHashMap<>();
     private final Map<String, Object> controllerFields = new HashMap<>();
     private Entity current;
+
+    private Function<Class<?>, Object> controllerFactory;
 
     //================================================================================
     // Constructors
@@ -105,7 +108,9 @@ public class YamlDeserializer {
                     try {
                         Logger.debug("Trying to instantiate the controller {}", name);
                         Class<?> klass = scanner.findClass(name);
-                        return reflector.create(klass);
+                        return Optional.ofNullable(controllerFactory)
+                            .map(f -> f.apply(klass))
+                            .orElseGet(() -> reflector.create(klass));
                     } catch (IllegalArgumentException | ClassNotFoundException ex) {
                         Logger.error("Failed to instantiate the controller because:\n{}", ex);
                     }
@@ -432,6 +437,17 @@ public class YamlDeserializer {
     //================================================================================
     // Getters
     //================================================================================
+
+    /// @return the function used to create the document's controller
+    public Function<Class<?>, Object> getControllerFactory() {
+        return controllerFactory;
+    }
+
+    /// Sets the function used to create the document's controller.
+    public YamlDeserializer setControllerFactory(Function<Class<?>, Object> controllerFactory) {
+        this.controllerFactory = controllerFactory;
+        return this;
+    }
 
     /// @return the [ClassScanner] instance used by the deserializer
     public ClassScanner getScanner() {
