@@ -221,7 +221,7 @@ public class YamlParser {
         return parsed;
     }
 
-    /// In a way this method is similar to [YamlDeserializer#createEntity(Entity, Map.Entry)]. This is responsible for
+    /// In a way this method is similar to [YamlDeserializer#buildTree(Entity, Map.Entry)]. This is responsible for
     /// instantiating and initializing complex properties (see [Type#COMPLEX]) from a generic YAML map (see [CastUtils#asYamlMap(Object)]).
     ///
     /// First it instantiates the object by:

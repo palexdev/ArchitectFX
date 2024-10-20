@@ -12,7 +12,6 @@ import java.util.function.Function;
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Entity;
 import org.tinylog.Logger;
-import org.tinylog.Supplier;
 import org.yaml.snakeyaml.Yaml;
 
 /// Core class and entry point to load a YAML document compliant with the rules of this system.
@@ -40,7 +39,7 @@ import org.yaml.snakeyaml.Yaml;
 ///
 /// Supports asynchronous loading and allows to customize the deserializer, see:
 /// - [YamlDeserializer#buildTreeConcurrent(Map.Entry)] and [#setParallel(boolean)]
-/// - [#setDeserializerFactory(Supplier)]
+/// - [#setDeserializerFactory(Function)]
 ///
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {

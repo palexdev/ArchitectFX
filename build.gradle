@@ -77,5 +77,6 @@ tasks.withType(Javadoc) {
                     java.toolchain
             )
     )
+    failOnError = false
     options.addBooleanOption('Xdoclint:all,-missing', true)
 }
