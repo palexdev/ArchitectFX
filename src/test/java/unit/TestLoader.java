@@ -7,7 +7,6 @@ import java.util.List;
 
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.utils.CastUtils;
-import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -290,10 +289,7 @@ public class TestLoader {
 
         forceInitFX();
         Document doc = new YamlLoader()
-            .setDeserializerFactory(p ->
-                new YamlDeserializer(p)
-                    .setControllerFactory(c -> new TestController())
-            )
+            .setControllerFactory(TestController::new)
             .load(new ByteArrayInputStream(document.getBytes()));
         Object controller = doc.controller();
         assertNotNull(controller);

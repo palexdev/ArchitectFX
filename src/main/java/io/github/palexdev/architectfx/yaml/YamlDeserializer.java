@@ -44,11 +44,11 @@ public class YamlDeserializer {
     //================================================================================
     // Properties
     //================================================================================
-    private DependencyManager dm;
+    protected DependencyManager dm;
     private ClassScanner scanner;
     private Reflector reflector;
     private YamlParser parser;
-    private final boolean parallel;
+    private boolean parallel;
 
     private final List<Entity> loadQueue = new ArrayList<>();
     private final Map<Entity, SequencedMap<String, Object>> propertiesMap = new IdentityHashMap<>();
@@ -60,12 +60,25 @@ public class YamlDeserializer {
     //================================================================================
     // Constructors
     //================================================================================
+    public YamlDeserializer() {
+        this(false);
+    }
+
     public YamlDeserializer(boolean parallel) {
         dm = new DependencyManager();
         scanner = new ClassScanner(dm);
         reflector = new Reflector(dm, scanner);
         parser = new YamlParser(this, scanner, reflector);
         this.parallel = parallel;
+    }
+
+    public YamlDeserializer(Function<YamlDeserializer, YamlDeserializerConfig> config) {
+        YamlDeserializerConfig c = config.apply(this);
+        this.dm = c.dm();
+        this.scanner = c.scanner();
+        this.reflector = c.reflector();
+        this.parser = c.parser();
+        this.parallel = c.parallel();
     }
 
     //================================================================================
@@ -449,6 +462,17 @@ public class YamlDeserializer {
         return this;
     }
 
+    /// @return whether the deserialization process is going to be split across multiple threads
+    public boolean isParallel() {
+        return parallel;
+    }
+
+    /// Sets whether the deserialization process is going to be split across multiple threads
+    public YamlDeserializer setParallel(boolean parallel) {
+        this.parallel = parallel;
+        return this;
+    }
+
     /// @return the [ClassScanner] instance used by the deserializer
     public ClassScanner getScanner() {
         return scanner;
@@ -462,5 +486,22 @@ public class YamlDeserializer {
     /// @return the current [Entity] being initialized
     public Entity currentLoading() {
         return current;
+    }
+
+    //================================================================================
+    // Inner Classes
+    //================================================================================
+
+    /// This record allows to easily configure the dependencies and settings of a [YamlDeserializer].
+    public record YamlDeserializerConfig(
+        DependencyManager dm,
+        ClassScanner scanner,
+        Reflector reflector,
+        YamlParser parser,
+        boolean parallel
+    ) {
+        public YamlDeserializerConfig(DependencyManager dm, ClassScanner scanner, Reflector reflector, YamlParser parser) {
+            this(dm, scanner, reflector, parser, false);
+        }
     }
 }

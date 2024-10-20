@@ -2,23 +2,33 @@ package unit;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import app.Launcher;
+import io.github.palexdev.architectfx.deps.DependencyManager;
 import io.github.palexdev.architectfx.enums.Type;
+import io.github.palexdev.architectfx.model.Entity;
+import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.utils.reflection.Reflector;
+import io.github.palexdev.architectfx.yaml.YamlDeserializer;
 import io.github.palexdev.architectfx.yaml.YamlLoader;
+import io.github.palexdev.architectfx.yaml.YamlParser;
 import javafx.scene.Parent;
 import javafx.scene.paint.Color;
-import org.junit.jupiter.api.Test;
-import org.yaml.snakeyaml.Yaml;
+import misc.TestController;
+import misc.TestUtils;
 import misc.User;
 import misc.UserWrapper;
+import org.junit.jupiter.api.Test;
+import org.yaml.snakeyaml.Yaml;
 
 import static io.github.palexdev.architectfx.utils.CastUtils.asYamlMap;
 import static io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG;
 import static io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG;
-import static org.junit.jupiter.api.Assertions.*;
 import static misc.TestUtils.getProperty;
 import static misc.TestUtils.parser;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TestMisc {
 
@@ -254,5 +264,33 @@ public class TestMisc {
         assertEquals(64.0, getProperty(fIcon, "size"));
         assertEquals(Color.RED, getProperty(fIcon, "color"));
         assertEquals("fas-user", getProperty(fIcon, "description"));
+    }
+
+    @Test
+    void testChainSupplier() throws ClassNotFoundException {
+        YamlLoader loader = new YamlLoader()
+            .setParallel(true)
+            .setControllerFactory(c -> new TestController())
+            .addToScanCache(LocalDateTime.class);
+        YamlDeserializer deserializer = loader.getDeserializerFactory().get();
+        assertNotNull(deserializer);
+        assertTrue(deserializer.isParallel());
+        assertNotNull(deserializer.getControllerFactory());
+        assertNotNull(deserializer.getScanner().findClass(LocalDateTime.class.getName()));
+    }
+
+    @Test
+    void testDeserializerConfig() throws IOException {
+        TestUtils.forceInitFX();
+        YamlLoader loader = new YamlLoader()
+            .withDeserializer(() -> new YamlDeserializer(d -> {
+                DependencyManager dm = new DependencyManager();
+                ClassScanner scanner = new ClassScanner(dm);
+                Reflector reflector = new Reflector(dm, scanner);
+                YamlParser parser = new YamlParser(d, scanner, reflector);
+                return new YamlDeserializer.YamlDeserializerConfig(dm, scanner, reflector, parser, true);
+            }));
+        Entity root = loader.load(Launcher.class.getClassLoader().getResource("assets/TextFields.jdsl")).root();
+        assertNotNull(root);
     }
 }

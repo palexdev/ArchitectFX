@@ -8,9 +8,11 @@ import java.net.URL;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Entity;
+import io.github.palexdev.architectfx.utils.ChainSupplier;
 import org.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -39,24 +41,25 @@ import org.yaml.snakeyaml.Yaml;
 ///
 /// Supports asynchronous loading and allows to customize the deserializer, see:
 /// - [YamlDeserializer#buildTreeConcurrent(Map.Entry)] and [#setParallel(boolean)]
-/// - [#setDeserializerFactory(Function)]
+/// - [#withDeserializer(ChainSupplier)]
 ///
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader {
     //================================================================================
     // Properties
     //================================================================================
-    private Function<Boolean, YamlDeserializer> deserializerFactory;
-    private boolean parallel = false;
+    private ChainSupplier<YamlDeserializer> deserializerFactory;
 
     //================================================================================
     // Constructors
     //================================================================================
-
     public YamlLoader() {
-        deserializerFactory = YamlDeserializer::new;
+        this(false);
     }
 
+    public YamlLoader(boolean parallel) {
+        deserializerFactory = () -> new YamlDeserializer(parallel);
+    }
 
     //================================================================================
     // Methods
@@ -75,7 +78,7 @@ public class YamlLoader {
             SequencedMap<String, Object> map = new Yaml().load(stream);
 
             // Pre-load document
-            deserializer = deserializerFactory.apply(parallel);
+            deserializer = deserializerFactory.get();
             Document document = deserializer.parseDocument(map);
 
             // Initialization stage
@@ -119,21 +122,57 @@ public class YamlLoader {
     //================================================================================
     // Getters/Setters
     //================================================================================
-    public Function<Boolean, YamlDeserializer> getDeserializerFactory() {
+
+    /// @return the supplier responsible for building the [YamlDeserializer] used to load the document
+    public ChainSupplier<YamlDeserializer> getDeserializerFactory() {
         return deserializerFactory;
     }
 
-    public YamlLoader setDeserializerFactory(Function<Boolean, YamlDeserializer> deserializerFactory) {
+    /// Sets the supplier responsible for building the [YamlDeserializer] used to load the document.
+    public YamlLoader withDeserializer(ChainSupplier<YamlDeserializer> deserializerFactory) {
         this.deserializerFactory = deserializerFactory;
         return this;
     }
 
-    public boolean isParallel() {
-        return parallel;
+    //================================================================================
+    // Delegate Methods
+    //================================================================================
+
+    /// Delegate to [YamlDeserializer#setParallel(boolean)].
+    ///
+    /// Since a new deserializer is built every time [#load(InputStream)] is called, this applies the configuration
+    /// on the factory [#getDeserializerFactory()] thanks to chaining, [ChainSupplier].
+    public YamlLoader setParallel(boolean parallel) {
+        this.deserializerFactory = deserializerFactory.andThen(d -> d.setParallel(parallel));
+        return this;
     }
 
-    public YamlLoader setParallel(boolean parallel) {
-        this.parallel = parallel;
+    /// Delegate to [YamlDeserializer#addToScanCache(Class\[\])].
+    ///
+    /// Since a new deserializer is built every time [#load(InputStream)] is called, this applies the configuration
+    /// on the factory [#getDeserializerFactory()] thanks to chaining, [ChainSupplier].
+    public YamlLoader addToScanCache(Class<?>... classes) {
+        this.deserializerFactory = deserializerFactory.andThen(d -> d.addToScanCache(classes));
+        return this;
+    }
+
+    /// Delegate to [YamlDeserializer#setControllerFactory(Function)].
+    ///
+    /// Since a new deserializer is built every time [#load(InputStream)] is called, this applies the configuration
+    /// on the factory [#getDeserializerFactory()] thanks to chaining, [ChainSupplier].
+    public YamlLoader setControllerFactory(Function<Class<?>, Object> controllerFactory) {
+        this.deserializerFactory = deserializerFactory.andThen(d -> d.setControllerFactory(controllerFactory));
+        return this;
+    }
+
+    /// To be completely honest, the controller factory comes straight from JavaFX's FXMLLoader. Since I don't really
+    /// understand why it accepts a class as input, I added this as a shortcut for those who don't need such input.
+    /// Why not making it a Supplier and call it a day? Because I'm not excluding that someone out there actually uses
+    /// that input in some way.
+    ///
+    /// Delegate to [#setControllerFactory(Function)].
+    public YamlLoader setControllerFactory(Supplier<Object> controllerFactory) {
+        this.deserializerFactory = deserializerFactory.andThen(d -> d.setControllerFactory(c -> controllerFactory.get()));
         return this;
     }
 }
