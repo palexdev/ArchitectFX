@@ -26,6 +26,8 @@ dependencies {
     testImplementation "org.testfx:testfx-core:$testfx"
     testImplementation "org.testfx:testfx-junit5:$testfx"
     testImplementation "org.testfx:openjfx-monocle:$testfxMonocle"
+    testImplementation "org.openjdk.jmh:jmh-core:$jmh"
+    testAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
 }
 
 java {
@@ -51,6 +53,22 @@ test {
     ]
 
     systemProperty('test.environment', 'true')
+
+    filter {
+        excludeTestsMatching "JMH*"
+    }
+}
+
+tasks.register('jmh', Test) {
+    useJUnitPlatform()
+    filter {
+        excludeTestsMatching "unit.*"
+    }
+}
+
+tasks.register('testRun', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'app.Launcher'
 }
 
 tasks.withType(Javadoc) {
@@ -60,9 +78,4 @@ tasks.withType(Javadoc) {
             )
     )
     options.addBooleanOption('Xdoclint:all,-missing', true)
-}
-
-tasks.register('testRun', JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'app.Launcher'
 }

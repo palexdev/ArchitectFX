@@ -15,8 +15,7 @@ public class TestMavenHelper {
 
     @Test
     void testDownloadArtifacts() {
-        MavenHelper dm = new MavenHelper();
-        MavenResolvedArtifact[] artifacts = dm.downloadArtifacts(
+        MavenResolvedArtifact[] artifacts = MavenHelper.downloadArtifacts(
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         );

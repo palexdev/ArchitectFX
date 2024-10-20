@@ -28,7 +28,7 @@ public class TestUtils {
         DependencyManager dm = new DependencyManager();
         ClassScanner scanner = new ClassScanner(dm);
         return new YamlParser(
-            new YamlDeserializer(),
+            new YamlDeserializer(false),
             scanner,
             new Reflector(dm, scanner)
         );

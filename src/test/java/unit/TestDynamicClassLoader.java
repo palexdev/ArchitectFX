@@ -35,7 +35,7 @@ public class TestDynamicClassLoader {
         DependencyManager dm = new DependencyManager().addDeps(
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-        ).refresh(true);
+        );
         ClassScanner scanner = new ClassScanner(dm);
         Reflector reflector = new Reflector(dm, scanner);
         Object obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
@@ -54,7 +54,7 @@ public class TestDynamicClassLoader {
         DependencyManager dm = new DependencyManager();
         ClassScanner scanner = new ClassScanner(dm);
         Reflector reflector = new Reflector(dm, scanner);
-        dm.cleanDeps().refresh(true);
+        dm.cleanDeps();
         assertEquals(0, dm.dependencies().size());
 
         Object obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
@@ -63,7 +63,7 @@ public class TestDynamicClassLoader {
         dm.addDeps(
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
-        ).refresh(true);
+        );
         obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNotNull(obj);
         assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
