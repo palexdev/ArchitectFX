@@ -22,7 +22,7 @@ public class App extends Application {
         long end = System.nanoTime();
         long elapsed = end - start;
         long converted = TimeUnit.MILLISECONDS.convert(elapsed, TimeUnit.NANOSECONDS);
-        System.out.println("Elapsed: " +  converted + "ms");
+        System.out.println("Elapsed: " + converted + "ms");
 
         Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);

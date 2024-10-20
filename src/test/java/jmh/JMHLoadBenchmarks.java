@@ -33,7 +33,7 @@ public class JMHLoadBenchmarks {
     }
 
     @Setup(Level.Invocation)
-    public void prepare(){
+    public void prepare() {
         TestUtils.forceInitFX();
     }
 
