@@ -5,12 +5,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Map;
+import java.util.SequencedMap;
+import java.util.function.Function;
 
 import io.github.palexdev.architectfx.model.Document;
 import io.github.palexdev.architectfx.model.Entity;
-import io.github.palexdev.architectfx.utils.reflection.ClassScanner;
 import org.tinylog.Logger;
+import org.tinylog.Supplier;
 import org.yaml.snakeyaml.Yaml;
 
 /// Core class and entry point to load a YAML document compliant with the rules of this system.
@@ -35,20 +37,27 @@ import org.yaml.snakeyaml.Yaml;
 /// 3) The _third phase_ takes the instantiation queue and rebuilds the tree from it. This can be done thanks to the fact
 /// that all entities have their parents already set from the first stage.
 /// 4) Finally, the _fourth_phase_ is the one responsible for populating the controller and initializing it
+///
+/// Supports asynchronous loading and allows to customize the deserializer, see:
+/// - [YamlDeserializer#buildTreeConcurrent(Map.Entry)] and [#setParallel(boolean)]
+/// - [#setDeserializerFactory(Supplier)]
+///
 // TODO maybe we should not load a Parent but a generic Node
-// TODO make this reusable one way or the other
 public class YamlLoader {
     //================================================================================
     // Properties
     //================================================================================
-    private YamlDeserializer deserializer;
+    private Function<Boolean, YamlDeserializer> deserializerFactory;
+    private boolean parallel = false;
 
     //================================================================================
     // Constructors
     //================================================================================
+
     public YamlLoader() {
-        deserializer = new YamlDeserializer();
+        deserializerFactory = YamlDeserializer::new;
     }
+
 
     //================================================================================
     // Methods
@@ -61,15 +70,13 @@ public class YamlLoader {
     ///
     /// @throws IOException if an unrecoverable error occurs during the process
     public Document load(InputStream stream) throws IOException {
-        if (deserializer == null) {
-            throw new IllegalStateException("This loader has been closed, use a new one");
-        }
-
+        YamlDeserializer deserializer = null;
         try {
             // Load YAML
             SequencedMap<String, Object> map = new Yaml().load(stream);
 
             // Pre-load document
+            deserializer = deserializerFactory.apply(parallel);
             Document document = deserializer.parseDocument(map);
 
             // Initialization stage
@@ -84,6 +91,9 @@ public class YamlLoader {
             return document;
         } catch (Exception ex) {
             throw new IOException(ex);
+        } finally {
+            if (deserializer != null)
+                deserializer.dispose();
         }
     }
 
@@ -107,10 +117,24 @@ public class YamlLoader {
         }
     }
 
-    /// Delegate for [ClassScanner#addToScanCache(Class\[\])].
-    public YamlLoader addToScanCache(Class<?>... classes) {
-        ClassScanner scanner = deserializer.getScanner();
-        scanner.addToScanCache(classes);
+    //================================================================================
+    // Getters/Setters
+    //================================================================================
+    public Function<Boolean, YamlDeserializer> getDeserializerFactory() {
+        return deserializerFactory;
+    }
+
+    public YamlLoader setDeserializerFactory(Function<Boolean, YamlDeserializer> deserializerFactory) {
+        this.deserializerFactory = deserializerFactory;
+        return this;
+    }
+
+    public boolean isParallel() {
+        return parallel;
+    }
+
+    public YamlLoader setParallel(boolean parallel) {
+        this.parallel = parallel;
         return this;
     }
 }
