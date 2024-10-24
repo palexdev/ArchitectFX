@@ -55,7 +55,6 @@ subprojects {
         var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
         version = isLinuxArm ? "21.0.1" : "$jfx"
         configurations = ['implementation', 'testImplementation']
-        modules = ['javafx.controls']
     }
 
     test {

@@ -9,6 +9,10 @@ dependencies {
     implementation name: 'jresolve-21.0.3', classifier: 'sources'
 }
 
+javafx {
+    modules = ['javafx.graphics']
+}
+
 test {
     jvmArgs += [
             '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
