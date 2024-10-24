@@ -1,7 +1,13 @@
+import io.inverno.core.annotation.Module;
+
+@Module(sourcePackage = "io.github.palexdev.architectfx.backend")
 module afx.backend {
     //***** Dependencies *****//
     // JavaFX
     requires javafx.graphics;
+
+    // DI
+    requires static io.inverno.core.annotation;
 
     // YAML
     requires org.yaml.snakeyaml;
