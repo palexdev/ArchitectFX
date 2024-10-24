@@ -17,13 +17,21 @@ subprojects {
         flatDir {
             dirs "$rootDir/libs"
             dirs "$rootDir/libs/jresolve"
+            dirs "$rootDir/libs/nfx-lib"
+            dirs "$rootDir/libs/pragmatica"
         }
     }
 
     dependencies {
         // Standard
+        // Inverno Framework :D
+        annotationProcessor "io.inverno:inverno-core-compiler:$inverno"
+        implementation "io.inverno:inverno-core:$inverno"
         implementation "org.tinylog:tinylog-impl:$tinylog"
         //implementation "org.tinylog:slf4j-tinylog:$tinylog"
+
+        implementation name: 'pragmatica-core-0.3.0'
+        implementation name: 'pragmatica-core-0.3.0', classifier: 'sources'
 
         // Test
         testImplementation platform("org.junit:junit-bom:$junit")
@@ -64,5 +72,13 @@ subprojects {
         )
         failOnError = false
         options.addBooleanOption('Xdoclint:all,-missing', true)
+    }
+
+    // Since we are using a compile time DI framework, everytime the code changes
+    compileJava {
+        doFirst {
+            if (!classes.state.upToDate)
+                clean
+        }
     }
 }
