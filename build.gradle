@@ -2,81 +2,67 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
     id 'java'
-    id 'org.openjfx.javafxplugin' version "$jfxPlugin"
+    id 'org.openjfx.javafxplugin' version "$jfxPlugin" apply false
 }
 
-group = 'io.github.palexdev'
-version = '1.0-SNAPSHOT'
+subprojects {
+    apply plugin: "java"
+    apply plugin: "org.openjfx.javafxplugin"
 
-repositories {
-    mavenCentral()
-}
+    group 'io.github.palexdev'
 
-dependencies {
-    implementation "org.yaml:snakeyaml:$snakeyaml"
-    implementation "org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-api-maven:$mavenResolver"
-    implementation "org.jboss.shrinkwrap.resolver:shrinkwrap-resolver-impl-maven:$mavenResolver"
-    implementation "org.jooq:joor:$joor"
-    implementation "io.github.classgraph:classgraph:$classgraph"
-    implementation "org.tinylog:tinylog-impl:$tinylog"
-    //implementation "org.tinylog:slf4j-tinylog:$tinylog"
+    repositories {
+        mavenCentral()
 
-    testImplementation platform("org.junit:junit-bom:$junit")
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation "org.testfx:testfx-core:$testfx"
-    testImplementation "org.testfx:testfx-junit5:$testfx"
-    testImplementation "org.testfx:openjfx-monocle:$testfxMonocle"
-    testImplementation "org.openjdk.jmh:jmh-core:$jmh"
-    testAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
-}
-
-java {
-    sourceCompatibility = "$jdk"
-    targetCompatibility = "$jdk"
-    withJavadocJar()
-    withSourcesJar()
-}
-
-javafx {
-    // Workaround for Linux ARM64 because JavaFX is not updated as often for this architecture
-    var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
-    version = isLinuxArm ? "21.0.1" : "$jfx"
-    configurations = ['implementation', 'testImplementation']
-    modules = ['javafx.controls']
-}
-
-test {
-    useJUnitPlatform()
-    testLogging.showStandardStreams = true
-    jvmArgs += [
-            '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
-    ]
-
-    systemProperty('test.environment', 'true')
-
-    filter {
-        excludeTestsMatching "JMH*"
+        flatDir {
+            dirs "$rootDir/libs"
+            dirs "$rootDir/libs/jresolve"
+        }
     }
-}
 
-tasks.register('jmh', Test) {
-    useJUnitPlatform()
-    filter {
-        excludeTestsMatching "unit.*"
+    dependencies {
+        // Standard
+        implementation "org.tinylog:tinylog-impl:$tinylog"
+        //implementation "org.tinylog:slf4j-tinylog:$tinylog"
+
+        // Test
+        testImplementation platform("org.junit:junit-bom:$junit")
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testImplementation "org.testfx:testfx-core:$testfx"
+        testImplementation "org.testfx:testfx-junit5:$testfx"
+        testImplementation "org.testfx:openjfx-monocle:$testfxMonocle"
+        testImplementation "org.openjdk.jmh:jmh-core:$jmh"
+        testAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
     }
-}
 
-tasks.register('testRun', JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'app.Launcher'
-}
+    java {
+        sourceCompatibility = "$jdk"
+        targetCompatibility = "$jdk"
+        withJavadocJar()
+        withSourcesJar()
+    }
 
-tasks.withType(Javadoc) {
-    javadocTool.set(
-            javaToolchains.javadocToolFor(
-                    java.toolchain
-            )
-    )
-    failOnError = false
-    options.addBooleanOption('Xdoclint:all,-missing', true)
+    javafx {
+        // Workaround for Linux ARM64 because JavaFX is not updated as often for this architecture
+        var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
+        version = isLinuxArm ? "21.0.1" : "$jfx"
+        configurations = ['implementation', 'testImplementation']
+        modules = ['javafx.controls']
+    }
+
+    test {
+        useJUnitPlatform()
+        testLogging.showStandardStreams = true
+        systemProperty('test.environment', 'true')
+    }
+
+    tasks.withType(Javadoc) {
+        javadocTool.set(
+                javaToolchains.javadocToolFor(
+                        java.toolchain
+                )
+        )
+        failOnError = false
+        options.addBooleanOption('Xdoclint:all,-missing', true)
+    }
 }

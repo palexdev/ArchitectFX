@@ -1,2 +1,10 @@
+include 'backend'
+include 'frontend'
+
 rootProject.name = 'ArchitectFX'
+rootProject.children.each { project ->
+    {
+        project.projectDir = file("modules/$project.name")
+    }
+}
 

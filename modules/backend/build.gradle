@@ -1,0 +1,29 @@
+dependencies {
+    implementation "org.yaml:snakeyaml:$snakeyaml"
+    implementation "org.jooq:joor:$joor"
+    implementation "io.github.classgraph:classgraph:$classgraph"
+
+    implementation name: 'jresolve-21.0.3'
+    implementation name: 'jresolve-21.0.3', classifier: 'sources'
+}
+
+test {
+    jvmArgs += [
+            '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
+    ]
+    filter {
+        excludeTestsMatching "JMH*"
+    }
+}
+
+tasks.register('jmh', Test) {
+    useJUnitPlatform()
+    filter {
+        excludeTestsMatching "unit.*"
+    }
+}
+
+tasks.register('testRun', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'app.Launcher'
+}
