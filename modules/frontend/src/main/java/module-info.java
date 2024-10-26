@@ -7,20 +7,23 @@ module afx.frontend {
     requires afx.backend;
 
     // JavaFX
-    requires javafx.fxml;
-    requires mfx.core;
+    requires fr.brouillard.oss.cssfx;
+    requires mfx.components;
     requires nfx.core;
+    requires VirtualizedFX;
 
     // DI
     requires static io.inverno.core.annotation;
     requires io.inverno.core;
+
+    // Yaml
+    requires org.yaml.snakeyaml;
 
     // Logging
     requires org.tinylog.api;
 
     // Misc
     requires pragmatica.core;
-
 
     //***** Exports *****//
     // Base Package

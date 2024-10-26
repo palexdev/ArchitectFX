@@ -7,8 +7,10 @@ version = "$afx_frontend"
 dependencies {
     implementation(project(":backend"))
 
+    implementation "io.github.palexdev:mfxcore:$mfxcore"
     implementation "io.github.palexdev:mfxcomponents:$materialfx"
     implementation "io.github.palexdev:virtualizedfx:$virtualizedfx"
+    implementation "fr.brouillard.oss:cssfx:$cssfx"
 
     implementation name: 'nfx-core-1.0.2'
     implementation name: 'nfx-core-1.0.2', classifier: 'sources'

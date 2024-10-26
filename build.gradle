@@ -1,5 +1,3 @@
-import org.apache.tools.ant.taskdefs.condition.Os
-
 plugins {
     id 'java'
     id 'org.openjfx.javafxplugin' version "$jfxPlugin" apply false
@@ -27,6 +25,7 @@ subprojects {
         // Inverno Framework :D
         annotationProcessor "io.inverno:inverno-core-compiler:$inverno"
         implementation "io.inverno:inverno-core:$inverno"
+        implementation "org.yaml:snakeyaml:$snakeyaml"
         implementation "org.tinylog:tinylog-impl:$tinylog"
         //implementation "org.tinylog:slf4j-tinylog:$tinylog"
 
@@ -51,9 +50,7 @@ subprojects {
     }
 
     javafx {
-        // Workaround for Linux ARM64 because JavaFX is not updated as often for this architecture
-        var isLinuxArm = (Os.isFamily(Os.FAMILY_UNIX)) && "aarch64".equals(System.getProperty("os.arch"))
-        version = isLinuxArm ? "21.0.1" : "$jfx"
+        version = "$jfx"
         configurations = ['implementation', 'testImplementation']
     }
 

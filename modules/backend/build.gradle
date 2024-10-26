@@ -1,7 +1,6 @@
 version = "$afx_backend"
 
 dependencies {
-    implementation "org.yaml:snakeyaml:$snakeyaml"
     implementation "org.jooq:joor:$joor"
     implementation "io.github.classgraph:classgraph:$classgraph"
 
