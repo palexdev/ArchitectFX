@@ -3,13 +3,18 @@ package io.github.palexdev.architectfx.frontend;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.enums.OSType;
 import io.github.palexdev.architectfx.backend.utils.OSUtils;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
+import io.github.palexdev.architectfx.frontend.events.SettingsEvent;
+import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
 import io.github.palexdev.architectfx.frontend.views.ViewManager;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxcore.settings.Settings;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.Wrapper;
 import io.inverno.core.v1.StandardBanner;
@@ -17,12 +22,8 @@ import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Pane;
-import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.pragmatica.lang.Result;
@@ -77,13 +78,18 @@ public class ArchitectFX extends Application {
             fail -> Logger.error(fail.message()),
             success -> {
                 frontend = success;
-                events.publish(new AppEvent.AppReadyEvent());
+                events.publish(new AppEvent.AppReadyEvent()); // Start app, show main window
                 Logger.info("Bootstrap completed successfully!");
             }
         );
+    }
 
-        stage.setScene(new Scene(new Group(), 800, 600));
-        stage.show();
+    @Override
+    public void stop() {
+        double w = (!Double.isNaN(stage.getWidth()) ? stage.getWidth() : settings.windowWidth().defValue());
+        double h = (!Double.isNaN(stage.getHeight()) ? stage.getHeight() : settings.windowHeight().defValue());
+        settings.windowWidth().set(w);
+        settings.windowHeight().set(h);
     }
 
     private Result<Frontend> bootstrap() {
@@ -93,7 +99,7 @@ public class ArchitectFX extends Application {
             new StandardBanner().print(new PrintStream(out));
             return out.toString();
         });
-        io.inverno.core.v1.Application.with(new Frontend.Builder()).run();
+        Frontend frontend = io.inverno.core.v1.Application.with(new Frontend.Builder()).run();
 
         // Ensure supported platform
         if (!OSUtils.isSupportedPlatform()) {
@@ -101,6 +107,12 @@ public class ArchitectFX extends Application {
         }
 
         // TODO init theme before anything else
+        themeEngine.loadTheme();
+
+        // Check if settings reset has been requested via arguments
+        // Also add listener for ResetSettingEvents
+        if (settings.isResetSettings()) Settings.resetAll();
+        events.subscribe(SettingsEvent.ResetSettingsEvent.class, e -> Settings.reset(e.data()));
 
         return Result.success(frontend);
     }
