@@ -154,16 +154,38 @@ public class ArchitectFX extends Application {
 
     @Bean
     @Wrapper
-    public static class RootPane implements Supplier<Pane> {
-        private final Pane rootPane;
-
-        public RootPane() {
-            this.rootPane = ArchitectFX.root;
-        }
-
+    public static class MainWindow implements Supplier<Stage> {
         @Override
-        public Pane get() {
-            return rootPane;
+        public Stage get() {
+            return ArchitectFX.stage;
         }
     }
+
+    @Bean
+    @Wrapper
+    public static class RootPane implements Supplier<Pane> {
+        @Override
+        public Pane get() {
+            return ArchitectFX.root;
+        }
+    }
+
+    @Bean
+    @Wrapper
+    public static class ParametersWrap implements Supplier<Parameters> {
+        @Override
+        public Parameters get() {
+            return ArchitectFX.parameters;
+        }
+    }
+
+    @Bean
+    @Wrapper
+    public static class HostServicesWrap implements Supplier<HostServices> {
+        @Override
+        public HostServices get() {
+            return ArchitectFX.hostServices;
+        }
+    }
+
 }
