@@ -1,0 +1,7 @@
+.root .mfx-button {
+  -fx-background-radius: 12px;
+}
+
+.root .mfx-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}

@@ -1,0 +1,13 @@
+@import "fonts/Fonts.css";
+@import "Overrides.css";
+@import "components/Components.css";
+@import "views/Views.css";
+
+* {
+  -fx-font-smoothing-type: GRAY;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root {
+  -fx-background-color: -md-sys-color-surface;
+}

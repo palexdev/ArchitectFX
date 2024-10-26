@@ -1,0 +1,97 @@
+.init-view {
+  -fx-alignment: CENTER;
+  -fx-min-height: 540px;
+  -fx-min-width: 960px;
+  -fx-padding: 32px;
+  -fx-spacing: 16px;
+}
+
+.init-view > .header {
+  -fx-font-family: "Montserrat Bold";
+  -fx-font-size: 22px;
+}
+
+.init-view > .sub-header {
+  -fx-text-alignment: CENTER;
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-line-spacing: 2px;
+}
+
+.init-view > HBox {
+  -fx-padding: 32px 0px 0px 0px;
+  -fx-spacing: 24px;
+}
+
+.init-view > HBox > .vfx-scroll-pane {
+  -fx-background-color: -md-sys-color-surface;
+  -fx-background-radius: 12px;
+  -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.20), 8, 0.16, 0, 3);
+  -fx-padding: -0px;
+  -vfx-clip-border-radius: 24px;
+  -vfx-layout-mode: COMPACT;
+}
+
+.init-view > HBox > .vfx-scroll-pane:compact {
+  -vfx-vbar-padding: 10 7 14 0;
+  -vfx-hbar-padding: 0 14 7 10;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-scroll-bar {
+  -background: -md-sys-color-surface-container;
+  -border: transparent;
+  -thumb: -md-sys-color-outline-variant;
+  -thumb-hop: -md-sys-color-outline;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table {
+  -vfx-columns-size: "200 40";
+  -vfx-rows-height: 40px;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .columns {
+  -fx-background-radius: 8px 8px 0px 0px;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .rows {
+  -fx-border-color: -md-sys-color-outline transparent transparent transparent;
+  -fx-border-width: 0.125em;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column {
+  -fx-border-color: transparent;
+  -fx-border-insets: 4px 2px 4px 2px;
+  -fx-border-style: solid segments(3) line-cap round solid solid;
+  -fx-border-width: 0.125em;
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-padding: 0px 8px 0px 8px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -vfx-enable-overlay: false;
+  -vfx-resizable: true;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column:hover,
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column:dragged {
+  -fx-border-color: transparent -md-sys-color-outline transparent transparent;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:hover,
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:selected {
+  -fx-background-color: -md-sys-color-primary-container;
+  -fx-background-insets: 0.125em 0px 0px 0px;
+  -fx-background-radius: 0px;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row .label {
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-padding: 0px 12px 0px 12px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+  -fx-text-overrun: LEADING_WORD_ELLIPSIS;
+}
+
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:hover .label,
+.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:selected .label {
+  -fx-text-fill: -md-sys-color-on-primary-container;
+}
