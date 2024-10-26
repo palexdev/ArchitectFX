@@ -50,6 +50,8 @@ public class ArchitectFX extends Application {
     // Dependencies
     private static ViewManager viewManager;
     private static IEventBus events;
+    private static AppSettings settings;
+    private static ThemeEngine themeEngine;
 
     //================================================================================
     // Startup/Shutdown
@@ -139,11 +141,15 @@ public class ArchitectFX extends Application {
 
         public App(
             ViewManager viewManger,
-            IEventBus events
+            IEventBus events,
+            AppSettings settings,
+            ThemeEngine themeEngine
         ) {
             app = ArchitectFX.app;
             ArchitectFX.viewManager = viewManger;
             ArchitectFX.events = events;
+            ArchitectFX.settings = settings;
+            ArchitectFX.themeEngine = themeEngine;
         }
 
         @Override
