@@ -61,7 +61,7 @@ public class ArchitectFX extends Application {
     @Override
     public void start(Stage stage) {
         // Init stage
-        stage = initStage(stage);
+        stage = getMainWindow(stage);
 
         // Init extra beans
         ArchitectFX.app = this;
@@ -106,18 +106,21 @@ public class ArchitectFX extends Application {
     //================================================================================
     // Misc
     //================================================================================
-    private Stage initStage(Stage stage) {
+    private Stage getMainWindow(Stage stage) {
         // Special stage only for Windows
         if (OSUtils.os() == OSType.Windows) {
             NfxWindow window = new NfxWindow();
             window.titleBarColorProperty().bind(
-                stage.sceneProperty()
+                window.sceneProperty()
                     .flatMap(Scene::rootProperty)
                     .flatMap(r -> ((Region) r).backgroundProperty())
                     .map(b -> {
-                        List<BackgroundFill> fills = b.getFills();
-                        if (fills == null || fills.isEmpty()) return Color.TRANSPARENT;
-                        return ((Color) fills.getFirst().getFill());
+                        List<BackgroundFill> fills = Optional.ofNullable(b)
+                            .map(Background::getFills)
+                            .orElse(List.of());
+                        Color bg = fills.isEmpty() ? Color.WHITE : (Color) fills.getFirst().getFill();
+                        Logger.debug("Bg will be: {}", bg);
+                        return bg;
                     })
             );
             stage = window;
