@@ -35,5 +35,9 @@ public abstract class View<P extends Pane> {
         return root;
     }
 
+    public String title() {
+        return "";
+    }
+
     protected void onAppReady() {}
 }

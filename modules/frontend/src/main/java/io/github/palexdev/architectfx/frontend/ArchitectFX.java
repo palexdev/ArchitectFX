@@ -34,7 +34,8 @@ public class ArchitectFX extends Application {
     //================================================================================
     // Properties
     //================================================================================
-    public static final StringProperty title = new SimpleStringProperty("ArchitectFX");
+    public static final String APP_TITLE = "ArchitectFX";
+    public static final StringProperty windowTitle = new SimpleStringProperty(APP_TITLE);
 
     // Module
     private Frontend frontend;
@@ -121,7 +122,7 @@ public class ArchitectFX extends Application {
             );
             stage = window;
         }
-        stage.titleProperty().bind(title);
+        stage.titleProperty().bind(windowTitle);
         return stage;
     }
 

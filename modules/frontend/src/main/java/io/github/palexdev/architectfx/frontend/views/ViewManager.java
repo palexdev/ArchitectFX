@@ -33,6 +33,7 @@ public class ViewManager {
         View<?> view = views.get(event.data());
         if (view == null)
             throw new IllegalStateException("Unknown view: " + event.data());
+        ArchitectFX.windowTitle.set(ArchitectFX.APP_TITLE + " - " + view.title());
         rootPane.getChildren().setAll(view.toRegion());
     }
 }
