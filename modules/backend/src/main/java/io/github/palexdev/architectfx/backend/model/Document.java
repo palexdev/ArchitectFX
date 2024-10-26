@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
- * This file is part of ArchitectFX (https://github.com/palexdev/MaterialFX)
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
