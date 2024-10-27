@@ -9,7 +9,7 @@ dependencies {
 }
 
 javafx {
-    modules = ['javafx.graphics']
+    modules = ['javafx.controls']
 }
 
 test {

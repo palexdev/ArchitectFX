@@ -42,7 +42,7 @@ public class TestMisc {
               - 3
               - "Integer.MAX_VALUE"
               - "This is a string"
-              - "io.github.palexdev.architectfx.enums.Type.COLLECTION"
+              - "io.github.palexdev.architectfx.backend.enums.Type.COLLECTION"
               - "Double.MAX_VALUE"
             """;
         Object yaml = asYamlMap(new Yaml().load(document)).get("list");
@@ -211,8 +211,8 @@ public class TestMisc {
             list:
               - {.type: User, .args: ["User.PLACEHOLDER", "User.PLACEHOLDER"]}
               - {.type: User, .args: ["", ""],
-                 name: "io.github.palexdev.architectfx.yaml.Tags.TYPE_TAG",
-                 password: "io.github.palexdev.architectfx.yaml.Tags.VALUE_TAG"
+                 name: "io.github.palexdev.architectfx.backend.yaml.Tags.TYPE_TAG",
+                 password: "io.github.palexdev.architectfx.backend.yaml.Tags.VALUE_TAG"
                 }
             """;
 
