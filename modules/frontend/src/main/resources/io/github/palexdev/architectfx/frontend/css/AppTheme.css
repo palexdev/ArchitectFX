@@ -24,9 +24,9 @@
 * {
   /* Extended MD palette */
   -md-sys-color-on-green: #FFFFFF;
-  -md-sys-color-green: #3B6939;
-  -md-sys-color-green-container: #BCF0B4;
-  -md-sys-color-on-green-container: #002204;
+  -md-sys-color-green: #4CAF50;
+  -md-sys-color-green-container: #9FF5A7;
+  -md-sys-color-on-green-container: #00210F;
 
   -fx-font-smoothing-type: GRAY;
   -fx-text-fill: -md-sys-color-on-surface;

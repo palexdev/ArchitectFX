@@ -168,7 +168,7 @@
 }
 
 .init-view > .actions > .mfx-icon-button.success > .surface > .mfx-ripple-generator {
-  -mfx-ripple-color: derive(-md-sys-color-green, 116%);
+  -mfx-ripple-color: derive(-md-sys-color-green, 84%);
 }
 
 .init-view > .actions > .mfx-icon-button.success > .mfx-icon-wrapper > .mfx-font-icon {
