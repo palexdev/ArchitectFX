@@ -18,14 +18,16 @@
 
 package io.github.palexdev.architectfx.frontend.settings;
 
+import java.util.Collection;
 import java.util.Map;
 
-import io.github.palexdev.architectfx.frontend.model.Recents;
+import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.mfxcore.settings.NumberSetting;
 import io.github.palexdev.mfxcore.settings.Settings;
 import io.github.palexdev.mfxcore.settings.StringSetting;
 import io.inverno.core.annotation.Bean;
 import javafx.application.Application;
+import javafx.collections.ObservableList;
 
 @Bean
 public class AppSettings extends Settings {
@@ -35,6 +37,8 @@ public class AppSettings extends Settings {
     private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 1024.0);
     private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 768.0);
     private final StringSetting recents = registerString("recents", "YAML string that contains recently opened documents", "");
+    private final StringSetting lastDir = registerString("last.dir", "Last directory used for file input", "");
+    private final StringSetting lastTool = registerString("last.tool", "Last tool used for file input", "PREVIEW");
 
     private final Application.Parameters parameters;
     private Boolean resetSettings = null;
@@ -76,6 +80,14 @@ public class AppSettings extends Settings {
 
     public NumberSetting<Double> windowHeight() {
         return windowHeight;
+    }
+
+    public StringSetting lastDir() {
+        return lastDir;
+    }
+
+    public StringSetting lastTool() {
+        return lastTool;
     }
 
     public boolean isResetSettings() {
