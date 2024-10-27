@@ -32,7 +32,6 @@ public class ThemeEngine {
     public void loadTheme() {
         UserAgentBuilder.builder()
             .themes(MaterialThemes.INDIGO_LIGHT)
-            .themes(VFXTheme.SCROLL_PANE)
             .themes(AppTheme.DEFAULT)
             .setDeploy(true)
             .setResolveAssets(true)
