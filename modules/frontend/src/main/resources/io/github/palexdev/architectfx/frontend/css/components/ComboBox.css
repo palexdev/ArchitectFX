@@ -1,0 +1,78 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.combo-box {
+  -fx-background-color: -md-sys-color-surface;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 8px;
+  -fx-min-width: 180px;
+  -fx-padding: 0px 12px 0px 12px;
+}
+
+.combo-box > .cell > .label {
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+.combo-box > .mfx-icon-button.outlined {
+  -fx-border-color: transparent transparent transparent -md-sys-color-primary;
+  -fx-border-radius: 0px;
+  -fx-padding: 0px;
+}
+
+.combo-box > .mfx-icon-button.outlined > .surface > .bg {
+  -fx-background-insets: 1px;
+  -fx-background-radius: 0px 8px 8px 0px;
+}
+
+.combo-box > .mfx-icon-button.outlined > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: "fas-chevron-down";
+  -mfx-size: 16px
+}
+
+.combo-box > .mfx-popup .content {
+  -mfx-offset: '4 4';
+}
+
+.combo-box > .mfx-popup .vfx-scroll-pane {
+  -fx-background-color: -md-sys-color-surface;
+  -fx-background-radius: 8px;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 8px;
+  -vfx-clip-border-radius: 16px;
+  -vfx-layout-mode: COMPACT;
+}
+
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list {
+  -vfx-cell-size: 40px;
+}
+
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell {
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-padding: 0px 12px 0px 12px;
+  -fx-text-text-fill: -md-sys-color-on-surface-variant;
+}
+
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell:hover {
+  -fx-background-color: -md-ref-palette-primary95;
+}
+
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell:selected {
+  -fx-background-color: -md-ref-palette-primary90;
+}

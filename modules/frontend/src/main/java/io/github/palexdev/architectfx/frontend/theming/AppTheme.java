@@ -58,7 +58,8 @@ public enum AppTheme implements Theme {
             String[] assets = new String[]{
                 "css/Overrides.css",
                 "css/components/Components.css",
-                "css/components/DnDComponent.css",
+                "css/components/ComboBox.css",
+                "css/components/FileInput.css",
                 "css/fonts/Fonts.css",
                 "css/fonts/montserrat/Montserrat.css",
                 "css/fonts/montserrat/Montserrat-Black.ttf",

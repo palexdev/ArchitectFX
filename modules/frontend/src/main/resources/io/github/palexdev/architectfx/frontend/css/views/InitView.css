@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 .init-view {
   -fx-alignment: CENTER;
   -fx-min-height: 540px;
@@ -9,6 +27,7 @@
 .init-view > .header {
   -fx-font-family: "Montserrat Bold";
   -fx-font-size: 22px;
+  -fx-text-fill: -md-sys-color-on-surface;
 }
 
 .init-view > .sub-header {
@@ -16,49 +35,51 @@
   -fx-font-family: "Montserrat Medium";
   -fx-font-size: 14px;
   -fx-line-spacing: 2px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
 }
 
-.init-view > HBox {
+.init-view > .split {
+  -fx-alignment: CENTER;
   -fx-padding: 32px 0px 0px 0px;
   -fx-spacing: 24px;
 }
 
-.init-view > HBox > .vfx-scroll-pane {
+.init-view > .split > .vfx-scroll-pane {
   -fx-background-color: -md-sys-color-surface;
   -fx-background-radius: 12px;
   -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.20), 8, 0.16, 0, 3);
-  -fx-padding: -0px;
+  -fx-padding: 0px;
   -vfx-clip-border-radius: 24px;
   -vfx-layout-mode: COMPACT;
 }
 
-.init-view > HBox > .vfx-scroll-pane:compact {
+.init-view > .split > .vfx-scroll-pane:compact {
   -vfx-vbar-padding: 10 7 14 0;
   -vfx-hbar-padding: 0 14 7 10;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-scroll-bar {
+.init-view > .split > .vfx-scroll-pane .vfx-scroll-bar {
   -background: -md-sys-color-surface-container;
   -border: transparent;
   -thumb: -md-sys-color-outline-variant;
   -thumb-hop: -md-sys-color-outline;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table {
+.init-view > .split > .vfx-scroll-pane .vfx-table {
   -vfx-columns-size: "200 40";
   -vfx-rows-height: 40px;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .columns {
+.init-view > .split > .vfx-scroll-pane .vfx-table .columns {
   -fx-background-radius: 8px 8px 0px 0px;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .rows {
+.init-view > .split > .vfx-scroll-pane .vfx-table .rows {
   -fx-border-color: -md-sys-color-outline transparent transparent transparent;
   -fx-border-width: 0.125em;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column {
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-column {
   -fx-border-color: transparent;
   -fx-border-insets: 4px 2px 4px 2px;
   -fx-border-style: solid segments(3) line-cap round solid solid;
@@ -71,19 +92,29 @@
   -vfx-resizable: true;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column:hover,
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-column:dragged {
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-column > .mfx-font-icon {
+  -mfx-description: "fas-caret-up";
+}
+
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-column:hover,
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-column:dragged {
   -fx-border-color: transparent -md-sys-color-outline transparent transparent;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:hover,
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:selected {
-  -fx-background-color: -md-sys-color-primary-container;
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:hover,
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:selected {
   -fx-background-insets: 0.125em 0px 0px 0px;
-  -fx-background-radius: 0px;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row .label {
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:hover {
+  -fx-background-color: -md-ref-palette-primary95;
+}
+
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:selected {
+  -fx-background-color: -md-ref-palette-primary90;
+}
+
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row .label {
   -fx-font-family: "Montserrat Medium";
   -fx-font-size: 14px;
   -fx-padding: 0px 12px 0px 12px;
@@ -91,7 +122,56 @@
   -fx-text-overrun: LEADING_WORD_ELLIPSIS;
 }
 
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:hover .label,
-.init-view > HBox > .vfx-scroll-pane .vfx-table .vfx-row:selected .label {
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:hover .label,
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:selected .label {
   -fx-text-fill: -md-sys-color-on-primary-container;
+}
+
+.init-view > .actions {
+  -fx-alignment: CENTER;
+  -fx-padding: 8px 0px 0px 0px;
+  -fx-spacing: 12px;
+}
+
+.init-view > .actions > .mfx-icon-button:disabled {
+  -fx-background-color: transparent;
+}
+
+.init-view > .actions > .mfx-icon-button.warning {
+  -fx-border-color: -md-sys-color-error;
+  -fx-border-insets: -1px;
+  -fx-padding: 1px;
+}
+
+.init-view > .actions > .mfx-icon-button.warning > .surface > .bg {
+  -fx-background-color: -md-sys-color-error;
+}
+
+.init-view > .actions > .mfx-icon-button.warning > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: derive(-md-sys-color-error, 116%);
+}
+
+.init-view > .actions > .mfx-icon-button.warning:disabled > .mfx-icon-wrapper > .mfx-font-icon,
+.init-view > .actions > .mfx-icon-button.warning > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-color: -md-sys-color-error;
+  -mfx-description: 'fas-trash';
+}
+
+.init-view > .actions > .mfx-icon-button.success {
+  -fx-border-color: -md-sys-color-green;
+  -fx-border-insets: -1px;
+  -fx-padding: 1px;
+}
+
+.init-view > .actions > .mfx-icon-button.success > .surface > .bg {
+  -fx-background-color: -md-sys-color-green;
+}
+
+.init-view > .actions > .mfx-icon-button.success > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: derive(-md-sys-color-green, 116%);
+}
+
+.init-view > .actions > .mfx-icon-button.success > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-color: -md-sys-color-green;
+  -mfx-description: 'fas-play';
 }
