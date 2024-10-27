@@ -3,6 +3,14 @@
   ArchitectFX
 </h1>
 
+<h2 align="center" style="font-style: italic">
+  One step closer to the first milestone!
+</h2>
+
+![Imgur](https://imgur.com/7Cgdznu.png)
+
+<br>
+
 ArchitectFX is the "wannabe" nextgen successor of SceneBuilder.
 
 _Q: What do you mean by "wannabe¨?_  
