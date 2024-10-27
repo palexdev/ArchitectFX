@@ -18,8 +18,6 @@
 
 package io.github.palexdev.architectfx.frontend.views;
 
-import fr.brouillard.oss.cssfx.CSSFX;
-import io.github.palexdev.architectfx.frontend.Resources;
 import io.github.palexdev.architectfx.frontend.components.ComboBox;
 import io.github.palexdev.architectfx.frontend.components.FileInput;
 import io.github.palexdev.architectfx.frontend.components.base.ComboCell.SimpleComboCell;
@@ -151,10 +149,6 @@ public class InitView extends View<InitPane> {
 
             getChildren().addAll(header, subHeader, split, actionsBox);
             getStyleClass().add("init-view");
-
-            // TODO for debugging
-            CSSFX.start(this);
-            getStylesheets().add(Resources.load("css/views/InitView.css"));
         }
     }
 }
