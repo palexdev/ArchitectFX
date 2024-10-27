@@ -135,7 +135,7 @@ public class YamlTreeIterator implements Iterator<TreeEntry> {
     }
 
     //================================================================================
-    // Internal Classes
+    // Inner Classes
     //================================================================================
 
     /// Simple wrapper for a YAML entries.

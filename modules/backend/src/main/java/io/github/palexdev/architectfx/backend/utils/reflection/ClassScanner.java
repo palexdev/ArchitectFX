@@ -280,7 +280,7 @@ public class ClassScanner {
     }
 
     //================================================================================
-    // Internal Classes
+    // Inner Classes
     //================================================================================
 
     /// An enum factory which builds a [ClassGraph] instance based on how many things we want to scan.
