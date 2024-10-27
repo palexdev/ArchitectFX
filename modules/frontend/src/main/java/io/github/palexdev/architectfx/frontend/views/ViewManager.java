@@ -75,7 +75,6 @@ public class ViewManager {
         initMainWindow();
         mainWindow.sizeToScene();
         mainWindow.centerOnScreen();
-        mainWindow.setResizable(false);
     }
 
     private void onViewSwitchRequest(UIEvent.ViewSwitchEvent event) {
