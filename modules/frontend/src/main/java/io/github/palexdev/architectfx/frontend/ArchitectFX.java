@@ -104,6 +104,7 @@ public class ArchitectFX extends Application {
 
     @Override
     public void stop() {
+        events.publish(new AppEvent.AppCloseEvent());
         double w = (!Double.isNaN(stage.getWidth()) ? stage.getWidth() : settings.windowWidth().defValue());
         double h = (!Double.isNaN(stage.getHeight()) ? stage.getHeight() : settings.windowHeight().defValue());
         settings.windowWidth().set(w);
