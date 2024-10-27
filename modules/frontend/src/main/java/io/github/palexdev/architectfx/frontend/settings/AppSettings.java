@@ -49,13 +49,13 @@ public class AppSettings extends Settings {
     //================================================================================
     // Methods
     //================================================================================
-    public Recents loadRecents() {
+    public ObservableList<Recent> loadRecents() {
         String yaml = recents.get();
-        return Recents.load(yaml);
+        return Recent.load(yaml);
     }
 
-    public void saveRecents(Recents recents) {
-        String toYaml = recents.save();
+    public void saveRecents(Collection<Recent> recents) {
+        String toYaml = Recent.save(recents);
         this.recents.set(toYaml);
     }
 
