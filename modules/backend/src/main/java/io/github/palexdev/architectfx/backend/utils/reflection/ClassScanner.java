@@ -304,8 +304,10 @@ public class ClassScanner {
                 }
 
                 return new ClassGraph()
-                    .overrideClasspath(deps.toArray())
-                    .overrideClasspath((Object[]) PROJECT_CLASSPATH);
+                    .overrideClassLoaders(
+                        ClassLoader.getSystemClassLoader(),
+                        dm.loader()
+                    );
             }
         },
         ;
