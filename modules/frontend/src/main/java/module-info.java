@@ -21,8 +21,10 @@ module afx.frontend {
 
     // Logging
     requires org.tinylog.api;
+    requires org.tinylog.api.slf4j;
 
     // Misc
+    requires directory.watcher;
     requires pragmatica.core;
 
     //***** Exports *****//

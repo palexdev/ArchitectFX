@@ -14,6 +14,7 @@ subprojects {
 
         flatDir {
             dirs "$rootDir/libs"
+            dirs "$rootDir/libs/dirwatcher"
             dirs "$rootDir/libs/jresolve"
             dirs "$rootDir/libs/nfx-lib"
             dirs "$rootDir/libs/pragmatica"
@@ -27,7 +28,7 @@ subprojects {
         implementation "io.inverno:inverno-core:$inverno"
         implementation "org.yaml:snakeyaml:$snakeyaml"
         implementation "org.tinylog:tinylog-impl:$tinylog"
-        //implementation "org.tinylog:slf4j-tinylog:$tinylog"
+        implementation "org.tinylog:slf4j-tinylog:$tinylog"
 
         implementation name: 'pragmatica-core-0.3.0'
         implementation name: 'pragmatica-core-0.3.0', classifier: 'sources'
