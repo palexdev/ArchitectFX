@@ -21,9 +21,7 @@ import misc.TestUtils;
 import org.joor.Reflect;
 import org.junit.jupiter.api.Test;
 
-import static io.github.palexdev.architectfx.backend.utils.CastUtils.as;
-import static misc.TestUtils.forceInitFX;
-import static misc.TestUtils.getProperty;
+import static misc.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestLoader {
@@ -66,7 +64,7 @@ public class TestLoader {
 
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        GridPane root = as(new YamlLoader().load(stream).rootNode(), GridPane.class);
+        GridPane root = load(stream, GridPane.class);
 
         assertEquals(Pos.CENTER, root.getAlignment());
         assertEquals(20.0, root.getHgap());
@@ -125,7 +123,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        GridPane root = as(new YamlLoader().load(stream).rootNode(), GridPane.class);
+        GridPane root = load(stream, GridPane.class);
 
         assertEquals(Pos.CENTER, root.getAlignment());
         assertEquals(20.0, root.getHgap());
@@ -176,7 +174,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        Object obj = new YamlLoader().load(stream).rootNode();
+        Object obj = load(stream).rootNode();
         assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
         assertEquals(new Insets(10.0), getProperty(obj, "padding"));
         assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
@@ -218,7 +216,7 @@ public class TestLoader {
             """;
 
         InputStream stream = new ByteArrayInputStream(document.getBytes());
-        Object obj = new YamlLoader().load(stream).rootNode();
+        Object obj = load(stream).rootNode();
         assertEquals(Pos.CENTER, getProperty(obj, "alignment"));
         assertEquals(new Insets(10.0), getProperty(obj, "padding"));
         assertEquals("This is a MaterialFX's Button", getProperty(obj, "text"));
@@ -257,7 +255,8 @@ public class TestLoader {
             """;
 
         forceInitFX();
-        Document doc = new YamlLoader().load(new ByteArrayInputStream(document.getBytes()));
+        ByteArrayInputStream stream = new ByteArrayInputStream(document.getBytes());
+        Document doc = load(stream);
         Object controller = doc.controller();
         assertNotNull(controller);
         assertNotNull(Reflect.on(controller).get("box"));
@@ -288,9 +287,11 @@ public class TestLoader {
             """;
 
         forceInitFX();
-        Document doc = new YamlLoader()
-            .setControllerFactory(TestController::new)
-            .load(new ByteArrayInputStream(document.getBytes()));
+        Document doc;
+        ByteArrayInputStream stream = new ByteArrayInputStream(document.getBytes());
+        try (YamlLoader loader = new YamlLoader()) {
+            doc = loader.setControllerFactory(TestController::new).load(stream);
+        }
         Object controller = doc.controller();
         assertNotNull(controller);
         assertNotNull(Reflect.on(controller).get("box"));

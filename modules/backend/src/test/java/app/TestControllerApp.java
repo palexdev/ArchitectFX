@@ -31,7 +31,10 @@ public class TestControllerApp extends Application {
                     .args: ["Change Text"]
             """;
 
-        Parent root = new YamlLoader().load(new ByteArrayInputStream(document.getBytes())).rootNode();
+        Parent root;
+        try (YamlLoader loader = new YamlLoader()) {
+            root = loader.load(new ByteArrayInputStream(document.getBytes())).rootNode();
+        }
         Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);
         stage.show();

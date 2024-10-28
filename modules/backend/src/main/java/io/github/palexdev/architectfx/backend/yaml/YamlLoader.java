@@ -61,11 +61,17 @@ import org.yaml.snakeyaml.Yaml;
 /// - [YamlDeserializer#buildTreeConcurrent(Map.Entry)] and [#setParallel(boolean)]
 /// - [#withDeserializer(ChainSupplier)]
 ///
+/// Implements [AutoCloseable] for automatic disposal of the [YamlDeserializer] used to load the document ia `try` block.
+/// There are cases in which you don't want to dispose the deserializer because that would mean that all its dependencies
+/// are going to be disposed as well. If you want to reuse them, for faster subsequent loads of the same document then
+/// you can store the dependencies and configure the [YamlDeserializer] factory.
+///
 // TODO maybe we should not load a Parent but a generic Node
-public class YamlLoader {
+public class YamlLoader implements AutoCloseable {
     //================================================================================
     // Properties
     //================================================================================
+    private YamlDeserializer deserializer;
     private ChainSupplier<YamlDeserializer> deserializerFactory;
 
     //================================================================================
@@ -90,7 +96,6 @@ public class YamlLoader {
     ///
     /// @throws IOException if an unrecoverable error occurs during the process
     public Document load(InputStream stream) throws IOException {
-        YamlDeserializer deserializer = null;
         try {
             // Load YAML
             SequencedMap<String, Object> map = new Yaml().load(stream);
@@ -106,14 +111,9 @@ public class YamlLoader {
             deserializer.linkTree();
             deserializer.handleController(document);
 
-            deserializer.dispose();
-            deserializer = null;
             return document;
         } catch (Exception ex) {
             throw new IOException(ex);
-        } finally {
-            if (deserializer != null)
-                deserializer.dispose();
         }
     }
 
@@ -138,18 +138,14 @@ public class YamlLoader {
     }
 
     //================================================================================
-    // Getters/Setters
+    // Overridden Methods
     //================================================================================
 
-    /// @return the supplier responsible for building the [YamlDeserializer] used to load the document
-    public ChainSupplier<YamlDeserializer> getDeserializerFactory() {
-        return deserializerFactory;
-    }
-
-    /// Sets the supplier responsible for building the [YamlDeserializer] used to load the document.
-    public YamlLoader withDeserializer(ChainSupplier<YamlDeserializer> deserializerFactory) {
-        this.deserializerFactory = deserializerFactory;
-        return this;
+    /// Disposes the last [YamlDeserializer] used to load the document (if not null).
+    @Override
+    public void close() {
+        if (deserializer != null)
+            deserializer.dispose();
     }
 
     //================================================================================
@@ -191,6 +187,21 @@ public class YamlLoader {
     /// Delegate to [#setControllerFactory(Function)].
     public YamlLoader setControllerFactory(Supplier<Object> controllerFactory) {
         this.deserializerFactory = deserializerFactory.andThen(d -> d.setControllerFactory(c -> controllerFactory.get()));
+        return this;
+    }
+
+    //================================================================================
+    // Getters/Setters
+    //================================================================================
+
+    /// @return the supplier responsible for building the [YamlDeserializer] used to load the document
+    public ChainSupplier<YamlDeserializer> getDeserializerFactory() {
+        return deserializerFactory;
+    }
+
+    /// Sets the supplier responsible for building the [YamlDeserializer] used to load the document.
+    public YamlLoader withDeserializer(ChainSupplier<YamlDeserializer> deserializerFactory) {
+        this.deserializerFactory = deserializerFactory;
         return this;
     }
 }

@@ -26,8 +26,7 @@ import org.yaml.snakeyaml.Yaml;
 import static io.github.palexdev.architectfx.backend.utils.CastUtils.asYamlMap;
 import static io.github.palexdev.architectfx.backend.yaml.Tags.TYPE_TAG;
 import static io.github.palexdev.architectfx.backend.yaml.Tags.VALUE_TAG;
-import static misc.TestUtils.getProperty;
-import static misc.TestUtils.parser;
+import static misc.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestMisc {
@@ -251,7 +250,8 @@ public class TestMisc {
                 - {.method: setSize, .args: [64.0]}
                 - {.method: wrapIcon, .args: [64.0, true, true], .transform: true}
             """;
-        Parent icon = new YamlLoader().load(new ByteArrayInputStream(document.getBytes())).rootNode();
+
+        Parent icon = load(new ByteArrayInputStream(document.getBytes()), Parent.class);
         assertNotNull(icon);
         assertEquals("MFXIconWrapper", icon.getClass().getSimpleName());
 
@@ -268,29 +268,31 @@ public class TestMisc {
 
     @Test
     void testChainSupplier() throws ClassNotFoundException {
-        YamlLoader loader = new YamlLoader()
-            .setParallel(true)
-            .setControllerFactory(c -> new TestController())
-            .addToScanCache(LocalDateTime.class);
-        YamlDeserializer deserializer = loader.getDeserializerFactory().get();
-        assertNotNull(deserializer);
-        assertTrue(deserializer.isParallel());
-        assertNotNull(deserializer.getControllerFactory());
-        assertNotNull(deserializer.getScanner().findClass(LocalDateTime.class.getName()));
+        try (YamlLoader loader = new YamlLoader()) {
+            loader.setParallel(true)
+                .setControllerFactory(c -> new TestController())
+                .addToScanCache(LocalDateTime.class);
+            YamlDeserializer deserializer = loader.getDeserializerFactory().get();
+            assertNotNull(deserializer);
+            assertTrue(deserializer.isParallel());
+            assertNotNull(deserializer.getControllerFactory());
+            assertNotNull(deserializer.getScanner().findClass(LocalDateTime.class.getName()));
+        }
     }
 
     @Test
     void testDeserializerConfig() throws IOException {
         TestUtils.forceInitFX();
-        YamlLoader loader = new YamlLoader()
-            .withDeserializer(() -> new YamlDeserializer(d -> {
+        try (YamlLoader loader = new YamlLoader()) {
+            loader.withDeserializer(() -> new YamlDeserializer(d -> {
                 DependencyManager dm = new DependencyManager();
                 ClassScanner scanner = new ClassScanner(dm);
                 Reflector reflector = new Reflector(dm, scanner);
                 YamlParser parser = new YamlParser(d, scanner, reflector);
                 return new YamlDeserializer.YamlDeserializerConfig(dm, scanner, reflector, parser, true);
             }));
-        Entity root = loader.load(Launcher.class.getClassLoader().getResource("assets/TextFields.jdsl")).root();
-        assertNotNull(root);
+            Entity root = loader.load(Launcher.class.getClassLoader().getResource("assets/TextFields.jdsl")).root();
+            assertNotNull(root);
+        }
     }
 }

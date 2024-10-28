@@ -15,14 +15,17 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         long start = System.nanoTime();
         URL res = Launcher.class.getClassLoader().getResource("assets/TextFields.jdsl");
-        Parent root = new YamlLoader()
-            .setParallel(true)
-            .load(res)
-            .rootNode();
-        long end = System.nanoTime();
-        long elapsed = end - start;
-        long converted = TimeUnit.MILLISECONDS.convert(elapsed, TimeUnit.NANOSECONDS);
-        System.out.println("Elapsed: " + converted + "ms");
+
+        Parent root;
+        try (YamlLoader loader = new YamlLoader()) {
+            root = loader.setParallel(true)
+                .load(res)
+                .rootNode();
+            long end = System.nanoTime();
+            long elapsed = end - start;
+            long converted = TimeUnit.MILLISECONDS.convert(elapsed, TimeUnit.NANOSECONDS);
+            System.out.println("Elapsed: " + converted + "ms");
+        }
 
         Scene scene = new Scene(root, 800, 600);
         stage.setScene(scene);
