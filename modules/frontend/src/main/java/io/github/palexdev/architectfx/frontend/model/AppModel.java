@@ -19,16 +19,24 @@
 package io.github.palexdev.architectfx.frontend.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.github.palexdev.architectfx.backend.model.Document;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.events.AppEvent.AppCloseEvent;
+import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.DateTimeUtils;
+import io.github.palexdev.architectfx.frontend.utils.KeyValueProperty;
+import io.github.palexdev.architectfx.frontend.views.LivePreview;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.inverno.core.annotation.Bean;
+import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
+import javafx.util.Pair;
+import org.tinylog.Logger;
 
 @Bean
 public class AppModel {
@@ -38,6 +46,9 @@ public class AppModel {
     private final ObservableList<Recent> recents;
     private final AppSettings settings;
     private final IEventBus events;
+
+    private Tool lastTool;
+    private final KeyValueProperty<File, Document> document = new KeyValueProperty<>();
 
     //================================================================================
     // Constructors
@@ -54,9 +65,11 @@ public class AppModel {
     //================================================================================
     public void run(Tool tool, File file) {
         try {
-            tool.load(file);
+            setDocument(file, tool.load(file));
+            events.publish(new UIEvent.ViewSwitchEvent(LivePreview.class));
 
             // Save tool for next session
+            lastTool = tool;
             settings.lastTool().set(tool.name());
 
             // We have to work with lists for simplicity, but we need to make sure that there are no duplicate files!
@@ -67,15 +80,32 @@ public class AppModel {
             }
 
             settings.lastDir().set(file.getParent());
-        } catch (Exception ex) {
-
+        } catch (IOException ex) {
+            Logger.error(ex.getMessage());
+            setDocument(null, null);
         }
     }
 
     //================================================================================
-    // Getters
+    // Getters/Setters
     //================================================================================
     public ObservableList<Recent> recents() {
         return recents;
+    }
+
+    public Tool getLastTool() {
+        return lastTool;
+    }
+
+    public Pair<File, Document> getDocument() {
+        return document.get();
+    }
+
+    public ReadOnlyObjectProperty<Pair<File, Document>> documentProperty() {
+        return document.getReadOnlyProperty();
+    }
+
+    protected void setDocument(File file, Document document) {
+        this.document.setPair(file, document);
     }
 }
