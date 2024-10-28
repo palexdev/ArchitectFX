@@ -21,16 +21,13 @@ package io.github.palexdev.architectfx.frontend.views;
 import io.github.palexdev.architectfx.frontend.components.ComboBox;
 import io.github.palexdev.architectfx.frontend.components.FileInput;
 import io.github.palexdev.architectfx.frontend.components.base.ComboCell.SimpleComboCell;
-import io.github.palexdev.architectfx.frontend.components.selection.ISelectionModel;
 import io.github.palexdev.architectfx.frontend.components.vfx.RecentsTable;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
-import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.views.InitView.InitPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
-import io.github.palexdev.mfxcore.builders.bindings.BooleanBindingBuilder;
 import io.github.palexdev.mfxcore.controls.Label;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
@@ -95,7 +92,7 @@ public class InitView extends View<InitPane> {
         protected InitPane() {
             // Combo, needs to be instantiated early, belongs to actions
             toolCombo = new ComboBox<>(
-                FXCollections.observableArrayList(Tool.values()),
+                FXCollections.observableArrayList(Tool.PREVIEW),
                 SimpleComboCell::new
             );
 
@@ -134,14 +131,8 @@ public class InitView extends View<InitPane> {
             removeBtn.getStyleClass().add("warning");
 
             loadBtn = new MFXIconButton().outlined();
-            loadBtn.disableProperty().bind(BooleanBindingBuilder.build()
-                .setMapper(() -> {
-                    ISelectionModel<Recent> sm = recentsTable.getSelectionModel();
-                    return sm.isEmpty() || toolCombo.getSelectedItem() == Tool.EDIT;
-                })
-                .addSources(recentsTable.getSelectionModel().selection(), toolCombo.selection())
-                .get()
-            );
+            loadBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
+            loadBtn.setOnAction(e -> model.run(toolCombo.getSelectedItem(), recentsTable.getSelectionModel().getSelectedItem().file().toFile()));
             loadBtn.getStyleClass().add("success");
 
             HBox actionsBox = new HBox(removeBtn, toolCombo, loadBtn);
