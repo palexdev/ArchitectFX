@@ -20,23 +20,61 @@ package io.github.palexdev.architectfx.frontend.enums;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
+
+import io.github.palexdev.architectfx.backend.deps.DependencyManager;
+import io.github.palexdev.architectfx.backend.model.Document;
+import io.github.palexdev.architectfx.backend.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
+import io.github.palexdev.architectfx.backend.yaml.YamlDeserializer;
+import io.github.palexdev.architectfx.backend.yaml.YamlDeserializer.YamlDeserializerConfig;
+import io.github.palexdev.architectfx.backend.yaml.YamlLoader;
+import io.github.palexdev.architectfx.backend.yaml.YamlParser;
 
 public enum Tool {
     EDIT {
         @Override
-        public void load(File file) throws IOException {
+        public Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
     },
     PREVIEW {
-        @Override
-        public void load(File file) throws IOException {
+        private DependencyManager dm;
+        private ClassScanner scanner;
+        private Reflector reflector;
 
+        @Override
+        public Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException {
+            YamlLoader loader = new YamlLoader();
+            loaderConfig.accept(loader);
+            return loader.load(file);
+        }
+
+        @Override
+        public Consumer<YamlLoader> defaultConfig() {
+            if (dm == null || scanner == null || reflector == null) {
+                dm = new DependencyManager();
+                scanner = new ClassScanner(dm);
+                reflector = new Reflector(dm, scanner);
+            }
+            return loader -> loader.withDeserializer(
+                () -> new YamlDeserializer(
+                    d -> new YamlDeserializerConfig(dm, scanner, reflector, new YamlParser(d, scanner, reflector), true)
+                )
+            );
         }
     },
     ;
 
-    public abstract void load(File file) throws IOException;
+    public abstract Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException;
+
+    public Document load(File file) throws IOException {
+        return load(file, defaultConfig());
+    }
+
+    public Consumer<YamlLoader> defaultConfig() {
+        return loader -> {};
+    }
 
     @Override
     public String toString() {
