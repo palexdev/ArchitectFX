@@ -45,9 +45,7 @@ public enum Tool {
 
         @Override
         public Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException {
-            YamlLoader loader = new YamlLoader();
-            loaderConfig.accept(loader);
-            return loader.load(file);
+            return loader(loaderConfig).load(file);
         }
 
         @Override
@@ -70,6 +68,16 @@ public enum Tool {
 
     public Document load(File file) throws IOException {
         return load(file, defaultConfig());
+    }
+
+    public YamlLoader loader(Consumer<YamlLoader> loaderConfig) {
+        YamlLoader loader = new YamlLoader();
+        loaderConfig.accept(loader);
+        return loader;
+    }
+
+    public YamlLoader loader() {
+        return loader(defaultConfig());
     }
 
     public Consumer<YamlLoader> defaultConfig() {
