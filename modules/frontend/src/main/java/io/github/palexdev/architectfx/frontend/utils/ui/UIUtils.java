@@ -18,16 +18,21 @@
 
 package io.github.palexdev.architectfx.frontend.utils.ui;
 
+import io.github.palexdev.mfxcomponents.window.MFXPlainContent;
+import io.github.palexdev.mfxcomponents.window.popups.MFXTooltip;
 import io.github.palexdev.mfxcore.base.beans.Size;
+import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Node;
 import javafx.stage.Screen;
+import javafx.util.Duration;
 
-public class WindowUtils {
+public class UIUtils {
 
     //================================================================================
     // Constructors
     //================================================================================
-    private WindowUtils() {}
+    private UIUtils() {}
 
     //================================================================================
     // Static Methods
@@ -37,5 +42,13 @@ public class WindowUtils {
         Rectangle2D bounds = screen.getVisualBounds();
         defaultValue.setWidth(Math.min(defaultValue.getWidth(), bounds.getWidth() - 50));
         defaultValue.setHeight(Math.min(defaultValue.getHeight(), bounds.getHeight() - 50));
+    }
+
+    public static MFXTooltip installTooltip(Node owner, String text) {
+        MFXTooltip tooltip = new MFXTooltip(owner);
+        tooltip.setContent(new MFXPlainContent(text));
+        tooltip.setInDelay(M3Motion.EXTRA_LONG4);
+        tooltip.setOutDelay(Duration.ZERO);
+        return tooltip.install();
     }
 }
