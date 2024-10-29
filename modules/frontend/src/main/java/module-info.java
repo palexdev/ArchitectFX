@@ -35,6 +35,8 @@ module afx.frontend {
     exports io.github.palexdev.architectfx.frontend.components;
     exports io.github.palexdev.architectfx.frontend.components.base;
     exports io.github.palexdev.architectfx.frontend.components.selection;
+    exports io.github.palexdev.architectfx.frontend.components.dialogs;
+    exports io.github.palexdev.architectfx.frontend.components.dialogs.base;
     exports io.github.palexdev.architectfx.frontend.components.vfx;
     exports io.github.palexdev.architectfx.frontend.components.vfx.cells;
     exports io.github.palexdev.architectfx.frontend.components.vfx.columns;

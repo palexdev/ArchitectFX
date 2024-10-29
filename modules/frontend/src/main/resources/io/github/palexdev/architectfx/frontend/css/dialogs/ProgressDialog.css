@@ -1,0 +1,48 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.progress-dialog .box {
+  -fx-alignment: CENTER;
+  -fx-background-color: -md-sys-color-surface;
+  -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 12px;
+  -fx-min-height: 200px;
+  -fx-min-width: 400px;
+  -fx-spacing: 24px;
+}
+
+.progress-dialog .box > .label {
+  -fx-font-family: "Montserrat Medium";
+  -fx-font-size: 14px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+}
+
+.progress-dialog .box > .mfx-button.warning {
+  -fx-border-color: -md-sys-color-warn;
+  -fx-font-family: "Montserrat Medium";
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+}
+
+.progress-dialog .box > .mfx-button.warning > .surface > .bg {
+  -fx-background-color: -md-sys-color-warn;
+}
+
+.progress-dialog .box > .mfx-button.warning > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: derive(-md-sys-color-warn, 16%);
+}

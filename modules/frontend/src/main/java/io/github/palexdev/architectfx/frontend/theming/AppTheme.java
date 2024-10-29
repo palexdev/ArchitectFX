@@ -60,6 +60,8 @@ public enum AppTheme implements Theme {
                 "css/components/Components.css",
                 "css/components/ComboBox.css",
                 "css/components/FileInput.css",
+                "css/dialogs/Dialogs.css",
+                "css/dialogs/ProgressDialog.css",
                 "css/fonts/Fonts.css",
                 "css/fonts/montserrat/Montserrat.css",
                 "css/fonts/montserrat/Montserrat-Black.ttf",
@@ -85,6 +87,8 @@ public enum AppTheme implements Theme {
             };
 
             zos.putNextEntry(new ZipEntry("components/"));
+            zos.closeEntry();
+            zos.putNextEntry(new ZipEntry("dialogs/"));
             zos.closeEntry();
             zos.putNextEntry(new ZipEntry("fonts/"));
             zos.closeEntry();
