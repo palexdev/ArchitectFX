@@ -22,17 +22,29 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import io.github.palexdev.architectfx.backend.model.Document;
+import io.github.palexdev.architectfx.backend.utils.Async;
+import io.github.palexdev.architectfx.backend.utils.Progress;
+import io.github.palexdev.architectfx.backend.yaml.YamlLoader;
+import io.github.palexdev.architectfx.frontend.components.dialogs.ProgressDialog;
+import io.github.palexdev.architectfx.frontend.components.dialogs.base.DialogsService;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.events.AppEvent.AppCloseEvent;
+import io.github.palexdev.architectfx.frontend.events.DialogEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.DateTimeUtils;
 import io.github.palexdev.architectfx.frontend.utils.KeyValueProperty;
+import io.github.palexdev.architectfx.frontend.utils.ProgressProperty;
 import io.github.palexdev.architectfx.frontend.views.LivePreview;
+import io.github.palexdev.mfxcomponents.window.popups.PopupWindowState;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxcore.observables.When;
 import io.inverno.core.annotation.Bean;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.util.Pair;
@@ -48,6 +60,17 @@ public class AppModel {
     private final IEventBus events;
 
     private Tool lastTool;
+    private CompletableFuture<?> loadTask;
+    private final ProgressProperty progress = new ProgressProperty() {
+        @Override
+        protected void invalidated() {
+            if (get() == Progress.CANCELED && loadTask != null) {
+                loadTask.cancel(true);
+                Logger.debug("Load task has been canceled");
+                loadTask = null;
+            }
+        }
+    };
     private final KeyValueProperty<File, Document> document = new KeyValueProperty<>();
 
     //================================================================================
@@ -64,10 +87,8 @@ public class AppModel {
     // Methods
     //================================================================================
     public void run(Tool tool, File file) {
-        try {
-            setDocument(file, tool.load(file));
-            events.publish(new UIEvent.ViewSwitchEvent(LivePreview.class));
-
+        // Load document async
+        loadTask = load(tool, file).thenRun(() -> {
             // Save tool for next session
             lastTool = tool;
             settings.lastTool().set(tool.name());
@@ -80,10 +101,46 @@ public class AppModel {
             }
 
             settings.lastDir().set(file.getParent());
-        } catch (IOException ex) {
+        }).exceptionally(ex -> {
+            progress.set(Progress.CANCELED);
             Logger.error(ex.getMessage());
             setDocument(null, null);
-        }
+            return null;
+        });
+    }
+
+    protected CompletableFuture<Void> load(Tool tool, File file) {
+        // Init loader, show dialog
+        YamlLoader loader = tool.loader();
+        loader.setOnProgress(progress::set);
+        progress.reset(); // Needed otherwise subsequent calls will not make the dialog appear
+        events.publish(new DialogEvent.ShowProgress(() -> new DialogsService.DialogConfig<ProgressDialog>()
+            .implicitOwner()
+            .setScrimOwner(true)
+            .extraConfig(d -> {
+                d.progressProperty().bindBidirectional(progress);
+                // Switch view once closed for better transition
+                When.onInvalidated(d.stateProperty())
+                    .condition(PopupWindowState::isClosing)
+                    .then(s -> {
+                        if (progress.get() != Progress.CANCELED)
+                            Platform.runLater(
+                                () -> events.publish(new UIEvent.ViewSwitchEvent(LivePreview.class))
+                            );
+                    })
+                    .oneShot()
+                    .listen();
+            })
+        ));
+
+        return Async.run(() -> {
+            try {
+                Document loaded = loader.load(file);
+                setDocument(file, loaded);
+            } catch (IOException ex) {
+                throw new CompletionException(ex);
+            }
+        });
     }
 
     //================================================================================
