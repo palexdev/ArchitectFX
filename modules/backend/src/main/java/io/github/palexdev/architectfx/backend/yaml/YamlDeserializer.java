@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.backend.yaml;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -444,6 +445,12 @@ public class YamlDeserializer {
     /// Delegate for [ClassScanner#addToScanCache(Class\[\])].
     public YamlDeserializer addToScanCache(Class<?>... classes) {
         scanner.addToScanCache(classes);
+        return this;
+    }
+
+    /// Delegate for [ClassScanner#setDocumentPath(Path)].
+    public YamlDeserializer setDocumentPath(Path path) {
+        scanner.setDocumentPath(path);
         return this;
     }
 

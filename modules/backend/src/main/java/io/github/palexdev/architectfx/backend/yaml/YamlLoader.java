@@ -170,6 +170,15 @@ public class YamlLoader implements AutoCloseable {
         return this;
     }
 
+    /// Delegate to [YamlDeserializer#setDocumentPath(Path)].
+    ///
+    /// Since a new deserializer is built every time [#load(InputStream)] is called, this applies the configuration
+    /// on the factory [#getDeserializerFactory()] thanks to chaining, [ChainSupplier].
+    public YamlLoader setDocumentPath(File file) {
+        this.deserializerFactory = deserializerFactory.andThen(d -> d.setDocumentPath(file.toPath()));
+        return this;
+    }
+
     /// Delegate to [YamlDeserializer#setControllerFactory(Function)].
     ///
     /// Since a new deserializer is built every time [#load(InputStream)] is called, this applies the configuration

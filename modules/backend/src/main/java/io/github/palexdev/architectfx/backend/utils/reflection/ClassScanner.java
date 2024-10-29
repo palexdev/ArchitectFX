@@ -18,7 +18,10 @@
 
 package io.github.palexdev.architectfx.backend.utils.reflection;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -30,6 +33,7 @@ import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
 import io.github.palexdev.architectfx.backend.utils.ImportsSet;
 import io.github.palexdev.architectfx.backend.yaml.Keyword;
+import io.github.palexdev.architectfx.backend.yaml.YamlLoader;
 import org.tinylog.Logger;
 
 /// This class offers core functionalities to the deserialization process. Thanks to the third-party library
@@ -97,12 +101,6 @@ public class ClassScanner {
         Set.class
     };
 
-    /// Classpath entries got from `System.getProperty("java.class.path")` and split by `;`.
-    ///
-    /// Used by [ClassGraph], could be useful for future optimizations.
-    public static final String[] PROJECT_CLASSPATH = Arrays.stream(System.getProperty("java.class.path").split(";"))
-        .toArray(String[]::new);
-
     //================================================================================
     // Properties
     //================================================================================
@@ -111,6 +109,7 @@ public class ClassScanner {
     private final Map<String, ClassInfoList> scanCache = new HashMap<>();
     private final Map<String, Class<?>> searchCache = new HashMap<>();
     private final Map<String, URI> resourceCache = new HashMap<>();
+    private Path documentPath;
 
     //================================================================================
     // Constructors
@@ -195,6 +194,9 @@ public class ClassScanner {
     ///
     /// If the resource was already found by a previous scan, returns from cache.
     ///
+    /// If the document was loaded from a file and the path was set by [#setDocumentPath(Path)], tries to resolve the
+    /// resource based on the document's path.
+    ///
     /// Otherwise, resorts to [ClassGraph] to find a complete list of the resources on the classpath, which are then
     /// filtered by a [Pattern] built on the given name.
     ///
@@ -204,7 +206,33 @@ public class ClassScanner {
         // Check cache first
         if (resourceCache.containsKey(resource)) return resourceCache.get(resource);
 
+        // Try path approach first as it is faster
+        try {
+            if (documentPath != null && Files.isDirectory(documentPath.getParent())) {
+                Logger.debug("Using path-based approach...");
+                Path resPath = Path.of(resource);
+                Path targetPath;
+                if (resPath.isAbsolute()) {
+                    targetPath = resPath;
+                } else {
+                    Path basePath = documentPath.getParent();
+                    targetPath = basePath.resolve(resPath);
+                }
+
+                if (Files.exists(targetPath) && !Files.isDirectory(targetPath)) {
+                    URI uri = targetPath.toUri();
+                    resourceCache.put(resource, uri);
+                    return uri;
+                } else {
+                    throw new IOException("Resource not found at: " + targetPath);
+                }
+            }
+        } catch (Exception ex) {
+            Logger.warn("Path-based approach for resource {} failed because:\n{}", resource, ex);
+        }
+
         // Scan
+        Logger.debug("Using ClassGraph approach...");
         ClassGraph cg = scope.build(dm);
         try (ScanResult res = cg.scan()) {
             Logger.trace("ClassGraph scan terminated...");
@@ -216,14 +244,10 @@ public class ClassScanner {
                 resourceCache.put(resource, uri);
                 return uri;
             }
-
-            if (resources.isEmpty()) {
-                Logger.warn("Resource {} not found", resource);
-            } else {
-                Logger.warn("More than one resource found for name {}", resource);
-            }
-            return null;
+            Logger.warn(resources.isEmpty() ? "Resource {} not found" : "More than one resource found for name {}", resource);
         }
+
+        return null;
     }
 
     /// Uses [ClassGraph] to search for all classes with the given `className`.
@@ -270,6 +294,15 @@ public class ClassScanner {
         this.imports.addAll(imports);
     }
 
+    /// When a document is loaded from a file using [YamlLoader#load(File)], it's possible to set its path here to
+    /// enable path-based resources resolution. Basically, if the document specifies a resource like this
+    /// `@dir/myresource`, [#findResource(String, ScanScope)] will first attempt to resolve the resource relative to
+    /// the document's path. There's also the option of specifying absolute paths like this `/home/user/myresource`, in
+    /// this case, the document's path is not used.
+    public void setDocumentPath(Path documentPath) {
+        this.documentPath = documentPath;
+    }
+
     /// Closes all the scans (if any is still open), clears all the caches, and sets the [DependencyManager] reference to `null`
     public void dispose() {
         ScanResult.closeAll();
@@ -277,6 +310,7 @@ public class ClassScanner {
         imports.clear();
         scanCache.clear();
         searchCache.clear();
+        documentPath = null;
     }
 
     //================================================================================
