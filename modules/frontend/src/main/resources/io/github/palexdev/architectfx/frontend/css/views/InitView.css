@@ -138,23 +138,32 @@
 }
 
 .init-view > .actions > .mfx-icon-button.warning {
-  -fx-border-color: -md-sys-color-error;
+  -fx-border-color: -md-sys-color-fail;
   -fx-border-insets: -1px;
   -fx-padding: 1px;
 }
 
 .init-view > .actions > .mfx-icon-button.warning > .surface > .bg {
-  -fx-background-color: -md-sys-color-error;
+  -fx-background-color: -md-sys-color-fail;
 }
 
 .init-view > .actions > .mfx-icon-button.warning > .surface > .mfx-ripple-generator {
-  -mfx-ripple-color: derive(-md-sys-color-error, 116%);
+  -mfx-ripple-color: derive(-md-sys-color-fail, 84%);
 }
 
 .init-view > .actions > .mfx-icon-button.warning:disabled > .mfx-icon-wrapper > .mfx-font-icon,
 .init-view > .actions > .mfx-icon-button.warning > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-color: -md-sys-color-error;
+  -mfx-color: -md-sys-color-fail;
   -mfx-description: 'fas-trash';
+}
+
+.init-view > .actions > .mfx-icon-button.show {
+  -fx-border-insets: -1px;
+  -fx-padding: 1px;
+}
+
+.init-view > .actions > .mfx-icon-button.show > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: 'fas-folder-open';
 }
 
 .init-view > .actions > .mfx-icon-button.success {

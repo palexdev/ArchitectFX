@@ -31,3 +31,11 @@
   -fx-background-radius: 12px;
   -fx-border-radius: 12px;
 }
+
+.root .mfx-tooltip .content > .plain {
+  -fx-background-radius: 12px;
+}
+
+.root .mfx-tooltip .content > .plain > .label {
+  -fx-font-family: "Montserrat SemiBold";
+}

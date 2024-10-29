@@ -19,19 +19,48 @@
 @import "fonts/Fonts.css";
 @import "Overrides.css";
 @import "components/Components.css";
+@import "dialogs/Dialogs.css";
 @import "views/Views.css";
 
 * {
+  -fx-font-smoothing-type: GRAY;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root {
   /* Extended MD palette */
   -md-sys-color-on-green: #FFFFFF;
   -md-sys-color-green: #4CAF50;
   -md-sys-color-green-container: #9FF5A7;
   -md-sys-color-on-green-container: #00210F;
 
-  -fx-font-smoothing-type: GRAY;
-  -fx-text-fill: -md-sys-color-on-surface;
+  -md-sys-color-on-warn: #522300;
+  -md-sys-color-warn: #FFB68C;
+  -md-sys-color-warn-container: #6F3812;
+  -md-sys-color-on-warn-container: #FFDBC9;
+
+  -md-sys-color-on-fail: #FFFFFF;
+  -md-sys-color-fail: #E57373;
+  -md-sys-color-fail-container: #FFDAD6;
+  -md-sys-color-on-fail-container: #400001;
+
+  -fx-background-color: -md-sys-color-surface;
 }
 
-.root {
-  -fx-background-color: -md-sys-color-surface;
+.root:dark {
+  /* Extended MD palette (Dark variants) */
+  -md-sys-color-on-green: #00331A;
+  -md-sys-color-green: #9FF5A7;
+  -md-sys-color-green-container: #004D27;
+  -md-sys-color-on-green-container: #C4F1C5;
+
+  -md-sys-color-on-warn: #43290F;
+  -md-sys-color-warn: #FFB68C;
+  -md-sys-color-warn-container: #6A3F20;
+  -md-sys-color-on-warn-container: #FFDBBF;
+
+  -md-sys-color-on-fail: #5C0005;
+  -md-sys-color-fail: #FFB4A9;
+  -md-sys-color-fail-container: #7A2A22;
+  -md-sys-color-on-fail-container: #FFDAD6;
 }

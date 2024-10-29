@@ -47,3 +47,7 @@
   -fx-font-family: "Montserrat SemiBold";
   -fx-font-size: 14px;
 }
+
+.file-input > .mfx-button.outlined {
+  -fx-font-family: "Montserrat Medium";
+}
