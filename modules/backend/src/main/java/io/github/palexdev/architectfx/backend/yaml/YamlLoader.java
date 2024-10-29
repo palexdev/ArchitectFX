@@ -23,14 +23,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.SequencedMap;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.model.Document;
 import io.github.palexdev.architectfx.backend.model.Entity;
 import io.github.palexdev.architectfx.backend.utils.ChainSupplier;
+import io.github.palexdev.architectfx.backend.utils.Progress;
 import org.tinylog.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -66,6 +69,7 @@ import org.yaml.snakeyaml.Yaml;
 /// are going to be disposed as well. If you want to reuse them, for faster subsequent loads of the same document then
 /// you can store the dependencies and configure the [YamlDeserializer] factory.
 ///
+/// Allows you to monitor the loading task progress by setting a callback with [#setOnProgress(Consumer)]
 // TODO maybe we should not load a Parent but a generic Node
 public class YamlLoader implements AutoCloseable {
     //================================================================================
@@ -73,6 +77,7 @@ public class YamlLoader implements AutoCloseable {
     //================================================================================
     private YamlDeserializer deserializer;
     private ChainSupplier<YamlDeserializer> deserializerFactory;
+    private Consumer<Progress> onProgress;
 
     //================================================================================
     // Constructors
@@ -98,21 +103,28 @@ public class YamlLoader implements AutoCloseable {
     public Document load(InputStream stream) throws IOException {
         try {
             // Load YAML
+            onProgress("Loading document...", -1.0);
             SequencedMap<String, Object> map = new Yaml().load(stream);
 
             // Pre-load document
             deserializer = deserializerFactory.get();
             Document document = deserializer.parseDocument(map);
+            onProgress("Nodes instantiated...", 0.75);
 
             // Initialization stage
             deserializer.initializeTree();
+            onProgress("Tree initialized...", 0.9);
 
             // Finally, build the scene graph and populate the controller if present
             deserializer.linkTree();
             deserializer.handleController(document);
+            onProgress("Tree linked and controller initialized...", 0.99);
+            onProgress("Done!", 1.0);
 
             return document;
         } catch (Exception ex) {
+            if (onProgress != null)
+                onProgress.accept(Progress.CANCELED);
             throw new IOException(ex);
         }
     }
@@ -121,7 +133,7 @@ public class YamlLoader implements AutoCloseable {
     public Document load(File file) throws IOException {
         try {
             Logger.debug("Loading file {}", file.toString());
-            return load(new FileInputStream(file));
+            return setDocumentPath(file).load(new FileInputStream(file));
         } catch (Exception ex) {
             throw new IOException("Failed to load file", ex);
         }
@@ -135,6 +147,12 @@ public class YamlLoader implements AutoCloseable {
         } catch (Exception ex) {
             throw new IOException("Failed to load from URL", ex);
         }
+    }
+
+    /// Responsible for signaling the progress state of the load task.
+    protected void onProgress(String description, double progress) {
+        if (onProgress != null)
+            onProgress.accept(Progress.of(description, progress));
     }
 
     //================================================================================
@@ -211,6 +229,17 @@ public class YamlLoader implements AutoCloseable {
     /// Sets the supplier responsible for building the [YamlDeserializer] used to load the document.
     public YamlLoader withDeserializer(ChainSupplier<YamlDeserializer> deserializerFactory) {
         this.deserializerFactory = deserializerFactory;
+        return this;
+    }
+
+    /// @return the callback that handles progress updates
+    public Consumer<Progress> getOnProgress() {
+        return onProgress;
+    }
+
+    /// Sets the callback that handles progress updates
+    public YamlLoader setOnProgress(Consumer<Progress> onProgress) {
+        this.onProgress = onProgress;
         return this;
     }
 }
