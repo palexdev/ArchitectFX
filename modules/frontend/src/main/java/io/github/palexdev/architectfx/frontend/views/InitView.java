@@ -24,7 +24,9 @@ import io.github.palexdev.architectfx.frontend.components.base.ComboCell.SimpleC
 import io.github.palexdev.architectfx.frontend.components.vfx.RecentsTable;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
+import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.InitView.InitPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
@@ -32,10 +34,12 @@ import io.github.palexdev.mfxcore.controls.Label;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
 import io.inverno.core.annotation.Bean;
+import javafx.application.HostServices;
 import javafx.collections.FXCollections;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import org.tinylog.Logger;
 
 @Bean
 public class InitView extends View<InitPane> {
@@ -44,14 +48,16 @@ public class InitView extends View<InitPane> {
     //================================================================================
     private final AppModel model;
     private final AppSettings settings;
+    private final HostServices hostServices;
 
     //================================================================================
     // Constructors
     //================================================================================
-    public InitView(IEventBus events, AppModel model, AppSettings settings) {
+    public InitView(IEventBus events, AppModel model, AppSettings settings, HostServices hostServices) {
         super(events);
         this.model = model;
         this.settings = settings;
+        this.hostServices = hostServices;
     }
 
     //================================================================================
@@ -87,6 +93,7 @@ public class InitView extends View<InitPane> {
 
         private final ComboBox<Tool> toolCombo;
         private final MFXIconButton removeBtn;
+        private final MFXIconButton showBtn;
         private final MFXIconButton loadBtn;
 
         protected InitPane() {
@@ -129,17 +136,38 @@ public class InitView extends View<InitPane> {
             removeBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
             removeBtn.setOnAction(e -> model.recents().remove(recentsTable.getSelectionModel().getSelectedItem()));
             removeBtn.getStyleClass().add("warning");
+            UIUtils.installTooltip(removeBtn, "Delete entry");
+
+            showBtn = new MFXIconButton().outlined();
+            showBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
+            showBtn.setOnAction(e -> openInFileManager());
+            showBtn.getStyleClass().add("show");
+            UIUtils.installTooltip(showBtn, "Show in file manager");
 
             loadBtn = new MFXIconButton().outlined();
             loadBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
-            loadBtn.setOnAction(e -> model.run(toolCombo.getSelectedItem(), recentsTable.getSelectionModel().getSelectedItem().file().toFile()));
+            loadBtn.setOnAction(e -> model.run(toolCombo.getSelectedItem(), getSelectedItem().file().toFile()));
             loadBtn.getStyleClass().add("success");
+            UIUtils.installTooltip(loadBtn, "Load with selected tool");
 
-            HBox actionsBox = new HBox(removeBtn, toolCombo, loadBtn);
+            HBox actionsBox = new HBox(removeBtn, showBtn, toolCombo, loadBtn);
             actionsBox.getStyleClass().add("actions");
 
             getChildren().addAll(header, subHeader, split, actionsBox);
             getStyleClass().add("init-view");
+        }
+
+        protected void openInFileManager() {
+            try {
+                Recent item = getSelectedItem();
+                hostServices.showDocument(item.file().getParent().toUri().toString());
+            } catch (Exception ex) {
+                Logger.warn("Could not show file in file manager because:\n{}", ex);
+            }
+        }
+
+        protected Recent getSelectedItem() {
+            return recentsTable.getSelectionModel().getSelectedItem();
         }
     }
 }
