@@ -18,6 +18,10 @@
 
 @import 'MFXColors.css';
 
+* {
+	-fx-font-smoothing-type: gray;
+}
+
 .header-label {
 	-fx-font-family: 'Open Sans Bold';
 	-fx-font-size: 14;

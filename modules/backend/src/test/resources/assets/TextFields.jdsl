@@ -20,14 +20,15 @@
 
 # Global config, in this case, setting a global theme
 # Needless to say, global configs only support static methods and fields
-.config:
-  - {.method: "UserAgentBuilder.builder", .transform: true}
-  - {.method: "themes", .varargs: [JavaFXThemes.MODENA]}
-  - {.method: "themes", .varargs: [MaterialFXStylesheets.DEFAULT]}
-  - {.method: "setDeploy", .args: [true]}
-  - {.method: "setResolveAssets", .args: [true]}
-  - {.method: "build", .transform: true}
-  - {.method: "setGlobal"}
+# This is now disabled because on frontend testing it causes the override of the app theme!
+#.config:
+#  - {.method: "UserAgentBuilder.builder", .transform: true}
+#  - {.method: "themes", .varargs: [JavaFXThemes.MODENA]}
+#  - {.method: "themes", .varargs: [MaterialFXStylesheets.DEFAULT]}
+#  - {.method: "setDeploy", .args: [true]}
+#  - {.method: "setResolveAssets", .args: [true]}
+#  - {.method: "build", .transform: true}
+#  - {.method: "setGlobal"}
 
 GridPane:
   alignment: "Pos.CENTER"
@@ -37,6 +38,7 @@ GridPane:
   styleClass:
     - "grid-pane"
   stylesheets:
+    - "@css/DefaultTheme.css"
     - "@css/TextFields.css"
 
   columnConstraints: [
@@ -149,7 +151,7 @@ GridPane:
           - {.method: "GridPane.setRowIndex", .args: ["Keyword.THIS", 2]}
 
     - MFXPasswordField:
-        id: "customField"
+        id: "customPassword"
         floatingText: "Custom"
         promptText: "Prompt Text"
         .config:
@@ -220,14 +222,14 @@ GridPane:
           - {.method: "GridPane.setColumnSpan", .args: ["Keyword.THIS", 2147483647]}
         children:
           - MFXPasswordField:
-              id: "validatedField"
               .cid: "passwordField"
+              id: "validatedField"
               floatingText: "Validated"
               maxWidth: 200.0
 
           - Label:
-              id: "validationLabel"
               .cid: "validationLabel"
+              id: "validationLabel"
               visible: false
               textFill: {.type: Color, .factory: Color.web, .args: ["#ef6e6b"]}
               wrapText: true
