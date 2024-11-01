@@ -32,7 +32,6 @@ import io.github.palexdev.virtualizedfx.table.VFXTableColumn;
 import io.github.palexdev.virtualizedfx.table.defaults.VFXDefaultTableColumn;
 import io.github.palexdev.virtualizedfx.table.defaults.VFXDefaultTableColumnSkin;
 import io.github.palexdev.virtualizedfx.table.defaults.VFXTableColumnBehavior;
-import javafx.animation.Animation;
 import javafx.scene.Node;
 import javafx.scene.input.MouseEvent;
 
@@ -40,10 +39,6 @@ import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
 import static io.github.palexdev.mfxcore.observables.When.onInvalidated;
 
 public class SortingColumnSkin<T, C extends VFXTableCell<T>> extends VFXDefaultTableColumnSkin<T, C> {
-    //================================================================================
-    // Properties
-    //================================================================================
-    private Animation iconAnimation;
 
     //================================================================================
     // Constructors
@@ -81,7 +76,8 @@ public class SortingColumnSkin<T, C extends VFXTableCell<T>> extends VFXDefaultT
                             handleIcon(initialState);
                         }
                     })
-                    .oneShot()
+                    .oneShot(true)
+                    .executeNow(() -> !table.isEmpty())
                     .listen();
             }
         }
