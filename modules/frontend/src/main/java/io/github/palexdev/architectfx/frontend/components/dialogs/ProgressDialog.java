@@ -19,7 +19,6 @@
 package io.github.palexdev.architectfx.frontend.components.dialogs;
 
 import java.util.List;
-import java.util.Objects;
 
 import io.github.palexdev.architectfx.backend.utils.Progress;
 import io.github.palexdev.architectfx.frontend.components.dialogs.base.Dialog;
@@ -28,7 +27,6 @@ import io.github.palexdev.mfxcomponents.controls.buttons.MFXButton;
 import io.github.palexdev.mfxcomponents.controls.progress.MFXProgressIndicator;
 import io.github.palexdev.mfxcomponents.controls.progress.ProgressDisplayMode;
 import io.github.palexdev.mfxcore.controls.Label;
-import io.github.palexdev.mfxcore.observables.When;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.layout.VBox;
@@ -39,27 +37,24 @@ public class ProgressDialog extends Dialog {
     //================================================================================
     private ProgressProperty progress;
 
+    private MFXProgressIndicator indicator;
+    private Label desc;
+
     //================================================================================
     // Overridden Methods
     //================================================================================
     @Override
     protected Node buildContent() {
-        MFXProgressIndicator indicator = new MFXProgressIndicator();
+        indicator = new MFXProgressIndicator();
         indicator.setDisplayMode(ProgressDisplayMode.CIRCULAR);
+        indicator.setProgress(progressProperty().getProgress());
 
         MFXButton cancel = new MFXButton("Cancel").outlined();
         cancel.setOnAction(e -> progressProperty().set(Progress.CANCELED));
         cancel.getStyleClass().add("warning");
 
-        Label desc = new Label();
-        When.onInvalidated(progressProperty())
-            .condition(Objects::nonNull)
-            .then(p -> Platform.runLater(() -> {
-                indicator.setProgress(p.progress());
-                desc.setText(p.description());
-            }))
-            .executeNow()
-            .listen();
+        desc = new Label();
+        desc.setText(progressProperty().getDescription());
 
         VBox container = new VBox(24.0, indicator, desc, cancel);
         container.getStyleClass().add("box");
@@ -69,6 +64,12 @@ public class ProgressDialog extends Dialog {
     @Override
     public List<String> defaultStyleClasses() {
         return List.of("mfx-popup", "progress-dialog");
+    }
+
+    @Override
+    protected void dispose() {
+        progressProperty().unbind();
+        super.dispose();
     }
 
     //================================================================================
@@ -83,8 +84,15 @@ public class ProgressDialog extends Dialog {
             @Override
             protected void invalidated() {
                 Progress current = get();
-                if (current == Progress.CANCELED || current.progress() == 1.0)
+
+                Platform.runLater(() -> {
+                    indicator.setProgress(current.progress());
+                    desc.setText(current.description());
+                });
+
+                if (current == Progress.CANCELED || current.progress() == 1.0) {
                     Platform.runLater(ProgressDialog.this::hide);
+                }
             }
         };
         return progress;
