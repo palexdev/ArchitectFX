@@ -38,6 +38,7 @@ public abstract class Dialog extends MFXPopup {
     private boolean scrimOwner = false;
     private double scrimStrength = 0.25;
     private When<?> ownerPosWhen;
+    private boolean aotStatus = false;
 
     //================================================================================
     // Constructors
@@ -96,6 +97,16 @@ public abstract class Dialog extends MFXPopup {
         }
     }
 
+    protected void dispose() {
+        if (ownerPosWhen != null) {
+            ownerPosWhen.dispose();
+            ownerPosWhen = null;
+        }
+        setOwner(null);
+        setContent(null);
+        scrim = null;
+    }
+
     //================================================================================
     // Overridden Methods
     //================================================================================
@@ -106,6 +117,7 @@ public abstract class Dialog extends MFXPopup {
             .filter(Stage.class::isInstance)
             .map(Stage.class::cast)
             .ifPresent(s -> {
+                aotStatus = s.isAlwaysOnTop();
                 s.setAlwaysOnTop(true);
                 ownerPosWhen = When.onInvalidated(s.xProperty())
                     .then(v -> autoReposition())
@@ -120,19 +132,16 @@ public abstract class Dialog extends MFXPopup {
 
     @Override
     public void hide() {
-        if (getState().isClosing()) return; // TODO improve on the MaterialFX side
         Optional.ofNullable(getOwnerWindow())
             .filter(Stage.class::isInstance)
             .map(Stage.class::cast)
             .ifPresent(s -> {
-                s.setAlwaysOnTop(false);
+                // Restore old aot status rather than setting it to false
+                s.setAlwaysOnTop(aotStatus);
                 unscrim();
             });
-        if (ownerPosWhen != null){
-            ownerPosWhen.dispose();
-            ownerPosWhen = null;
-        }
         super.hide();
+        dispose();
     }
 
     //================================================================================
