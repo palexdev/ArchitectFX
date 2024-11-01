@@ -7,6 +7,7 @@ module afx.frontend {
     requires afx.backend;
 
     // JavaFX
+    requires javafx.graphics;
     requires fr.brouillard.oss.cssfx;
     requires mfx.components;
     requires nfx.core;
@@ -34,9 +35,10 @@ module afx.frontend {
     // Components Package
     exports io.github.palexdev.architectfx.frontend.components;
     exports io.github.palexdev.architectfx.frontend.components.base;
-    exports io.github.palexdev.architectfx.frontend.components.selection;
     exports io.github.palexdev.architectfx.frontend.components.dialogs;
     exports io.github.palexdev.architectfx.frontend.components.dialogs.base;
+    exports io.github.palexdev.architectfx.frontend.components.layout;
+    exports io.github.palexdev.architectfx.frontend.components.selection;
     exports io.github.palexdev.architectfx.frontend.components.vfx;
     exports io.github.palexdev.architectfx.frontend.components.vfx.cells;
     exports io.github.palexdev.architectfx.frontend.components.vfx.columns;
