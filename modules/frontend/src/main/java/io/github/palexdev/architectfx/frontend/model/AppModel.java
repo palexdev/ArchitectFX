@@ -97,12 +97,12 @@ public class AppModel {
             Recent recent = new Recent(file.toPath(), DateTimeUtils.epochMilli());
             Set<Recent> tmp = new HashSet<>(recents);
             if (tmp.add(recent)) {
-                recents.add(recent);
+                Platform.runLater(() -> recents.add(recent));
             }
 
             settings.lastDir().set(file.getParent());
         }).exceptionally(ex -> {
-            progress.set(Progress.CANCELED);
+            setProgress(Progress.CANCELED);
             Logger.error(ex.getMessage());
             setDocument(null, null);
             return null;
@@ -112,18 +112,18 @@ public class AppModel {
     protected CompletableFuture<Void> load(Tool tool, File file) {
         // Init loader, show dialog
         YamlLoader loader = tool.loader();
-        loader.setOnProgress(progress::set);
+        loader.setOnProgress(this::setProgress);
         progress.reset(); // Needed otherwise subsequent calls will not make the dialog appear
         events.publish(new DialogEvent.ShowProgress(() -> new DialogsService.DialogConfig<ProgressDialog>()
             .implicitOwner()
             .setScrimOwner(true)
             .extraConfig(d -> {
-                d.progressProperty().bindBidirectional(progress);
+                d.progressProperty().bind(progress);
                 // Switch view once closed for better transition
                 When.onInvalidated(d.stateProperty())
                     .condition(PopupWindowState::isClosing)
                     .then(s -> {
-                        if (progress.get() != Progress.CANCELED)
+                        if (getProgress() != Progress.CANCELED)
                             Platform.runLater(
                                 () -> events.publish(new UIEvent.ViewSwitchEvent(LivePreview.class))
                             );
@@ -152,6 +152,18 @@ public class AppModel {
 
     public Tool getLastTool() {
         return lastTool;
+    }
+
+    public Progress getProgress() {
+        return progress.get();
+    }
+
+    public ReadOnlyObjectProperty<Progress> progressProperty() {
+        return progress.getReadOnlyProperty();
+    }
+
+    protected void setProgress(Progress progress) {
+        this.progress.set(progress);
     }
 
     public Pair<File, Document> getDocument() {
