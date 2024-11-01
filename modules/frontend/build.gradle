@@ -27,3 +27,8 @@ application {
     mainModule = 'afx.frontend'
     mainClass = 'io.github.palexdev.architectfx.frontend.ArchitectFX'
 }
+
+tasks.register('launch', JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'app.Launcher'
+}
