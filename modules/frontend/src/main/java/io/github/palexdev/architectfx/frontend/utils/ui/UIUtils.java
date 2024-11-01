@@ -18,12 +18,15 @@
 
 package io.github.palexdev.architectfx.frontend.utils.ui;
 
+import fr.brouillard.oss.cssfx.CSSFX;
+import io.github.palexdev.architectfx.frontend.Resources;
 import io.github.palexdev.mfxcomponents.window.MFXPlainContent;
 import io.github.palexdev.mfxcomponents.window.popups.MFXTooltip;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 
@@ -52,5 +55,10 @@ public class UIUtils {
         tooltip.setInDelay(M3Motion.EXTRA_LONG4);
         tooltip.setOutDelay(Duration.ZERO);
         return tooltip.install();
+    }
+
+    public static void debugTheme(Parent parent, String theme) {
+        CSSFX.start(parent);
+        parent.getStylesheets().add(Resources.load(theme));
     }
 }
