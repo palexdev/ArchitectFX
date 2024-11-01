@@ -27,7 +27,6 @@ public class Async {
     // Static Properties
     //================================================================================
     private static final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-    private static final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
     public static final CompletableFuture<Object> EMPTY_FUTURE = CompletableFuture.completedFuture(null);
 
     //================================================================================
@@ -56,12 +55,20 @@ public class Async {
         }, executor);
     }
 
-    public static ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
-        return scheduledExecutor.schedule(command, delay, unit);
+    public static CompletableFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+        Executor delayed = CompletableFuture.delayedExecutor(delay, unit, executor);
+        return CompletableFuture.runAsync(command, delayed);
     }
 
-    public static <T> ScheduledFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
-        return scheduledExecutor.schedule(callable, delay, unit);
+    public static <T> CompletableFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
+        Executor delayed = CompletableFuture.delayedExecutor(delay, unit, executor);
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return callable.call();
+            } catch (Exception ex) {
+                throw new CompletionException(ex);
+            }
+        }, delayed);
     }
 
     /// Convenience method to wrap a [Callable] in a [CompletableFuture]. The action is not run asynchronously!
@@ -90,9 +97,5 @@ public class Async {
     /// @see Executors#newVirtualThreadPerTaskExecutor()
     public static ExecutorService executor() {
         return executor;
-    }
-
-    public static ExecutorService schedulingExecutor() {
-        return scheduledExecutor;
     }
 }
