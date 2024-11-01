@@ -37,11 +37,13 @@ public class UIUtils {
     //================================================================================
     // Static Methods
     //================================================================================
-    public static void clampWindowSizes(Size defaultValue) {
+    public static Size clampWindowSizes(Size size) {
         Screen screen = Screen.getPrimary();
         Rectangle2D bounds = screen.getVisualBounds();
-        defaultValue.setWidth(Math.min(defaultValue.getWidth(), bounds.getWidth() - 50));
-        defaultValue.setHeight(Math.min(defaultValue.getHeight(), bounds.getHeight() - 50));
+        return Size.of(
+            Math.min(size.getWidth(), bounds.getWidth() - 50),
+            Math.min(size.getHeight(), bounds.getHeight() - 50)
+        );
     }
 
     public static MFXTooltip installTooltip(Node owner, String text) {

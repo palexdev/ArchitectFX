@@ -24,7 +24,9 @@ import io.github.palexdev.architectfx.frontend.ArchitectFX;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.base.View;
+import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.inverno.core.annotation.Bean;
 import javafx.scene.Scene;
@@ -64,9 +66,21 @@ public class ViewManager {
     // Methods
     //================================================================================
     private void initMainWindow() {
-        Scene scene = new Scene(rootPane);
+        // Get minimum sizes
+        double minW = settings.windowWidth().defValue();
+        double minH = settings.windowHeight().defValue();
+        double prefW = settings.windowWidth().get();
+        double prefH = settings.windowHeight().get();
+        Size minSize = UIUtils.clampWindowSizes(Size.of(minW, minH));
+        Size prefSize = UIUtils.clampWindowSizes(Size.of(prefW, prefH));
+        double w = Math.max(minSize.getWidth(), prefSize.getWidth());
+        double h = Math.max(minSize.getHeight(), prefSize.getHeight());
+
+        Scene scene = new Scene(rootPane, w, h);
         mainWindow.setScene(scene);
         mainWindow.initStyle(StageStyle.UNIFIED);
+        mainWindow.setMinWidth(minSize.getWidth());
+        mainWindow.setMinHeight(minSize.getHeight());
         onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitView.class));
         mainWindow.show();
     }

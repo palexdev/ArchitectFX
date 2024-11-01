@@ -34,8 +34,11 @@ public class AppSettings extends Settings {
     //================================================================================
     // Settings
     //================================================================================
-    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 1024.0);
-    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 768.0);
+    // UI
+    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 960.0);
+    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 540.0);
+
+    // App
     private final StringSetting recents = registerString("recents", "YAML string that contains recently opened documents", "");
     private final StringSetting lastDir = registerString("last.dir", "Last directory used for file input", "");
     private final StringSetting lastTool = registerString("last.tool", "Last tool used for file input", "PREVIEW");
