@@ -65,7 +65,7 @@ public class RecentsTable extends VFXTable<Recent> implements Sortable<Recent>, 
         setItems(backingList);
 
         setColumnsLayoutMode(ColumnsLayoutMode.VARIABLE);
-        selectionModel = new SelectionModel<>(recents);
+        selectionModel = new SelectionModel<>(backingList);
         selectionModel.setAllowsMultipleSelection(false);
 
         // Path column
