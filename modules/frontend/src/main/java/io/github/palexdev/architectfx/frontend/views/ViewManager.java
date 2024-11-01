@@ -81,13 +81,14 @@ public class ViewManager {
         mainWindow.initStyle(StageStyle.UNIFIED);
         mainWindow.setMinWidth(minSize.getWidth());
         mainWindow.setMinHeight(minSize.getHeight());
+        mainWindow.setWidth(w);
+        mainWindow.setHeight(h);
         onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitView.class));
         mainWindow.show();
     }
 
     private void onAppReady() {
         initMainWindow();
-        mainWindow.sizeToScene();
         mainWindow.centerOnScreen();
     }
 
