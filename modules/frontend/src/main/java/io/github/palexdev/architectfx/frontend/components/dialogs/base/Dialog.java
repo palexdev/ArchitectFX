@@ -59,7 +59,7 @@ public abstract class Dialog extends MFXPopup {
     // Methods
     //================================================================================
     protected void autoReposition() {
-        if (getWindowOwner() != null) {
+        if (getOwnerWindow() != null) {
             windowReposition();
         } else {
             reposition();

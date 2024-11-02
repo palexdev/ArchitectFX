@@ -24,23 +24,16 @@ import java.util.function.Supplier;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.mfxcomponents.controls.base.MFXControl;
 import io.github.palexdev.mfxcomponents.controls.base.MFXSkinBase;
-import io.github.palexdev.mfxcomponents.controls.progress.MFXProgressIndicator;
-import io.github.palexdev.mfxcomponents.skins.MFXCircularProgressIndicatorSkin;
 import io.github.palexdev.mfxcore.behavior.BehaviorBase;
 import io.github.palexdev.mfxcore.observables.When;
 import io.github.palexdev.mfxcore.utils.fx.StyleUtils;
 import io.github.palexdev.mfxeffects.animations.Animations;
-import io.github.palexdev.mfxeffects.animations.Animations.KeyFrames;
-import io.github.palexdev.mfxeffects.animations.Animations.TimelineBuilder;
 import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
 import io.github.palexdev.mfxeffects.enums.Interpolators;
 import io.github.palexdev.mfxresources.fonts.MFXIconWrapper;
 import javafx.animation.Animation;
-import javafx.animation.Interpolator;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.geometry.HPos;
-import javafx.geometry.VPos;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -97,7 +90,7 @@ public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavio
     //================================================================================
     @Override
     protected MFXSkinBase<?, ?> buildSkin() {
-        return new CountdownIconSkin2(this);
+        return new CountdownIconSkin(this);
     }
 
     @Override
@@ -147,90 +140,12 @@ public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavio
     }
 
     public static class CountdownIconSkin extends MFXSkinBase<CountdownIcon, CountdownIconBehavior> {
-        private final MFXProgressIndicator indicator;
-        private final MFXIconWrapper iconWrapper;
-
-        private Animation progressAnimation;
-
-        protected CountdownIconSkin(CountdownIcon icon) {
-            super(icon);
-
-            indicator = new MFXProgressIndicator(1.0) {
-                @Override
-                protected MFXSkinBase<?, ?> buildSkin() {
-                    // TODO bug on the MaterialFX side, changing skin leaves a dot
-                    return new MFXCircularProgressIndicatorSkin(this) {
-                        {
-                            BASE_ARCS_GAP = 0.0;
-                            MIN_WIDTH = 40.0;
-                            MIN_HEIGHT = 40.0;
-                        }
-                    };
-                }
-            };
-            indicator.setAnimated(false);
-            listeners(
-                When.onInvalidated(icon.countdownProperty())
-                    .then(c -> updateAnimation())
-                    .executeNow(),
-                When.onInvalidated(icon.statusProperty())
-                    .then(this::playStop)
-            );
-
-            iconWrapper = new MFXIconWrapper();
-
-            getChildren().addAll(indicator, iconWrapper);
-        }
-
-        protected void updateAnimation() {
-            CountdownIcon icon = getSkinnable();
-            if (Animations.isPlaying(progressAnimation)) {
-                progressAnimation.stop();
-            }
-
-            progressAnimation = TimelineBuilder.build()
-                .add(KeyFrames.of(icon.getCountdown(), indicator.progressProperty(), 0.0, Interpolator.LINEAR))
-                .setOnFinished(e -> icon.stop())
-                .getAnimation();
-            playStop(icon.getStatus());
-        }
-
-        protected void playStop(CountdownStatus status) {
-            if (Animations.isPlaying(progressAnimation) && status != CountdownStatus.STARTED) {
-                progressAnimation.stop();
-                return;
-            }
-            progressAnimation.playFromStart();
-        }
-
-        @Override
-        public double computeMaxWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
-            return getSkinnable().prefWidth(height);
-        }
-
-        @Override
-        public double computeMaxHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
-            return getSkinnable().prefHeight(width);
-        }
-
-        @Override
-        protected void layoutChildren(double x, double y, double w, double h) {
-            layoutInArea(indicator, x, y, w, h, 0, HPos.CENTER, VPos.CENTER);
-            iconWrapper.resize(
-                w + snappedLeftInset() + snappedRightInset(),
-                h + snappedTopInset() + snappedBottomInset()
-            );
-            positionInArea(iconWrapper, x, y, w, h, 0, HPos.CENTER, VPos.CENTER);
-        }
-    }
-
-    public static class CountdownIconSkin2 extends MFXSkinBase<CountdownIcon, CountdownIconBehavior> {
         private final Rectangle bg;
         private final MFXIconWrapper iconWrapper;
 
         private Animation bgAnimation;
 
-        public CountdownIconSkin2(CountdownIcon icon) {
+        public CountdownIconSkin(CountdownIcon icon) {
             super(icon);
 
             bg = new Rectangle();
