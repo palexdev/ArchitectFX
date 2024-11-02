@@ -94,7 +94,6 @@ public class AppSettings extends Settings {
         return lastDir;
     }
 
-    // TODO ensure that these 3 are saved on exit!
     public StringSetting lastTool() {
         return lastTool;
     }

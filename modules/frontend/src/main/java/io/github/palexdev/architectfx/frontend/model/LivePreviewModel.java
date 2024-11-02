@@ -26,7 +26,9 @@ import io.github.palexdev.architectfx.backend.utils.Async;
 import io.github.palexdev.architectfx.backend.utils.Progress;
 import io.github.palexdev.architectfx.frontend.components.CountdownIcon.CountdownStatus;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
+import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.BeanSocket;
 import io.methvin.watcher.DirectoryChangeEvent.EventType;
@@ -62,11 +64,16 @@ public class LivePreviewModel {
     //================================================================================
     // Constructors
     //================================================================================
-    public LivePreviewModel(AppModel appModel, AppSettings settings) {
+    public LivePreviewModel(AppModel appModel, AppSettings settings, IEventBus events) {
         this.appModel = appModel;
         this.settings = settings;
         this.autoReload = settings.autoReload().get();
         setReloadDelay(Duration.seconds(settings.autoReloadDelay().get()));
+
+        events.subscribe(AppEvent.AppCloseEvent.class, e -> {
+            settings.autoReload().set(isAutoReload());
+            settings.autoReloadDelay().set((int) getReloadDelay().toSeconds());
+        });
     }
 
     //================================================================================
