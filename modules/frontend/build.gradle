@@ -32,3 +32,23 @@ tasks.register('launch', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'app.Launcher'
 }
+
+tasks.register('zipAssets', Zip) {
+    delete(file("src/main/resources/io/github/palexdev/architectfx/frontend/assets/assets.zip"))
+
+    destinationDirectory = file("src/main/resources/io/github/palexdev/architectfx/frontend/assets")
+    archiveFileName = "assets.zip"
+
+    from "src/main/resources/io/github/palexdev/architectfx/frontend/css"
+
+    outputs.upToDateWhen { false }
+
+    doLast {
+        copy {
+            from archiveFile
+            into "${file(layout.buildDirectory)}/resources/main/io/github/palexdev/architectfx/frontend/assets"
+        }
+    }
+}
+
+processResources.finalizedBy(zipAssets)
