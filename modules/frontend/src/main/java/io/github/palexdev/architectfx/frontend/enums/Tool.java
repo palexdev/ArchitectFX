@@ -38,7 +38,6 @@ public enum Tool {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
     },
-    // TODO loader should be disposed when switching documents!
     PREVIEW {
         private DependencyManager dm;
         private ClassScanner scanner;
@@ -62,6 +61,15 @@ public enum Tool {
                 )
             );
         }
+
+        @Override
+        public void dispose() {
+            scanner.dispose();
+            reflector.dispose();
+            dm = null;
+            scanner = null;
+            reflector = null;
+        }
     },
     ;
 
@@ -84,6 +92,8 @@ public enum Tool {
     public Consumer<YamlLoader> defaultConfig() {
         return loader -> {};
     }
+
+    public void dispose() {}
 
     @Override
     public String toString() {

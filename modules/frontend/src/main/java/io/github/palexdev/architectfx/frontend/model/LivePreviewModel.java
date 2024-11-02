@@ -20,6 +20,7 @@ package io.github.palexdev.architectfx.frontend.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 import io.github.palexdev.architectfx.backend.model.Document;
 import io.github.palexdev.architectfx.backend.utils.Async;
@@ -46,9 +47,9 @@ public class LivePreviewModel {
     private final AppModel appModel;
     private final AppSettings settings;
 
-    // TODO dispose on close
     private File oldFile;
     private DirectoryWatcher watcher;
+    private CompletableFuture<?> watcherTask;
     private boolean autoReload;
     private final ReadOnlyBooleanWrapper fileModified = new ReadOnlyBooleanWrapper(false);
     private final ReadOnlyObjectWrapper<Duration> reloadDelay = new ReadOnlyObjectWrapper<>();
@@ -114,7 +115,7 @@ public class LivePreviewModel {
                     }
                 })
                 .build();
-            Async.run(watcher::watch);
+            watcherTask = Async.run(watcher::watch);
         } catch (IOException ex) {
             Logger.error("Failed to build file watcher:\n{}", ex);
         }
@@ -122,6 +123,10 @@ public class LivePreviewModel {
 
     protected void closeWatcher() {
         if (watcher != null) {
+            if (watcherTask != null) {
+                watcherTask.cancel(true);
+                watcherTask = null;
+            }
             try {
                 watcher.close();
             } catch (IOException ex) {
@@ -157,6 +162,12 @@ public class LivePreviewModel {
             Logger.error("Failed to reload document because:\n{}", ex);
             setFileModified(true);
         }
+    }
+
+    public void dispose() {
+        oldFile = null;
+        closeWatcher();
+        appModel.dispose();
     }
 
     //================================================================================

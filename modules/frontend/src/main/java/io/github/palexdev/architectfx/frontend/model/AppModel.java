@@ -60,6 +60,7 @@ public class AppModel {
     private final IEventBus events;
 
     private Tool lastTool;
+    private YamlLoader lastLoader;
     private CompletableFuture<?> loadTask;
     private final ProgressProperty progress = new ProgressProperty() {
         @Override
@@ -111,8 +112,8 @@ public class AppModel {
 
     protected CompletableFuture<Void> load(Tool tool, File file) {
         // Init loader, show dialog
-        YamlLoader loader = tool.loader();
-        loader.setOnProgress(this::setProgress);
+        lastLoader = tool.loader();
+        lastLoader.setOnProgress(this::setProgress);
         progress.reset(); // Needed otherwise subsequent calls will not make the dialog appear
         events.publish(new DialogEvent.ShowProgress(() -> new DialogsService.DialogConfig<ProgressDialog>()
             .implicitOwner()
@@ -135,12 +136,17 @@ public class AppModel {
 
         return Async.run(() -> {
             try {
-                Document loaded = loader.load(file);
+                Document loaded = lastLoader.load(file);
                 setDocument(file, loaded);
             } catch (IOException ex) {
                 throw new CompletionException(ex);
             }
         });
+    }
+
+    protected void dispose() {
+        if (lastLoader != null) lastLoader.close();
+        if (lastTool != null) lastTool.dispose();
     }
 
     //================================================================================
