@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import io.github.palexdev.architectfx.frontend.model.Recent;
+import io.github.palexdev.mfxcore.settings.BooleanSetting;
 import io.github.palexdev.mfxcore.settings.NumberSetting;
 import io.github.palexdev.mfxcore.settings.Settings;
 import io.github.palexdev.mfxcore.settings.StringSetting;
@@ -42,6 +43,10 @@ public class AppSettings extends Settings {
     private final StringSetting recents = registerString("recents", "YAML string that contains recently opened documents", "");
     private final StringSetting lastDir = registerString("last.dir", "Last directory used for file input", "");
     private final StringSetting lastTool = registerString("last.tool", "Last tool used for file input", "PREVIEW");
+
+    // Live Preview
+    private final BooleanSetting autoReload = registerBoolean("autoreload", "Specifies whether to automatically reload the document in case of modifications", true);
+    private final NumberSetting<Integer> autoReloadDelay = registerInteger("autoreload.delay", "Delay seconds for LivePreview auto-reload", 5);
 
     private final Application.Parameters parameters;
     private Boolean resetSettings = null;
@@ -89,8 +94,17 @@ public class AppSettings extends Settings {
         return lastDir;
     }
 
+    // TODO ensure that these 3 are saved on exit!
     public StringSetting lastTool() {
         return lastTool;
+    }
+
+    public BooleanSetting autoReload() {
+        return autoReload;
+    }
+
+    public NumberSetting<Integer> autoReloadDelay() {
+        return autoReloadDelay;
     }
 
     public boolean isResetSettings() {

@@ -21,9 +21,14 @@ package io.github.palexdev.architectfx.frontend.theming;
 import io.github.palexdev.mfxcomponents.theming.MaterialThemes;
 import io.github.palexdev.mfxcomponents.theming.UserAgentBuilder;
 import io.inverno.core.annotation.Bean;
+import javafx.css.PseudoClass;
 
 @Bean
 public class ThemeEngine {
+    //================================================================================
+    // Static Properties
+    //================================================================================
+    public static final PseudoClass PAUSED_PSEUDO_CLASS = PseudoClass.getPseudoClass("paused");
 
     /*
      * TODO implement this, for now it does the bare minimum to debug the UI

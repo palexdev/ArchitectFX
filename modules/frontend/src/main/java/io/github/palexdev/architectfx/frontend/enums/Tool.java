@@ -38,6 +38,7 @@ public enum Tool {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
     },
+    // TODO loader should be disposed when switching documents!
     PREVIEW {
         private DependencyManager dm;
         private ClassScanner scanner;
