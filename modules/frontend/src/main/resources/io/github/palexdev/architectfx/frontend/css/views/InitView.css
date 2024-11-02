@@ -18,8 +18,6 @@
 
 .init-view {
   -fx-alignment: CENTER;
-  -fx-min-height: 540px;
-  -fx-min-width: 960px;
   -fx-padding: 32px;
   -fx-spacing: 16px;
 }
