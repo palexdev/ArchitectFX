@@ -62,6 +62,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 
+import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.PAUSED_PSEUDO_CLASS;
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
 import static io.github.palexdev.mfxcore.observables.When.onInvalidated;
 
@@ -148,16 +149,24 @@ public class LivePreview extends View<LivePreviewPane> {
 
         {
             // Buttons
-            button("close", e -> events.publish(new UIEvent.ViewSwitchEvent(InitView.class)));
+            button("close", e -> {
+                lpModel.dispose();
+                events.publish(new UIEvent.ViewSwitchEvent(InitView.class));
+            });
             toggle("pin", v -> keepOpen = v, keepOpen);
+            addSeparator();
 
-            button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()));
+            MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()));
+            onInvalidated(lpModel.pausedProperty())
+                .then(v -> playPauseBtn.pseudoClassStateChanged(PAUSED_PSEUDO_CLASS, v))
+                .executeNow()
+                .listen();
             toggle("auto-reload", lpModel::setAutoReload, lpModel.isAutoReload());
+            addSeparator();
 
             MFXIconButton aot = toggle("aot", null, false);
             aot.selectedProperty().bind(mainWindow.alwaysOnTopProperty());
             aot.setOnAction(e -> mainWindow.setAlwaysOnTop(!mainWindow.isAlwaysOnTop()));
-
             button("theme-mode", e -> {/*TODO implement*/});
 
             // Config
@@ -204,12 +213,13 @@ public class LivePreview extends View<LivePreviewPane> {
             animation.play();
         }
 
-        protected void button(String styleClass, EventHandler<ActionEvent> handler) {
+        protected MFXIconButton button(String styleClass, EventHandler<ActionEvent> handler) {
             MFXIconButton button = RegionBuilder.region(new MFXIconButton().tonal())
                 .addStyleClasses(styleClass)
                 .getNode();
             button.setOnAction(handler);
-            getChildren().add(button);
+            getContainerChildren().add(button);
+            return button;
         }
 
         protected MFXIconButton toggle(String styleClass, Consumer<Boolean> selectionHandler, boolean init) {
@@ -222,6 +232,7 @@ public class LivePreview extends View<LivePreviewPane> {
                     .then(selectionHandler)
                     .listen();
             }
+            getContainerChildren().add(button);
             return button;
         }
     }
@@ -260,6 +271,7 @@ public class LivePreview extends View<LivePreviewPane> {
                 setContent(snapView);
                 root.setDisable(true);
             } else {
+                // TODO transition content smoothly?
                 root.setDisable(false);
                 snapView.setImage(null);
                 lpModel.onDocumentSet(fd);

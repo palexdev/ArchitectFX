@@ -95,11 +95,11 @@ public class Box extends Control implements MFXStyleable {
     // Methods
     //================================================================================
     public void addSeparator() {
-        getChildren().add(separator());
+        getContainerChildren().add(separator());
     }
 
     public void addSeparator(int index) {
-        getChildren().add(index, separator());
+        getContainerChildren().add(index, separator());
     }
 
     public void setGrow(Node child, Priority value) {
