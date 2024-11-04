@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.frontend.views;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import io.github.palexdev.architectfx.backend.model.Document;
@@ -43,6 +44,7 @@ import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
 import io.github.palexdev.virtualizedfx.utils.ScrollBounds;
 import io.inverno.core.annotation.Bean;
 import javafx.animation.Animation;
+import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -61,6 +63,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Pair;
+import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.PAUSED_PSEUDO_CLASS;
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
@@ -74,15 +77,17 @@ public class LivePreview extends View<LivePreviewPane> {
     private final Stage mainWindow;
     private final AppModel model;
     private final LivePreviewModel lpModel;
+    private final HostServices hostServices;
 
     //================================================================================
     // Constructors
     //================================================================================
-    public LivePreview(IEventBus events, Stage mainWindow, AppModel model, LivePreviewModel lpModel) {
+    public LivePreview(IEventBus events, Stage mainWindow, AppModel model, LivePreviewModel lpModel, HostServices hostServices) {
         super(events);
         this.mainWindow = mainWindow;
         this.model = model;
         this.lpModel = lpModel;
+        this.hostServices = hostServices;
     }
 
     //================================================================================
@@ -156,6 +161,18 @@ public class LivePreview extends View<LivePreviewPane> {
             toggle("pin", v -> keepOpen = v, keepOpen);
             addSeparator();
 
+            button("show", e ->
+                Optional.ofNullable(model.getDocument())
+                    .map(Pair::getKey)
+                    .ifPresent(f -> {
+                        try {
+                            String parent = f.toPath().getParent().toUri().toString();
+                            hostServices.showDocument(parent);
+                        } catch (Exception ex) {
+                            Logger.warn("Could not show file in file manager because:\n{}", ex);
+                        }
+                    })
+            );
             MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()));
             onInvalidated(lpModel.pausedProperty())
                 .then(v -> playPauseBtn.pseudoClassStateChanged(PAUSED_PSEUDO_CLASS, v))

@@ -63,6 +63,11 @@
   -mfx-description: "fas-thumbtack";
 }
 
+/* Show in explorer */
+.preview > .sidebar > .container > .mfx-icon-button.show > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: 'fas-folder-open';
+}
+
 /* Play Pause */
 .preview > .sidebar > .container > .mfx-icon-button.play-pause > .mfx-icon-wrapper {
   -mfx-animated: true;
