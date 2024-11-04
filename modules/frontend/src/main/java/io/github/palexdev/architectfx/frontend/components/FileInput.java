@@ -242,7 +242,7 @@ public class FileInput extends MFXControl<FileInputBehavior> {
             double hH = header.getLayoutBounds().getHeight();
             double oH = orText.getLayoutBounds().getHeight();
             double bH = browse.getHeight();
-            double totalH = iH + hH + oH + bH;
+            double totalH = iH + hH + oH + bH - snappedTopInset() - snappedBottomInset();
             double area = totalH + ICON_SPACING + TEXT_SPACING * 2; // Include spacings
 
             double pos = snapPositionY((h - area) / 2.0);
