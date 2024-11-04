@@ -18,10 +18,12 @@
 
 package io.github.palexdev.architectfx.frontend.components.vfx.rows;
 
+import io.github.palexdev.architectfx.frontend.components.SelectableSurface;
 import io.github.palexdev.architectfx.frontend.components.base.WithSelectionModel;
 import io.github.palexdev.architectfx.frontend.components.selection.ISelectionModel;
 import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.builders.bindings.BooleanBindingBuilder;
+import io.github.palexdev.mfxcore.events.WhenEvent;
 import io.github.palexdev.virtualizedfx.base.VFXContainer;
 import io.github.palexdev.virtualizedfx.table.defaults.VFXDefaultTableRow;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -35,6 +37,9 @@ public class SelectableRow<T> extends VFXDefaultTableRow<T> {
     //================================================================================
     // Properties
     //================================================================================
+    private final SelectableSurface surface = new SelectableSurface(this);
+    private WhenEvent<?> whenPressed;
+    private WhenEvent<?> whenReleased;
     protected final ReadOnlyBooleanWrapper selected = new ReadOnlyBooleanWrapper(false) {
         @Override
         protected void invalidated() {
@@ -47,6 +52,16 @@ public class SelectableRow<T> extends VFXDefaultTableRow<T> {
     //================================================================================
     public SelectableRow(T item) {
         super(item);
+        surface.initRipple(rg -> {});
+        whenPressed = intercept(this, MouseEvent.MOUSE_PRESSED)
+            .process(surface.getRippleGenerator()::generate)
+            .asFilter()
+            .register();
+        whenReleased = intercept(this, MouseEvent.MOUSE_RELEASED)
+            .process(e -> surface.getRippleGenerator().release())
+            .asFilter()
+            .register();
+
     }
 
     //================================================================================
@@ -78,6 +93,26 @@ public class SelectableRow<T> extends VFXDefaultTableRow<T> {
                 .asFilter()
                 .register();
         }
+    }
+
+    @Override
+    protected void onCellsChanged() {
+        super.onCellsChanged();
+        getChildren().addFirst(surface);
+    }
+
+    @Override
+    protected void layoutChildren() {
+        surface.resizeRelocate(0, 0, getWidth(), getHeight());
+    }
+
+    @Override
+    public void dispose() {
+        if (whenPressed != null) whenPressed.dispose();
+        if (whenReleased != null) whenReleased.dispose();
+        whenPressed = null;
+        whenReleased = null;
+        super.dispose();
     }
 
     //================================================================================

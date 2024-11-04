@@ -18,10 +18,12 @@
 
 package io.github.palexdev.architectfx.frontend.components.vfx.cells;
 
+import io.github.palexdev.architectfx.frontend.components.SelectableSurface;
 import io.github.palexdev.architectfx.frontend.components.base.WithSelectionModel;
 import io.github.palexdev.architectfx.frontend.components.selection.ISelectionModel;
 import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.builders.bindings.BooleanBindingBuilder;
+import io.github.palexdev.mfxcore.events.WhenEvent;
 import io.github.palexdev.virtualizedfx.base.VFXContainer;
 import io.github.palexdev.virtualizedfx.cells.VFXSimpleCell;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -36,6 +38,7 @@ public class SelectableCell<T> extends VFXSimpleCell<T> {
     //================================================================================
     // Properties
     //================================================================================
+    private final SelectableSurface surface = new SelectableSurface(this);
     private final ReadOnlyBooleanWrapper selected = new ReadOnlyBooleanWrapper(false) {
         @Override
         protected void invalidated() {
@@ -43,9 +46,27 @@ public class SelectableCell<T> extends VFXSimpleCell<T> {
         }
     };
 
+    private WhenEvent<?> whenClicked;
+    private WhenEvent<?> whenPressed;
+    private WhenEvent<?> whenReleased;
+
     //================================================================================
     // Constructors
     //================================================================================
+    {
+        surface.setManaged(false);
+        getChildren().addFirst(surface);
+
+        whenPressed = intercept(this, MouseEvent.MOUSE_PRESSED)
+            .process(surface.getRippleGenerator()::generate)
+            .asFilter()
+            .register();
+        whenReleased = intercept(this, MouseEvent.MOUSE_RELEASED)
+            .process(e -> surface.getRippleGenerator().release())
+            .asFilter()
+            .register();
+    }
+
     public SelectableCell(T item) {
         super(item);
     }
@@ -83,7 +104,7 @@ public class SelectableCell<T> extends VFXSimpleCell<T> {
                 .get()
             );
 
-            intercept(this, MouseEvent.MOUSE_CLICKED)
+            whenClicked = intercept(this, MouseEvent.MOUSE_CLICKED)
                 .condition(e -> e.getButton() == MouseButton.PRIMARY)
                 .process(e -> onSelectionEvent(sm))
                 .asFilter()
@@ -91,6 +112,22 @@ public class SelectableCell<T> extends VFXSimpleCell<T> {
         }
     }
 
+    @Override
+    protected void layoutChildren() {
+        super.layoutChildren();
+        surface.resizeRelocate(0, 0, getWidth(), getHeight());
+    }
+
+    @Override
+    public void dispose() {
+        if (whenClicked != null) whenClicked.dispose();
+        if (whenPressed != null) whenPressed.dispose();
+        if (whenReleased != null) whenReleased.dispose();
+        whenClicked = null;
+        whenPressed = null;
+        whenReleased = null;
+        super.dispose();
+    }
 
     //================================================================================
     // Getters/Setters
