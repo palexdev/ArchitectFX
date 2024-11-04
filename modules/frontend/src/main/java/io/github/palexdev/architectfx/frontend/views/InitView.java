@@ -136,13 +136,13 @@ public class InitView extends View<InitPane> {
             removeBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
             removeBtn.setOnAction(e -> model.recents().remove(recentsTable.getSelectionModel().getSelectedItem()));
             removeBtn.getStyleClass().add("warning");
-            UIUtils.installTooltip(removeBtn, "Delete entry");
+            UIUtils.installTooltip(removeBtn, "Delete Entry");
 
             showBtn = new MFXIconButton().outlined();
             showBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
             showBtn.setOnAction(e -> openInFileManager());
             showBtn.getStyleClass().add("show");
-            UIUtils.installTooltip(showBtn, "Show in file manager");
+            UIUtils.installTooltip(showBtn, "Show in File Manager");
 
             loadBtn = new MFXIconButton().outlined();
             loadBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());

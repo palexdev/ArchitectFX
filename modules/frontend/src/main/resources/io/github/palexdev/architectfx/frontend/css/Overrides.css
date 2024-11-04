@@ -35,7 +35,7 @@
 }
 
 .root .mfx-tooltip .content > .plain {
-  -fx-background-radius: 12px;
+  -fx-background-radius: 6px;
 }
 
 .root .mfx-tooltip .content > .plain > .label {

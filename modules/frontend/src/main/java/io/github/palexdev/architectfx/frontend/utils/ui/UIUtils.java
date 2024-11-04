@@ -24,6 +24,7 @@ import io.github.palexdev.mfxcomponents.window.MFXPlainContent;
 import io.github.palexdev.mfxcomponents.window.popups.MFXTooltip;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
+import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -50,10 +51,15 @@ public class UIUtils {
     }
 
     public static MFXTooltip installTooltip(Node owner, String text) {
+        return installTooltip(owner, text, Pos.BOTTOM_CENTER);
+    }
+
+    public static MFXTooltip installTooltip(Node owner, String text, Pos anchor) {
         MFXTooltip tooltip = new MFXTooltip(owner);
         tooltip.setContent(new MFXPlainContent(text));
         tooltip.setInDelay(M3Motion.EXTRA_LONG4);
         tooltip.setOutDelay(Duration.ZERO);
+        tooltip.setAnchor(anchor);
         return tooltip.install();
     }
 

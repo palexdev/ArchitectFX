@@ -28,6 +28,7 @@ import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
 import io.github.palexdev.architectfx.frontend.model.LivePreviewModel;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.LivePreview.LivePreviewPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
@@ -48,10 +49,7 @@ import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.HPos;
-import javafx.geometry.Insets;
-import javafx.geometry.Rectangle2D;
-import javafx.geometry.VPos;
+import javafx.geometry.*;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.ImageView;
@@ -157,8 +155,8 @@ public class LivePreview extends View<LivePreviewPane> {
             button("close", e -> {
                 lpModel.dispose();
                 events.publish(new UIEvent.ViewSwitchEvent(InitView.class));
-            });
-            toggle("pin", v -> keepOpen = v, keepOpen);
+            }, "Back to Projects Hub");
+            toggle("pin", v -> keepOpen = v, keepOpen, "Pin Sidebar");
             addSeparator();
 
             button("show", e ->
@@ -171,20 +169,21 @@ public class LivePreview extends View<LivePreviewPane> {
                         } catch (Exception ex) {
                             Logger.warn("Could not show file in file manager because:\n{}", ex);
                         }
-                    })
+                    }),
+                "Show in File Manager"
             );
-            MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()));
+            MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()), "Play/Pause Scene");
             onInvalidated(lpModel.pausedProperty())
                 .then(v -> playPauseBtn.pseudoClassStateChanged(PAUSED_PSEUDO_CLASS, v))
                 .executeNow()
                 .listen();
-            toggle("auto-reload", lpModel::setAutoReload, lpModel.isAutoReload());
+            toggle("auto-reload", lpModel::setAutoReload, lpModel.isAutoReload(), "Auto Reload");
             addSeparator();
 
-            MFXIconButton aot = toggle("aot", null, false);
+            MFXIconButton aot = toggle("aot", null, false, "Always on Top");
             aot.selectedProperty().bind(mainWindow.alwaysOnTopProperty());
             aot.setOnAction(e -> mainWindow.setAlwaysOnTop(!mainWindow.isAlwaysOnTop()));
-            button("theme-mode", e -> {/*TODO implement*/});
+            button("theme-mode", e -> {/*TODO implement*/}, "Light/Dark Mode");
 
             // Config
             onInvalidated(hoverProperty())
@@ -230,27 +229,25 @@ public class LivePreview extends View<LivePreviewPane> {
             animation.play();
         }
 
-        protected MFXIconButton button(String styleClass, EventHandler<ActionEvent> handler) {
+        protected MFXIconButton button(String styleClass, EventHandler<ActionEvent> handler, String tooltip) {
             MFXIconButton button = RegionBuilder.region(new MFXIconButton().tonal())
                 .addStyleClasses(styleClass)
                 .getNode();
-            button.setOnAction(handler);
+            if (handler != null) button.setOnAction(handler);
+            if (tooltip != null) UIUtils.installTooltip(button, tooltip, Pos.CENTER_RIGHT);
             getContainerChildren().add(button);
             return button;
         }
 
-        protected MFXIconButton toggle(String styleClass, Consumer<Boolean> selectionHandler, boolean init) {
-            MFXIconButton button = RegionBuilder.region(new MFXIconButton().tonal().asToggle())
-                .addStyleClasses(styleClass)
-                .getNode();
-            button.setSelected(init);
+        protected MFXIconButton toggle(String styleClass, Consumer<Boolean> selectionHandler, boolean init, String tooltip) {
+            MFXIconButton toggle = button(styleClass, null, tooltip).asToggle();
+            toggle.setSelected(init);
             if (selectionHandler != null) {
-                onInvalidated(button.selectedProperty())
+                onInvalidated(toggle.selectedProperty())
                     .then(selectionHandler)
                     .listen();
             }
-            getContainerChildren().add(button);
-            return button;
+            return toggle;
         }
     }
 
