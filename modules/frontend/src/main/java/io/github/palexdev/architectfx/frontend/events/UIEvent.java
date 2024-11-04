@@ -47,4 +47,6 @@ public abstract class UIEvent extends Event {
             return (Class<? extends View<?>>) super.data();
         }
     }
+
+    public static class ThemeSwitchEvent extends UIEvent {}
 }

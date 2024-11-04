@@ -28,8 +28,13 @@ import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
+import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.ImageView;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -60,6 +65,7 @@ public class ViewManager {
         this.settings = settings;
         events.subscribe(AppEvent.AppReadyEvent.class, e -> onAppReady());
         events.subscribe(UIEvent.ViewSwitchEvent.class, this::onViewSwitchRequest);
+        events.subscribe(UIEvent.ThemeSwitchEvent.class, this::onThemeSwitched);
     }
 
     //================================================================================
@@ -98,5 +104,36 @@ public class ViewManager {
             throw new IllegalStateException("Unknown view: " + event.data());
         ArchitectFX.windowTitle.set(ArchitectFX.APP_TITLE + " - " + view.title());
         rootPane.getChildren().setAll(view.toRegion());
+    }
+
+    private void onThemeSwitched(UIEvent.ThemeSwitchEvent event) {
+        if (rootPane.getScene() == null || rootPane.getScene().getWindow() == null)
+            return;
+
+        // "Disable" pane
+        rootPane.setMouseTransparent(true);
+
+        // Snapshot
+        WritableImage snapshot = UIUtils.snapshot(
+            rootPane,
+            rootPane.getWidth(), rootPane.getHeight(),
+            new SnapshotParameters()
+        );
+        ImageView view = new ImageView(snapshot);
+        view.setSmooth(false);
+        view.setFitWidth(rootPane.getWidth());
+        view.setFitHeight(rootPane.getHeight());
+        view.setOpacity(1.0);
+        rootPane.getChildren().add(view);
+
+        // Fade out and remove
+        ConsumerTransition.of(
+            frac -> view.setOpacity(1.0 - (1.0 * frac)),
+            M3Motion.EXTRA_LONG4,
+            M3Motion.STANDARD
+        ).setOnFinishedFluent(e -> {
+            rootPane.getChildren().remove(view);
+            rootPane.setMouseTransparent(false);
+        }).play();
     }
 }

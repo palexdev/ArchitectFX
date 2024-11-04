@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.frontend.views;
 import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import io.github.palexdev.architectfx.backend.model.Document;
@@ -29,6 +30,8 @@ import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
 import io.github.palexdev.architectfx.frontend.model.LivePreviewModel;
+import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
+import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.LivePreview.LivePreviewPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
@@ -51,7 +54,6 @@ import javafx.animation.Animation;
 import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -71,6 +73,7 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.tinylog.Logger;
 
+import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.DARK_PSEUDO_CLASS;
 import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.PAUSED_PSEUDO_CLASS;
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
 import static io.github.palexdev.mfxcore.observables.When.onChanged;
@@ -82,6 +85,7 @@ public class LivePreview extends View<LivePreviewPane> {
     // Properties
     //================================================================================
     private final Stage mainWindow;
+    private final ThemeEngine themeEngine;
     private final AppModel model;
     private final LivePreviewModel lpModel;
     private final HostServices hostServices;
@@ -89,9 +93,14 @@ public class LivePreview extends View<LivePreviewPane> {
     //================================================================================
     // Constructors
     //================================================================================
-    public LivePreview(IEventBus events, Stage mainWindow, AppModel model, LivePreviewModel lpModel, HostServices hostServices) {
+    public LivePreview(
+        IEventBus events, Stage mainWindow, ThemeEngine themeEngine,
+        AppModel model, LivePreviewModel lpModel,
+        HostServices hostServices
+    ) {
         super(events);
         this.mainWindow = mainWindow;
+        this.themeEngine = themeEngine;
         this.model = model;
         this.lpModel = lpModel;
         this.hostServices = hostServices;
@@ -161,14 +170,14 @@ public class LivePreview extends View<LivePreviewPane> {
 
         {
             // Buttons
-            button("close", e -> {
+            button("close", (b, e) -> {
                 lpModel.dispose();
                 events.publish(new UIEvent.ViewSwitchEvent(InitView.class));
             }, "Back to Projects Hub");
             toggle("pin", v -> keepOpen = v, keepOpen, "Pin Sidebar");
             addSeparator();
 
-            button("show", e ->
+            button("show", (b, e) ->
                     Optional.ofNullable(model.getDocument())
                         .map(Pair::getKey)
                         .ifPresent(f -> {
@@ -181,7 +190,7 @@ public class LivePreview extends View<LivePreviewPane> {
                         }),
                 "Show in File Manager"
             );
-            MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()), "Play/Pause Scene");
+            MFXIconButton playPauseBtn = button("play-pause", (b, e) -> lpModel.setPaused(!lpModel.isPaused()), "Play/Pause Scene");
             onInvalidated(lpModel.pausedProperty())
                 .then(v -> playPauseBtn.pseudoClassStateChanged(PAUSED_PSEUDO_CLASS, v))
                 .executeNow()
@@ -192,7 +201,10 @@ public class LivePreview extends View<LivePreviewPane> {
             MFXIconButton aot = toggle("aot", null, false, "Always on Top");
             aot.selectedProperty().bind(mainWindow.alwaysOnTopProperty());
             aot.setOnAction(e -> mainWindow.setAlwaysOnTop(!mainWindow.isAlwaysOnTop()));
-            button("theme-mode", e -> {/*TODO implement*/}, "Light/Dark Mode");
+            button("theme-mode", (b, e) -> {
+                themeEngine.nextMode();
+                b.pseudoClassStateChanged(DARK_PSEUDO_CLASS, themeEngine.getThemeMode() == ThemeMode.DARK);
+            }, "Light/Dark Mode");
 
             // Config
             onInvalidated(hoverProperty())
@@ -238,11 +250,11 @@ public class LivePreview extends View<LivePreviewPane> {
             animation.play();
         }
 
-        protected MFXIconButton button(String styleClass, EventHandler<ActionEvent> handler, String tooltip) {
+        protected MFXIconButton button(String styleClass, BiConsumer<MFXIconButton, ActionEvent> handler, String tooltip) {
             MFXIconButton button = RegionBuilder.region(new MFXIconButton().tonal())
                 .addStyleClasses(styleClass)
                 .getNode();
-            if (handler != null) button.setOnAction(handler);
+            if (handler != null) button.setOnAction(e -> handler.accept(button, e));
             if (tooltip != null) UIUtils.installTooltip(button, tooltip, Pos.CENTER_RIGHT);
             getContainerChildren().add(button);
             return button;

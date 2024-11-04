@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import io.github.palexdev.architectfx.frontend.model.Recent;
+import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.mfxcore.settings.BooleanSetting;
 import io.github.palexdev.mfxcore.settings.NumberSetting;
 import io.github.palexdev.mfxcore.settings.Settings;
@@ -38,6 +39,7 @@ public class AppSettings extends Settings {
     // UI
     private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 960.0);
     private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 540.0);
+    private final StringSetting themeMode = registerString("theme.mode", "Theme variation, light/dark", ThemeMode.LIGHT.name());
 
     // App
     private final StringSetting recents = registerString("recents", "YAML string that contains recently opened documents", "");
@@ -88,6 +90,10 @@ public class AppSettings extends Settings {
 
     public NumberSetting<Double> windowHeight() {
         return windowHeight;
+    }
+
+    public StringSetting themeMode() {
+        return themeMode;
     }
 
     public StringSetting lastDir() {

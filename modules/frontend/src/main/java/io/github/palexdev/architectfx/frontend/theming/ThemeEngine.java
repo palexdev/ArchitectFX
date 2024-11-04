@@ -18,10 +18,20 @@
 
 package io.github.palexdev.architectfx.frontend.theming;
 
+import java.util.Map;
+
+import io.github.palexdev.architectfx.frontend.events.AppEvent;
+import io.github.palexdev.architectfx.frontend.events.UIEvent;
+import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.mfxcomponents.theming.MaterialThemes;
 import io.github.palexdev.mfxcomponents.theming.UserAgentBuilder;
+import io.github.palexdev.mfxcomponents.theming.base.Theme;
+import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxcore.utils.EnumUtils;
 import io.inverno.core.annotation.Bean;
+import io.inverno.core.annotation.BeanSocket;
 import javafx.css.PseudoClass;
+import org.tinylog.Logger;
 
 @Bean
 public class ThemeEngine {
@@ -29,18 +39,64 @@ public class ThemeEngine {
     // Static Properties
     //================================================================================
     public static final PseudoClass PAUSED_PSEUDO_CLASS = PseudoClass.getPseudoClass("paused");
+    public static final PseudoClass DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
 
-    /*
-     * TODO implement this, for now it does the bare minimum to debug the UI
-     */
+    private static final Map<Theme, Theme> THEME_VARIANTS = Map.of(
+        MaterialThemes.INDIGO_LIGHT, MaterialThemes.INDIGO_DARK,
+        MaterialThemes.PURPLE_LIGHT, MaterialThemes.PURPLE_DARK
+    );
+
+    //================================================================================
+    // Properties
+    //================================================================================
+    private final IEventBus events;
+    private ThemeMode mode;
+
+    //================================================================================
+    // Constructors
+    //================================================================================
+    public ThemeEngine(AppSettings settings, IEventBus events) {
+        this.events = events;
+        try {
+            this.mode = EnumUtils.valueOfIgnoreCase(
+                ThemeMode.class,
+                settings.themeMode().get()
+            );
+        } catch (Exception ex) {
+            Logger.warn("Warning, corrupted theme settings! Fallback to default");
+            this.mode = ThemeMode.valueOf(settings.themeMode().defValue());
+        }
+        events.subscribe(AppEvent.AppCloseEvent.class, e -> settings.themeMode().set(mode.name()));
+    }
 
     public void loadTheme() {
+        events.publish(new UIEvent.ThemeSwitchEvent());
         UserAgentBuilder.builder()
-            .themes(MaterialThemes.INDIGO_LIGHT)
+            .themes(getThemeVariant(MaterialThemes.INDIGO_LIGHT))
             .themes(AppTheme.DEFAULT)
             .setDeploy(true)
             .setResolveAssets(true)
             .build()
             .setGlobal();
+    }
+
+    protected Theme getThemeVariant(Theme theme) {
+        if (mode == ThemeMode.LIGHT) return theme;
+        return THEME_VARIANTS.getOrDefault(theme, theme);
+    }
+
+    public ThemeMode getThemeMode() {
+        return mode;
+    }
+
+    @BeanSocket(enabled = false)
+    public void setThemeMode(ThemeMode mode) {
+        this.mode = mode;
+        loadTheme();
+    }
+
+    public void nextMode() {
+        ThemeMode next = EnumUtils.next(ThemeMode.class, mode);
+        setThemeMode(next);
     }
 }

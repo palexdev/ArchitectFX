@@ -21,11 +21,14 @@ package io.github.palexdev.architectfx.frontend.views;
 import io.github.palexdev.architectfx.frontend.components.ComboBox;
 import io.github.palexdev.architectfx.frontend.components.FileInput;
 import io.github.palexdev.architectfx.frontend.components.base.ComboCell.SimpleComboCell;
+import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.architectfx.frontend.components.vfx.RecentsTable;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
 import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
+import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.InitView.InitPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
@@ -41,11 +44,14 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.tinylog.Logger;
 
+import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.DARK_PSEUDO_CLASS;
+
 @Bean
 public class InitView extends View<InitPane> {
     //================================================================================
     // Properties
     //================================================================================
+    private final ThemeEngine themeEngine;
     private final AppModel model;
     private final AppSettings settings;
     private final HostServices hostServices;
@@ -53,8 +59,9 @@ public class InitView extends View<InitPane> {
     //================================================================================
     // Constructors
     //================================================================================
-    public InitView(IEventBus events, AppModel model, AppSettings settings, HostServices hostServices) {
+    public InitView(IEventBus events, ThemeEngine themeEngine, AppModel model, AppSettings settings, HostServices hostServices) {
         super(events);
+        this.themeEngine = themeEngine;
         this.model = model;
         this.settings = settings;
         this.hostServices = hostServices;
@@ -91,7 +98,9 @@ public class InitView extends View<InitPane> {
         private final RecentsTable recentsTable;
         private final FileInput input;
 
+        // TODO extract create buttons method from LivePreview (?)
         private final ComboBox<Tool> toolCombo;
+        private final MFXIconButton themeBtn;
         private final MFXIconButton removeBtn;
         private final MFXIconButton showBtn;
         private final MFXIconButton loadBtn;
@@ -132,6 +141,14 @@ public class InitView extends View<InitPane> {
             }
             toolCombo.selectItem(lastTool);
 
+            themeBtn = new MFXIconButton().tonal();
+            themeBtn.setOnAction(e -> {
+                themeEngine.nextMode();
+                themeBtn.pseudoClassStateChanged(DARK_PSEUDO_CLASS, themeEngine.getThemeMode() == ThemeMode.DARK);
+            });
+            themeBtn.getStyleClass().add("theme-mode");
+            UIUtils.installTooltip(themeBtn, "Light/Dark Mode");
+
             removeBtn = new MFXIconButton().outlined();
             removeBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
             removeBtn.setOnAction(e -> model.recents().remove(recentsTable.getSelectionModel().getSelectedItem()));
@@ -150,7 +167,13 @@ public class InitView extends View<InitPane> {
             loadBtn.getStyleClass().add("success");
             UIUtils.installTooltip(loadBtn, "Load with selected tool");
 
-            HBox actionsBox = new HBox(removeBtn, showBtn, toolCombo, loadBtn);
+            Box actionsBox = new Box(
+                Box.Direction.ROW,
+                themeBtn,
+                Box.separator(),
+                removeBtn, showBtn, toolCombo, loadBtn,
+                Box.separator()
+            );
             actionsBox.getStyleClass().add("actions");
 
             getChildren().addAll(header, subHeader, split, actionsBox);
