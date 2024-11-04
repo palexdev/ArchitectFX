@@ -38,10 +38,12 @@ import io.github.palexdev.mfxcore.builders.nodes.RegionBuilder;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxeffects.animations.Animations;
 import io.github.palexdev.mfxeffects.animations.Animations.KeyFrames;
+import io.github.palexdev.mfxeffects.animations.Animations.ParallelBuilder;
 import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.Animations.TimelineBuilder;
 import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
+import io.github.palexdev.mfxeffects.animations.motion.Motion;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
 import io.github.palexdev.virtualizedfx.utils.ScrollBounds;
 import io.inverno.core.annotation.Bean;
@@ -54,6 +56,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.ImageView;
@@ -62,6 +65,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -258,10 +262,15 @@ public class LivePreview extends View<LivePreviewPane> {
 
     // Content class
     protected class Content extends VFXScrollPane {
+        private final StackPane container = new StackPane();
+        private Animation animation;
+
         private final ImageView snapView = new ImageView();
         private boolean disablingPause = false;
+        private boolean wasPaused = false;
 
         {
+            setContent(container);
             // Config
             onChanged(model.documentProperty())
                 .then((o, n) -> {
@@ -274,8 +283,9 @@ public class LivePreview extends View<LivePreviewPane> {
         }
 
         protected void update(Pair<File, Document> oldDoc, Pair<File, Document> newDoc) {
+            lpModel.onDocumentSet(newDoc);
             if (newDoc == null || newDoc.getValue() == null) {
-                setContent(null);
+                container.getChildren().clear();
                 return;
             }
 
@@ -290,27 +300,60 @@ public class LivePreview extends View<LivePreviewPane> {
                 disablingPause = false;
             }
 
-            // TODO smooth transition?
-            Parent root = newDoc.getValue().rootNode();
-            root.setDisable(false);
-            snapView.setImage(null);
-            lpModel.onDocumentSet(newDoc);
-            setContent(root);
-
+            Parent newRoot = newDoc.getValue().rootNode();
+            if (Animations.isPlaying(animation)) animation.stop();
             if (lpModel.isPaused()) {
+
                 ScrollBounds sb = getContentBounds();
                 double w = Math.max(sb.contentWidth(), sb.viewportWidth());
                 double h = Math.max(sb.contentHeight(), sb.viewportHeight());
                 SnapshotParameters parameters = new SnapshotParameters();
                 parameters.setFill(Color.TRANSPARENT);
 
-                WritableImage snapshot = UIUtils.snapshot(root, w, h, parameters);
+                WritableImage snapshot = UIUtils.snapshot(newRoot, w, h, parameters);
                 snapView.setFitWidth(w);
                 snapView.setFitHeight(h);
                 snapView.setImage(snapshot);
-                setContent(snapView);
-                root.setDisable(true);
+                container.getChildren().setAll(snapView);
+                newRoot.setDisable(true);
+                wasPaused = true;
+            } else if (wasPaused) {
+                // If it was paused, do not animate
+                newRoot.setDisable(false);
+                container.getChildren().setAll(newRoot);
+                wasPaused = false;
+            } else {
+                Parent oldRoot = Optional.ofNullable(oldDoc)
+                    .map(Pair::getValue)
+                    .map(Document::rootNode)
+                    .orElse(null);
+                animateUpdate(oldRoot, newRoot);
             }
+        }
+
+        protected void animateUpdate(Node oldRoot, Node newRoot) {
+            newRoot.setOpacity(0.0);
+            container.getChildren().add(newRoot);
+            Animation nAnimation = ConsumerTransition.of(
+                frac -> newRoot.setOpacity(1.0 * frac),
+                M3Motion.SHORT4,
+                Motion.EASE_IN
+            ).setDelayFluent(M3Motion.SHORT4);
+            Animation oAnimation = ConsumerTransition.of(
+                frac -> {
+                    if (oldRoot == null) return;
+                    double target = 1.0 - (1.0 * frac);
+                    oldRoot.setOpacity(target);
+                },
+                M3Motion.SHORT4,
+                Motion.EASE_OUT
+            );
+            Animations.onStopped(oAnimation, () -> container.getChildren().remove(oldRoot), true);
+            animation = ParallelBuilder.build()
+                .add(oAnimation)
+                .add(nAnimation)
+                .getAnimation();
+            animation.play();
         }
     }
 
