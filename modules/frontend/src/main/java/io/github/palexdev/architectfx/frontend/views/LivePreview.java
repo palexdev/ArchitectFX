@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.frontend.views;
 
 import java.io.File;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -49,7 +50,10 @@ import javafx.application.HostServices;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.*;
+import javafx.geometry.HPos;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.ImageView;
@@ -65,6 +69,7 @@ import org.tinylog.Logger;
 
 import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.PAUSED_PSEUDO_CLASS;
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
+import static io.github.palexdev.mfxcore.observables.When.onChanged;
 import static io.github.palexdev.mfxcore.observables.When.onInvalidated;
 
 @Bean
@@ -160,16 +165,16 @@ public class LivePreview extends View<LivePreviewPane> {
             addSeparator();
 
             button("show", e ->
-                Optional.ofNullable(model.getDocument())
-                    .map(Pair::getKey)
-                    .ifPresent(f -> {
-                        try {
-                            String parent = f.toPath().getParent().toUri().toString();
-                            hostServices.showDocument(parent);
-                        } catch (Exception ex) {
-                            Logger.warn("Could not show file in file manager because:\n{}", ex);
-                        }
-                    }),
+                    Optional.ofNullable(model.getDocument())
+                        .map(Pair::getKey)
+                        .ifPresent(f -> {
+                            try {
+                                String parent = f.toPath().getParent().toUri().toString();
+                                hostServices.showDocument(parent);
+                            } catch (Exception ex) {
+                                Logger.warn("Could not show file in file manager because:\n{}", ex);
+                            }
+                        }),
                 "Show in File Manager"
             );
             MFXIconButton playPauseBtn = button("play-pause", e -> lpModel.setPaused(!lpModel.isPaused()), "Play/Pause Scene");
@@ -254,42 +259,57 @@ public class LivePreview extends View<LivePreviewPane> {
     // Content class
     protected class Content extends VFXScrollPane {
         private final ImageView snapView = new ImageView();
+        private boolean disablingPause = false;
 
         {
             // Config
-            onInvalidated(model.documentProperty())
-                .then(fd -> Platform.runLater(() -> update(fd)))
+            onChanged(model.documentProperty())
+                .then((o, n) -> {
+                    if (disablingPause) return;
+                    Platform.runLater(() -> update(o, n));
+                })
                 .invalidating(lpModel.pausedProperty())
                 .executeNow()
                 .listen();
         }
 
-        protected void update(Pair<File, Document> fd) {
-            if (fd == null || fd.getValue() == null) {
+        protected void update(Pair<File, Document> oldDoc, Pair<File, Document> newDoc) {
+            if (newDoc == null || newDoc.getValue() == null) {
                 setContent(null);
                 return;
             }
 
-            Parent root = fd.getValue().rootNode();
+            // When the document changes, it's not safe to keep the scene "paused" as it could potentially end up
+            // displaying an invalid snapshot.
+            // For example, if the document loads Nodes with animations, those could be captured at the wrong time.
+            // A possible workaround would be to reset the pause state a few seconds/milliseconds
+            // after the view is loaded. However, there's no way of telling how much time is needed for it to "stabilize".
+            if (oldDoc != null && !Objects.equals(oldDoc, newDoc)) {
+                disablingPause = true;
+                lpModel.setPaused(false);
+                disablingPause = false;
+            }
+
+            // TODO smooth transition?
+            Parent root = newDoc.getValue().rootNode();
+            root.setDisable(false);
+            snapView.setImage(null);
+            lpModel.onDocumentSet(newDoc);
+            setContent(root);
+
             if (lpModel.isPaused()) {
                 ScrollBounds sb = getContentBounds();
-                SnapshotParameters params = new SnapshotParameters();
-                params.setFill(Color.TRANSPARENT);
-                params.setViewport(new Rectangle2D(
-                    0, 0,
-                    Math.max(sb.contentWidth(), sb.viewportWidth()),
-                    Math.max(sb.contentHeight(), sb.viewportHeight())
-                ));
-                WritableImage snap = root.snapshot(params, null);
-                snapView.setImage(snap);
+                double w = Math.max(sb.contentWidth(), sb.viewportWidth());
+                double h = Math.max(sb.contentHeight(), sb.viewportHeight());
+                SnapshotParameters parameters = new SnapshotParameters();
+                parameters.setFill(Color.TRANSPARENT);
+
+                WritableImage snapshot = UIUtils.snapshot(root, w, h, parameters);
+                snapView.setFitWidth(w);
+                snapView.setFitHeight(h);
+                snapView.setImage(snapshot);
                 setContent(snapView);
                 root.setDisable(true);
-            } else {
-                // TODO transition content smoothly?
-                root.setDisable(false);
-                snapView.setImage(null);
-                lpModel.onDocumentSet(fd);
-                setContent(root);
             }
         }
     }
