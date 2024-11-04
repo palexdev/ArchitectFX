@@ -193,6 +193,7 @@ public class ComboBox<T> extends MFXControl<ComboBoxBehavior<T>> {
                 .get()
             );
             content.prefWidthProperty().bind(combo.widthProperty().subtract(12));
+            popup.setOnShown(e -> popup.reposition());
             return popup;
         }
 
