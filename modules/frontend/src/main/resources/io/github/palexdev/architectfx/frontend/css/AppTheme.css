@@ -24,7 +24,6 @@
 
 * {
   -fx-font-smoothing-type: GRAY;
-  -fx-text-fill: -md-sys-color-on-surface;
 }
 
 .root {
@@ -33,6 +32,7 @@
   -md-sys-color-green: #4CAF50;
   -md-sys-color-green-container: #9FF5A7;
   -md-sys-color-on-green-container: #00210F;
+  -md-sys-color-green-ripple: #4CAF5029;
 
   -md-sys-color-on-warn: #522300;
   -md-sys-color-warn: #FFB68C;
@@ -43,6 +43,7 @@
   -md-sys-color-fail: #E57373;
   -md-sys-color-fail-container: #FFDAD6;
   -md-sys-color-on-fail-container: #400001;
+  -md-sys-color-fail-ripple: #E5737329;
 
   -fx-background-color: -md-sys-color-surface;
 }

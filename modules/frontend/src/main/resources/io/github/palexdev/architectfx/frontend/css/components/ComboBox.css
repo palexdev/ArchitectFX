@@ -69,10 +69,6 @@
   -fx-text-text-fill: -md-sys-color-on-surface-variant;
 }
 
-.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell:hover {
-  -fx-background-color: -md-ref-palette-primary95;
-}
-
-.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell:selected {
-  -fx-background-color: -md-ref-palette-primary90;
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell > .surface > .bg {
+  -fx-background-color: -md-sys-color-primary;
 }

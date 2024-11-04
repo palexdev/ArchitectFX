@@ -23,7 +23,9 @@
 
   /* Content */
 .preview > .vfx-scroll-pane {
-  -fx-border-color: -md-sys-color-outline;
+  -fx-background-color: -md-sys-color-surface-variant;
+  -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-primary;
   -fx-border-radius: 12px;
   -vfx-autohide-bars: true;
   -vfx-clip-border-radius: 24px;
@@ -33,7 +35,8 @@
 /* Sidebar */
 .preview > .sidebar {
   -fx-background-color: -md-sys-color-surface;
-  -fx-border-color: -md-sys-color-outline;
+  -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-primary;
   -fx-border-insets: 0px 0px 0px 4px;
   -fx-border-radius: 12px;
   -fx-spacing: 8px;
@@ -92,4 +95,8 @@
 /* Theme Mode */
 .preview > .sidebar > .container > .mfx-icon-button.theme-mode > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: "fas-moon";
+}
+
+.preview > .sidebar > .container > .mfx-icon-button.theme-mode:dark > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: "fas-sun";
 }

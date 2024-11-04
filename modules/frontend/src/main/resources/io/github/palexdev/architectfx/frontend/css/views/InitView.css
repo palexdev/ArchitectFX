@@ -45,6 +45,8 @@
 .init-view > .split > .vfx-scroll-pane {
   -fx-background-color: -md-sys-color-surface;
   -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-radius: 12px;
   -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.20), 8, 0.16, 0, 3);
   -fx-padding: 0px;
   -vfx-clip-border-radius: 24px;
@@ -104,12 +106,8 @@
   -fx-background-insets: 0.125em 0px 0px 0px;
 }
 
-.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:hover {
-  -fx-background-color: -md-ref-palette-primary95;
-}
-
-.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row:selected {
-  -fx-background-color: -md-ref-palette-primary90;
+.init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row > .surface > .bg {
+  -fx-background-color: -md-sys-color-primary;
 }
 
 .init-view > .split > .vfx-scroll-pane .vfx-table .vfx-row .label {
@@ -131,54 +129,62 @@
   -fx-spacing: 12px;
 }
 
-.init-view > .actions > .mfx-icon-button:disabled {
+.init-view > .actions > .container > .mfx-icon-button:disabled {
   -fx-background-color: transparent;
 }
 
-.init-view > .actions > .mfx-icon-button.warning {
+.init-view > .actions > .container > .mfx-icon-button.warning {
   -fx-border-color: -md-sys-color-fail;
   -fx-border-insets: -1px;
   -fx-padding: 1px;
 }
 
-.init-view > .actions > .mfx-icon-button.warning > .surface > .bg {
+.init-view > .actions > .container > .mfx-icon-button.warning > .surface > .bg {
   -fx-background-color: -md-sys-color-fail;
 }
 
-.init-view > .actions > .mfx-icon-button.warning > .surface > .mfx-ripple-generator {
-  -mfx-ripple-color: derive(-md-sys-color-fail, 84%);
+.init-view > .actions > .container > .mfx-icon-button.warning > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: -md-sys-color-fail-ripple;
 }
 
-.init-view > .actions > .mfx-icon-button.warning:disabled > .mfx-icon-wrapper > .mfx-font-icon,
-.init-view > .actions > .mfx-icon-button.warning > .mfx-icon-wrapper > .mfx-font-icon {
+.init-view > .actions > .container > .mfx-icon-button.warning:disabled > .mfx-icon-wrapper > .mfx-font-icon,
+.init-view > .actions > .container > .mfx-icon-button.warning > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-color: -md-sys-color-fail;
   -mfx-description: 'fas-trash';
 }
 
-.init-view > .actions > .mfx-icon-button.show {
+.init-view > .actions > .container > .mfx-icon-button.show {
   -fx-border-insets: -1px;
   -fx-padding: 1px;
 }
 
-.init-view > .actions > .mfx-icon-button.show > .mfx-icon-wrapper > .mfx-font-icon {
+.init-view > .actions > .container > .mfx-icon-button.theme-mode > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: 'fas-moon';
+}
+
+.init-view > .actions > .container > .mfx-icon-button.theme-mode:dark > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: 'fas-sun';
+}
+
+.init-view > .actions > .container > .mfx-icon-button.show > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: 'fas-folder-open';
 }
 
-.init-view > .actions > .mfx-icon-button.success {
+.init-view > .actions > .container > .mfx-icon-button.success {
   -fx-border-color: -md-sys-color-green;
   -fx-border-insets: -1px;
   -fx-padding: 1px;
 }
 
-.init-view > .actions > .mfx-icon-button.success > .surface > .bg {
+.init-view > .actions > .container > .mfx-icon-button.success > .surface > .bg {
   -fx-background-color: -md-sys-color-green;
 }
 
-.init-view > .actions > .mfx-icon-button.success > .surface > .mfx-ripple-generator {
-  -mfx-ripple-color: derive(-md-sys-color-green, 84%);
+.init-view > .actions > .container > .mfx-icon-button.success > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: -md-sys-color-green-ripple;
 }
 
-.init-view > .actions > .mfx-icon-button.success > .mfx-icon-wrapper > .mfx-font-icon {
+.init-view > .actions > .container > .mfx-icon-button.success > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-color: -md-sys-color-green;
   -mfx-description: 'fas-play';
 }
