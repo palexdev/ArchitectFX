@@ -62,11 +62,11 @@
   -vfx-cell-size: 40px;
 }
 
-.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell {
+.combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell > .label {
   -fx-font-family: "Montserrat Medium";
   -fx-font-size: 14px;
   -fx-padding: 0px 12px 0px 12px;
-  -fx-text-text-fill: -md-sys-color-on-surface-variant;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
 }
 
 .combo-box > .mfx-popup .vfx-scroll-pane .vfx-list .cell > .surface > .bg {
