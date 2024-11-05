@@ -21,7 +21,6 @@ package io.github.palexdev.architectfx.frontend.components;
 import java.util.List;
 import java.util.function.Supplier;
 
-import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.mfxcomponents.controls.base.MFXControl;
 import io.github.palexdev.mfxcomponents.controls.base.MFXSkinBase;
 import io.github.palexdev.mfxcore.behavior.BehaviorBase;
@@ -61,8 +60,6 @@ public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavio
         setCountdown(countdown);
         getStyleClass().setAll(defaultStyleClasses());
         setDefaultBehaviorProvider();
-
-        UIUtils.debugTheme(this, "css/components/CountdownIcon.css");
     }
 
     //================================================================================
