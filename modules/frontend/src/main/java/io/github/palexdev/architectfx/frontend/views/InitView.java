@@ -33,6 +33,7 @@ import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.InitView.InitPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
+import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.controls.Label;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
@@ -43,8 +44,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.tinylog.Logger;
-
-import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.DARK_PSEUDO_CLASS;
 
 @Bean
 public class InitView extends View<InitPane> {
@@ -144,7 +143,7 @@ public class InitView extends View<InitPane> {
             themeBtn = new MFXIconButton().tonal();
             themeBtn.setOnAction(e -> {
                 themeEngine.nextMode();
-                themeBtn.pseudoClassStateChanged(DARK_PSEUDO_CLASS, themeEngine.getThemeMode() == ThemeMode.DARK);
+                PseudoClasses.setOn(themeBtn, "dark", themeEngine.getThemeMode() == ThemeMode.DARK);
             });
             themeBtn.getStyleClass().add("theme-mode");
             UIUtils.installTooltip(themeBtn, "Light/Dark Mode");

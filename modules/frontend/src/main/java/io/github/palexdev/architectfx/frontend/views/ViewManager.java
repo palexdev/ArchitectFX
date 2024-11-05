@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.frontend.views;
 
 import java.util.Map;
+import java.util.Optional;
 
 import io.github.palexdev.architectfx.frontend.ArchitectFX;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
@@ -123,6 +124,13 @@ public class ViewManager {
         view.setSmooth(false);
         view.setFitWidth(rootPane.getWidth());
         view.setFitHeight(rootPane.getHeight());
+        // This ensures that the snapshot overlaps perfectly with the current view pane
+        Optional.ofNullable(rootPane.getChildren())
+            .map(l -> !l.isEmpty() ? l.getFirst() : null)
+            .ifPresent(n -> {
+                view.setTranslateX(n.getLayoutX());
+                view.setTranslateY(n.getLayoutY());
+            });
         view.setOpacity(1.0);
         rootPane.getChildren().add(view);
 

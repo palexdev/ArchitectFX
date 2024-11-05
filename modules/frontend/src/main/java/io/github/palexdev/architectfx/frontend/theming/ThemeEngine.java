@@ -18,38 +18,24 @@
 
 package io.github.palexdev.architectfx.frontend.theming;
 
-import java.util.Map;
-
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.mfxcomponents.theming.MaterialThemes;
 import io.github.palexdev.mfxcomponents.theming.UserAgentBuilder;
-import io.github.palexdev.mfxcomponents.theming.base.Theme;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.utils.EnumUtils;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.BeanSocket;
-import javafx.css.PseudoClass;
 import org.tinylog.Logger;
 
 @Bean
 public class ThemeEngine {
     //================================================================================
-    // Static Properties
-    //================================================================================
-    public static final PseudoClass PAUSED_PSEUDO_CLASS = PseudoClass.getPseudoClass("paused");
-    public static final PseudoClass DARK_PSEUDO_CLASS = PseudoClass.getPseudoClass("dark");
-
-    private static final Map<Theme, Theme> THEME_VARIANTS = Map.of(
-        MaterialThemes.INDIGO_LIGHT, MaterialThemes.INDIGO_DARK,
-        MaterialThemes.PURPLE_LIGHT, MaterialThemes.PURPLE_DARK
-    );
-
-    //================================================================================
     // Properties
     //================================================================================
     private final IEventBus events;
+    private MaterialThemes currentMaterialTheme;
     private ThemeMode mode;
 
     //================================================================================
@@ -70,19 +56,15 @@ public class ThemeEngine {
     }
 
     public void loadTheme() {
-        events.publish(new UIEvent.ThemeSwitchEvent());
+        if (currentMaterialTheme == null)
+            currentMaterialTheme = mode == ThemeMode.LIGHT ? MaterialThemes.INDIGO_LIGHT : MaterialThemes.INDIGO_DARK;
         UserAgentBuilder.builder()
-            .themes(getThemeVariant(MaterialThemes.INDIGO_LIGHT))
+            .themes(currentMaterialTheme)
             .themes(AppTheme.DEFAULT)
             .setDeploy(true)
             .setResolveAssets(true)
             .build()
             .setGlobal();
-    }
-
-    protected Theme getThemeVariant(Theme theme) {
-        if (mode == ThemeMode.LIGHT) return theme;
-        return THEME_VARIANTS.getOrDefault(theme, theme);
     }
 
     public ThemeMode getThemeMode() {
@@ -92,6 +74,8 @@ public class ThemeEngine {
     @BeanSocket(enabled = false)
     public void setThemeMode(ThemeMode mode) {
         this.mode = mode;
+        this.currentMaterialTheme = currentMaterialTheme.getVariant();
+        events.publish(new UIEvent.ThemeSwitchEvent());
         loadTheme();
     }
 

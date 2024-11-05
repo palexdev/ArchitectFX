@@ -22,53 +22,19 @@ import io.github.palexdev.mfxcomponents.controls.MaterialSurface;
 import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import javafx.scene.layout.Region;
 
-// FIXME !Critical! For the love of programming improve this on MaterialFX side
 public class SelectableSurface extends MaterialSurface {
-    //================================================================================
-    // Properties
-    //================================================================================
-    private final Region owner;
-    private double lastOpacity;
 
     //================================================================================
     // Constructors
     //================================================================================
     public SelectableSurface(Region owner) {
         super(owner);
-        this.owner = owner;
-    }
-
-    //================================================================================
-    // Methods
-    //================================================================================
-    protected boolean isSelected() {
-        return PseudoClasses.SELECTED.isActiveOn(owner);
-    }
-    
-    //================================================================================
-    // Overridden Methods
-    //================================================================================
-    @Override
-    public void handleBackground() {
-        final double target;
-        if (isOwnerDisabled()) {
-            target = 0.0;
-        } else if (isOwnerPressed() || isSelected()) {
-            target = getPressOpacity();
-        } else if (isOwnerFocused()) {
-            target = getFocusOpacity();
-        } else if (isOwnerHover()) {
-            target = getHoverOpacity();
-        } else {
-            target = 0.0;
-        }
-
-        if (lastOpacity == target) return;
-        if (animated && isAnimateBackground()) {
-            animateBackground(target);
-        } else {
-            getChildren().getFirst().setOpacity(target);
-        }
-        lastOpacity = target;
+        /*
+         * TODO: States can be stored in a PriorityQueue for easier custom states
+         */
+        getStates().add(1, State.of(
+            PseudoClasses.SELECTED::isActiveOn,
+            MaterialSurface::getPressedOpacity
+        ));
     }
 }

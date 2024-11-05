@@ -36,6 +36,7 @@ import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.LivePreview.LivePreviewPane;
 import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
+import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.builders.InsetsBuilder;
 import io.github.palexdev.mfxcore.builders.nodes.RegionBuilder;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
@@ -73,8 +74,6 @@ import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.tinylog.Logger;
 
-import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.DARK_PSEUDO_CLASS;
-import static io.github.palexdev.architectfx.frontend.theming.ThemeEngine.PAUSED_PSEUDO_CLASS;
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
 import static io.github.palexdev.mfxcore.observables.When.onChanged;
 import static io.github.palexdev.mfxcore.observables.When.onInvalidated;
@@ -192,7 +191,7 @@ public class LivePreview extends View<LivePreviewPane> {
             );
             MFXIconButton playPauseBtn = button("play-pause", (b, e) -> lpModel.setPaused(!lpModel.isPaused()), "Play/Pause Scene");
             onInvalidated(lpModel.pausedProperty())
-                .then(v -> playPauseBtn.pseudoClassStateChanged(PAUSED_PSEUDO_CLASS, v))
+                .then(v -> PseudoClasses.setOn(playPauseBtn, "paused", v))
                 .executeNow()
                 .listen();
             toggle("auto-reload", lpModel::setAutoReload, lpModel.isAutoReload(), "Auto Reload");
@@ -203,7 +202,7 @@ public class LivePreview extends View<LivePreviewPane> {
             aot.setOnAction(e -> mainWindow.setAlwaysOnTop(!mainWindow.isAlwaysOnTop()));
             button("theme-mode", (b, e) -> {
                 themeEngine.nextMode();
-                b.pseudoClassStateChanged(DARK_PSEUDO_CLASS, themeEngine.getThemeMode() == ThemeMode.DARK);
+                PseudoClasses.setOn(b, "dark", themeEngine.getThemeMode() == ThemeMode.DARK);
             }, "Light/Dark Mode");
 
             // Config
