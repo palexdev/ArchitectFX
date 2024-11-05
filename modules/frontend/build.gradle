@@ -26,6 +26,7 @@ javafx {
 application {
     mainModule = 'afx.frontend'
     mainClass = 'io.github.palexdev.architectfx.frontend.ArchitectFX'
+    applicationDefaultJvmArgs += ['-Dprism.forceUploadingPainter=true']
 }
 
 tasks.register('launch', JavaExec) {
