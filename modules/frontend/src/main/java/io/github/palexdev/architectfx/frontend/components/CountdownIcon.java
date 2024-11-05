@@ -62,7 +62,7 @@ public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavio
         getStyleClass().setAll(defaultStyleClasses());
         setDefaultBehaviorProvider();
 
-        UIUtils.debugTheme(this,  "css/components/CountdownIcon.css");
+        UIUtils.debugTheme(this, "css/components/CountdownIcon.css");
     }
 
     //================================================================================
