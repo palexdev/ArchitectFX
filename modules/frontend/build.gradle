@@ -52,4 +52,29 @@ tasks.register('zipAssets', Zip) {
     }
 }
 
+sourcesJar.dependsOn(zipAssets)
 processResources.finalizedBy(zipAssets)
+
+// Compile-time DI configuration
+def generatedSources = "${file(layout.buildDirectory)}/generated/sources"
+def generatedOutputDir = file("$generatedSources")
+
+compileJava {
+    doFirst {
+        generatedOutputDir.exists() || generatedOutputDir.mkdirs()
+        options.compilerArgs = [
+                '-s', "${generatedSources}"
+        ]
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += generatedOutputDir
+        }
+    }
+}
+
+sourcesJar.dependsOn(compileJava)
+compileTestJava.dependsOn(sourcesJar)
