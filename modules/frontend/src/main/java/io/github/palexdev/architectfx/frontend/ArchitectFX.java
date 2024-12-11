@@ -89,7 +89,24 @@ public class ArchitectFX extends Application {
         ArchitectFX.stage = stage;
         ArchitectFX.parameters = getParameters();
         ArchitectFX.hostServices = getHostServices();
-        ArchitectFX.root = new StackPane();
+        ArchitectFX.root = new StackPane() {
+
+            @Override
+            protected double computeMinWidth(double height) {
+                Node content = getContent();
+                return content != null ? content.minWidth(height) + 16.0 : 0.0;
+            }
+
+            @Override
+            protected double computeMinHeight(double width) {
+                Node content = getContent();
+                return content != null ? content.minHeight(width) + 40.0 : 0.0;
+            }
+
+            Node getContent() {
+                return getChildren().isEmpty() ? null : getChildren().getFirst();
+            }
+        };
 
         // Bootstrap
         bootstrap().accept(

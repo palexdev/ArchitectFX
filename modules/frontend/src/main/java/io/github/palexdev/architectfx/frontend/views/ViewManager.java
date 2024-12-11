@@ -74,22 +74,27 @@ public class ViewManager {
     //================================================================================
     private void initMainWindow() {
         // Get minimum sizes
-        double minW = settings.windowWidth().defValue();
-        double minH = settings.windowHeight().defValue();
-        double prefW = settings.windowWidth().get();
-        double prefH = settings.windowHeight().get();
-        Size minSize = UIUtils.clampWindowSizes(Size.of(minW, minH));
-        Size prefSize = UIUtils.clampWindowSizes(Size.of(prefW, prefH));
-        double w = Math.max(minSize.getWidth(), prefSize.getWidth());
-        double h = Math.max(minSize.getHeight(), prefSize.getHeight());
-
-        Scene scene = new Scene(rootPane, w, h);
+        Size size = settings.getWindowSize();
+        Scene scene = new Scene(rootPane);
         mainWindow.setScene(scene);
         mainWindow.initStyle(StageStyle.UNIFIED);
         mainWindow.setMinWidth(minSize.getWidth());
         mainWindow.setMinHeight(minSize.getHeight());
         mainWindow.setWidth(w);
         mainWindow.setHeight(h);
+        mainWindow.setWidth(size.getWidth());
+        mainWindow.setHeight(size.getHeight());
+
+        When.onInvalidated(rootPane.boundsInParentProperty())
+            .then(b -> {
+                double minW = rootPane.minWidth(-1);
+                double minH = rootPane.minHeight(-1);
+                mainWindow.setMinWidth(minW);
+                mainWindow.setMinHeight(minH);
+            })
+            .executeNow()
+            .listen();
+
         onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitView.class));
         mainWindow.show();
     }
