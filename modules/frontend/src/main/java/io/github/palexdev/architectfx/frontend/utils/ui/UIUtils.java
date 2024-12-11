@@ -107,7 +107,7 @@ public class UIUtils {
     public static MFXTooltip installTooltip(Node owner, String text, Pos anchor) {
         MFXTooltip tooltip = new MFXTooltip(owner);
         tooltip.setContent(new MFXPlainContent(text));
-        tooltip.setInDelay(M3Motion.EXTRA_LONG4);
+        tooltip.setInDelay(M3Motion.LONG2);
         tooltip.setOutDelay(Duration.ZERO);
         tooltip.setAnchor(anchor);
         return tooltip.install();
