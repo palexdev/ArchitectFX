@@ -31,10 +31,8 @@ import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
 import io.github.palexdev.architectfx.frontend.model.LivePreviewModel;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
-import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.LivePreview.LivePreviewPane;
-import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
 import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.builders.InsetsBuilder;
@@ -167,6 +165,7 @@ public class LivePreview extends View<LivePreviewPane> {
 
         private Animation animation;
 
+        // TODO replace buttons methods with UIUtils
         {
             // Buttons
             button("close", (b, e) -> {
@@ -200,10 +199,7 @@ public class LivePreview extends View<LivePreviewPane> {
             MFXIconButton aot = toggle("aot", null, false, "Always on Top");
             aot.selectedProperty().bind(mainWindow.alwaysOnTopProperty());
             aot.setOnAction(e -> mainWindow.setAlwaysOnTop(!mainWindow.isAlwaysOnTop()));
-            button("theme-mode", (b, e) -> {
-                themeEngine.nextMode();
-                PseudoClasses.setOn(b, "dark", themeEngine.getThemeMode() == ThemeMode.DARK);
-            }, "Light/Dark Mode");
+            button("theme-mode", (b, e) -> themeEngine.nextMode(), "Light/Dark Mode");
 
             // Config
             onInvalidated(hoverProperty())

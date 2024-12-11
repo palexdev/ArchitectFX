@@ -6,12 +6,14 @@ module afx.frontend {
     // Modules
     requires afx.backend;
 
-    // JavaFX
+    // JavaFX/UI
     requires javafx.graphics;
+    requires javafx.swing;
     requires fr.brouillard.oss.cssfx;
     requires mfx.components;
     requires nfx.core;
     requires VirtualizedFX;
+    requires rectcut;
 
     // DI
     requires static io.inverno.core.annotation;
@@ -27,6 +29,7 @@ module afx.frontend {
     // Misc
     requires directory.watcher;
     requires pragmatica.core;
+    requires ImCache;
 
     //***** Exports *****//
     // Base Package
@@ -68,5 +71,4 @@ module afx.frontend {
 
     // Views Package
     exports io.github.palexdev.architectfx.frontend.views;
-    exports io.github.palexdev.architectfx.frontend.views.base;
 }

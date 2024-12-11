@@ -22,18 +22,23 @@ import java.util.Map;
 import java.util.Optional;
 
 import io.github.palexdev.architectfx.frontend.ArchitectFX;
+import io.github.palexdev.architectfx.frontend.Resources;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
+import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
-import io.github.palexdev.architectfx.frontend.views.base.View;
+import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxcore.observables.When;
 import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
@@ -50,6 +55,11 @@ public class ViewManager {
     private final Pane rootPane;
     private final Map<Class<? extends View>, View<?>> views;
     private final AppSettings settings;
+    private final ThemeEngine themeEngine;
+
+    // Assets
+    public static final Image LIGHT_LOGO = new Image(Resources.loadStream("assets/iconlight.png"));
+    public static final Image DARK_LOGO = new Image(Resources.loadStream("assets/icondark.png"));
 
     //================================================================================
     // Constructors
@@ -58,12 +68,13 @@ public class ViewManager {
         Stage mainWindow,
         Pane rootPane,
         Map<Class<? extends View>, View<?>> views, IEventBus events,
-        AppSettings settings
+        AppSettings settings, ThemeEngine themeEngine
     ) {
         this.mainWindow = mainWindow;
         this.rootPane = rootPane;
         this.views = views;
         this.settings = settings;
+        this.themeEngine = themeEngine;
         events.subscribe(AppEvent.AppReadyEvent.class, e -> onAppReady());
         events.subscribe(UIEvent.ViewSwitchEvent.class, this::onViewSwitchRequest);
         events.subscribe(UIEvent.ThemeSwitchEvent.class, this::onThemeSwitched);
@@ -78,10 +89,6 @@ public class ViewManager {
         Scene scene = new Scene(rootPane);
         mainWindow.setScene(scene);
         mainWindow.initStyle(StageStyle.UNIFIED);
-        mainWindow.setMinWidth(minSize.getWidth());
-        mainWindow.setMinHeight(minSize.getHeight());
-        mainWindow.setWidth(w);
-        mainWindow.setHeight(h);
         mainWindow.setWidth(size.getWidth());
         mainWindow.setHeight(size.getHeight());
 
@@ -95,6 +102,7 @@ public class ViewManager {
             .executeNow()
             .listen();
 
+        handleThemeMode();
         onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitView.class));
         mainWindow.show();
     }
@@ -109,6 +117,7 @@ public class ViewManager {
         if (view == null)
             throw new IllegalStateException("Unknown view: " + event.data());
         ArchitectFX.windowTitle.set(ArchitectFX.APP_TITLE + " - " + view.title());
+        view.onSwitching();
         rootPane.getChildren().setAll(view.toRegion());
     }
 
@@ -129,6 +138,7 @@ public class ViewManager {
         view.setSmooth(false);
         view.setFitWidth(rootPane.getWidth());
         view.setFitHeight(rootPane.getHeight());
+        view.setPreserveRatio(false);
         // This ensures that the snapshot overlaps perfectly with the current view pane
         Optional.ofNullable(rootPane.getChildren())
             .map(l -> !l.isEmpty() ? l.getFirst() : null)
@@ -139,6 +149,8 @@ public class ViewManager {
         view.setOpacity(1.0);
         rootPane.getChildren().add(view);
 
+        handleThemeMode();
+
         // Fade out and remove
         ConsumerTransition.of(
             frac -> view.setOpacity(1.0 - (1.0 * frac)),
@@ -148,5 +160,12 @@ public class ViewManager {
             rootPane.getChildren().remove(view);
             rootPane.setMouseTransparent(false);
         }).play();
+    }
+
+    private void handleThemeMode() {
+        ThemeMode mode = themeEngine.getThemeMode();
+        Image icon = mode == ThemeMode.LIGHT ? LIGHT_LOGO : DARK_LOGO;
+        mainWindow.getIcons().setAll(icon);
+        PseudoClasses.setOn(rootPane, "dark", mode == ThemeMode.DARK);
     }
 }

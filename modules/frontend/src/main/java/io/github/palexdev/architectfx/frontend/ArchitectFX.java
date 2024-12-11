@@ -40,6 +40,7 @@ import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -54,6 +55,7 @@ public class ArchitectFX extends Application {
     // Properties
     //================================================================================
     public static final String APP_TITLE = "ArchitectFX";
+    public static final String GIT = "https://github.com/palexdev/ArchitectFX";
     public static final StringProperty windowTitle = new SimpleStringProperty(APP_TITLE);
 
     // Module

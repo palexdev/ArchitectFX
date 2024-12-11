@@ -24,6 +24,8 @@ import java.util.Map;
 
 import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
+import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.settings.BooleanSetting;
 import io.github.palexdev.mfxcore.settings.NumberSetting;
 import io.github.palexdev.mfxcore.settings.Settings;
@@ -37,8 +39,8 @@ public class AppSettings extends Settings {
     // Settings
     //================================================================================
     // UI
-    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 960.0);
-    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 540.0);
+    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 1200.0);
+    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 500.0);
     private final StringSetting themeMode = registerString("theme.mode", "Theme variation, light/dark", ThemeMode.LIGHT.name());
 
     // App
@@ -71,6 +73,13 @@ public class AppSettings extends Settings {
     public void saveRecents(Collection<Recent> recents) {
         String toYaml = Recent.save(recents);
         this.recents.set(toYaml);
+    }
+
+    public Size getWindowSize() {
+        return UIUtils.getWindowSize(
+            windowWidth.defValue(), windowHeight.defValue(),
+            windowWidth.get(), windowHeight.get()
+        );
     }
 
     //================================================================================

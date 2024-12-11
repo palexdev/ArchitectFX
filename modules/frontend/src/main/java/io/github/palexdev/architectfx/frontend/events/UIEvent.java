@@ -18,7 +18,7 @@
 
 package io.github.palexdev.architectfx.frontend.events;
 
-import io.github.palexdev.architectfx.frontend.views.base.View;
+import io.github.palexdev.architectfx.frontend.views.View;
 import io.github.palexdev.mfxcore.events.Event;
 
 public abstract class UIEvent extends Event {

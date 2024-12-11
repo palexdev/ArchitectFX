@@ -16,7 +16,7 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.views.base;
+package io.github.palexdev.architectfx.frontend.views;
 
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
@@ -58,4 +58,6 @@ public abstract class View<P extends Pane> {
     }
 
     protected void onAppReady() {}
+
+    protected void onSwitching() {}
 }

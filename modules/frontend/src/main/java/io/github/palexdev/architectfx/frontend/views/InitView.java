@@ -18,38 +18,47 @@
 
 package io.github.palexdev.architectfx.frontend.views;
 
-import io.github.palexdev.architectfx.frontend.components.ComboBox;
-import io.github.palexdev.architectfx.frontend.components.FileInput;
-import io.github.palexdev.architectfx.frontend.components.base.ComboCell.SimpleComboCell;
+import io.github.palexdev.architectfx.frontend.ArchitectFX;
 import io.github.palexdev.architectfx.frontend.components.layout.Box;
-import io.github.palexdev.architectfx.frontend.components.vfx.RecentsTable;
+import io.github.palexdev.architectfx.frontend.components.vfx.RecentsGrid;
+import io.github.palexdev.architectfx.frontend.components.vfx.cells.RecentCell;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
 import io.github.palexdev.architectfx.frontend.model.AppModel;
-import io.github.palexdev.architectfx.frontend.model.Recent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
-import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.InitView.InitPane;
-import io.github.palexdev.architectfx.frontend.views.base.View;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
-import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
-import io.github.palexdev.mfxcore.controls.Label;
+import io.github.palexdev.mfxcore.builders.InsetsBuilder;
+import io.github.palexdev.mfxcore.controls.Text;
+import io.github.palexdev.mfxcore.events.WhenEvent;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
-import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
+import io.github.palexdev.mfxcore.utils.fx.LayoutUtils;
+import io.github.palexdev.mfxeffects.animations.Animations.AbstractBuilder;
+import io.github.palexdev.mfxeffects.animations.Animations.KeyFrames;
+import io.github.palexdev.mfxeffects.animations.Animations.ParallelBuilder;
+import io.github.palexdev.mfxeffects.animations.Animations.TimelineBuilder;
+import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
+import io.github.palexdev.rectcut.Rect;
 import io.inverno.core.annotation.Bean;
+import javafx.animation.Interpolator;
+import javafx.animation.KeyFrame;
 import javafx.application.HostServices;
-import javafx.collections.FXCollections;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+import javafx.event.EventType;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.tinylog.Logger;
+import javafx.stage.Stage;
+import javafx.util.Duration;
 
 @Bean
 public class InitView extends View<InitPane> {
     //================================================================================
     // Properties
     //================================================================================
+    private final Stage mainWindow;
     private final ThemeEngine themeEngine;
     private final AppModel model;
     private final AppSettings settings;
@@ -58,8 +67,14 @@ public class InitView extends View<InitPane> {
     //================================================================================
     // Constructors
     //================================================================================
-    public InitView(IEventBus events, ThemeEngine themeEngine, AppModel model, AppSettings settings, HostServices hostServices) {
+    public InitView(
+        IEventBus events,
+        Stage mainWindow, ThemeEngine themeEngine,
+        AppModel model, AppSettings settings,
+        HostServices hostServices
+    ) {
         super(events);
+        this.mainWindow = mainWindow;
         this.themeEngine = themeEngine;
         this.model = model;
         this.settings = settings;
@@ -80,6 +95,11 @@ public class InitView extends View<InitPane> {
     }
 
     @Override
+    protected void onSwitching() {
+        super.root.animateText();
+    }
+
+    @Override
     public String title() {
         return "Project Hub";
     }
@@ -87,109 +107,172 @@ public class InitView extends View<InitPane> {
     //================================================================================
     // View Class
     //================================================================================
-    protected class InitPane extends VBox {
+    protected class InitPane extends StackPane {
         private static final String HEADER = "Welcome to Your Project Hub!";
-        private static final String SUB_HEADER = "Start by selecting a file or continue where you left off.\n Choose your preferred mode to begin!";
+        private static final String SUB_HEADER = "Explore your projects\nContinue where you left off or import new ones";
 
-        private final Label header;
-        private final Label subHeader;
+        private final double H_SPACING = 12.0;
+        private final double V_SPACING = 8.0;
 
-        private final RecentsTable recentsTable;
-        private final FileInput input;
+        // Top Left
+        private final ImageView logoView;
+        private final Text title;
+        private final Text header;
+        private final Text subHeader;
+        private final Box topBox;
 
-        // TODO extract create buttons method from LivePreview (?)
-        private final ComboBox<Tool> toolCombo;
+        // Bottom Left
+        private final MFXIconButton gitBtn;
+        private final MFXIconButton aotBtn;
         private final MFXIconButton themeBtn;
-        private final MFXIconButton removeBtn;
-        private final MFXIconButton showBtn;
-        private final MFXIconButton loadBtn;
+        private final Box bottomBox;
+
+        // Right
+        private final RecentsGrid grid;
 
         protected InitPane() {
-            // Combo, needs to be instantiated early, belongs to actions
-            toolCombo = new ComboBox<>(
-                FXCollections.observableArrayList(Tool.PREVIEW),
-                SimpleComboCell::new
-            );
+            // Top Left
+            logoView = new ImageView();
 
-            // Header
-            header = new Label(HEADER);
+            title = new Text(ArchitectFX.APP_TITLE);
+            title.getStyleClass().add("title");
+
+            header = new Text(HEADER);
             header.getStyleClass().add("header");
-            subHeader = new Label(SUB_HEADER);
+
+            subHeader = new Text(SUB_HEADER);
             subHeader.getStyleClass().add("sub-header");
 
-            // Table & DnD
-            recentsTable = new RecentsTable(model.recents());
-            VFXScrollPane vsp = recentsTable.makeScrollable();
-            input = new FileInput(f -> model.run(toolCombo.getSelectedItem(), f), settings.lastDir().get());
-
-            // Split
-            HBox split = new HBox(vsp, input);
-            split.getStyleClass().add("split");
-            HBox.setHgrow(vsp, Priority.ALWAYS);
-            HBox.setHgrow(input, Priority.ALWAYS);
-            VBox.setVgrow(split, Priority.ALWAYS);
-            vsp.maxWidthProperty().bind(split.widthProperty().divide(2.0));
-            input.maxWidthProperty().bind(split.widthProperty().divide(2.0));
-
-            // Actions
-            Tool lastTool;
-            try {
-                lastTool = Tool.valueOf(settings.lastTool().get());
-            } catch (Exception ex) {
-                lastTool = Tool.PREVIEW;
-            }
-            toolCombo.selectItem(lastTool);
-
-            themeBtn = new MFXIconButton().tonal();
-            themeBtn.setOnAction(e -> {
-                themeEngine.nextMode();
-                PseudoClasses.setOn(themeBtn, "dark", themeEngine.getThemeMode() == ThemeMode.DARK);
-            });
-            themeBtn.getStyleClass().add("theme-mode");
-            UIUtils.installTooltip(themeBtn, "Light/Dark Mode");
-
-            removeBtn = new MFXIconButton().outlined();
-            removeBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
-            removeBtn.setOnAction(e -> model.recents().remove(recentsTable.getSelectionModel().getSelectedItem()));
-            removeBtn.getStyleClass().add("warning");
-            UIUtils.installTooltip(removeBtn, "Delete Entry");
-
-            showBtn = new MFXIconButton().outlined();
-            showBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
-            showBtn.setOnAction(e -> openInFileManager());
-            showBtn.getStyleClass().add("show");
-            UIUtils.installTooltip(showBtn, "Show in File Manager");
-
-            loadBtn = new MFXIconButton().outlined();
-            loadBtn.disableProperty().bind(recentsTable.getSelectionModel().selection().emptyProperty());
-            loadBtn.setOnAction(e -> model.run(toolCombo.getSelectedItem(), getSelectedItem().file().toFile()));
-            loadBtn.getStyleClass().add("success");
-            UIUtils.installTooltip(loadBtn, "Load with selected tool");
-
-            Box actionsBox = new Box(
-                Box.Direction.ROW,
-                themeBtn,
-                Box.separator(),
-                removeBtn, showBtn, toolCombo, loadBtn,
-                Box.separator()
+            topBox = new Box(
+                Box.Direction.COLUMN,
+                logoView, title,
+                header, subHeader
             );
-            actionsBox.getStyleClass().add("actions");
+            topBox.getStyleClass().add("top");
+            VBox.setMargin(title, InsetsBuilder.top(-24.0).get()); // Offset because of the image
+            VBox.setMargin(header, InsetsBuilder.top(24.0).get()); // Extra space between logo and header
 
-            getChildren().addAll(header, subHeader, split, actionsBox);
+            // Bottom Left
+            gitBtn = UIUtils.iconButton(
+                "git",
+                (b, e) -> hostServices.showDocument(ArchitectFX.GIT),
+                "Project's Home",
+                Pos.BOTTOM_CENTER
+            );
+
+            themeBtn = UIUtils.iconButton(
+                "theme-mode",
+                (b, e) -> themeEngine.nextMode(),
+                "Light/Dark Mode",
+                Pos.BOTTOM_CENTER
+            );
+
+            aotBtn = UIUtils.iconToggle(
+                "aot",
+                (b, s) -> mainWindow.setAlwaysOnTop(!s),
+                false,
+                "Always on Top",
+                Pos.BOTTOM_CENTER
+            );
+            aotBtn.selectedProperty().bind(mainWindow.alwaysOnTopProperty());
+
+
+            bottomBox = new Box(
+                Box.Direction.ROW,
+                gitBtn,
+                themeBtn,
+                aotBtn
+            );
+            bottomBox.getStyleClass().add("bottom");
+
+            grid = new RecentsGrid(model.recents(), settings.lastDir().get());
+            WhenEvent.intercept(grid, RecentCell.RecentCellEvent.ANY)
+                .process(e -> {
+                    switch (e.getEventType()) {
+                        case EventType<?> t when t == RecentCell.RecentCellEvent.LIVE_PREVIEW_EVENT ->
+                            model.run(Tool.PREVIEW, e.getRecent().file().toFile());
+                        case EventType<?> t when t == RecentCell.RecentCellEvent.FILE_EXPLORER_EVENT ->
+                            hostServices.showDocument(e.getRecent().file().getParent().toUri().toString());
+                        case EventType<?> t when t == RecentCell.RecentCellEvent.REMOVE_EVENT ->
+                            model.recents().remove(e.getRecent());
+                        case null, default -> {}
+                    }
+                })
+                .register();
+
             getStyleClass().add("init-view");
+            getChildren().addAll(topBox, bottomBox, grid);
         }
 
-        protected void openInFileManager() {
-            try {
-                Recent item = getSelectedItem();
-                hostServices.showDocument(item.file().getParent().toUri().toString());
-            } catch (Exception ex) {
-                Logger.warn("Could not show file in file manager because:\n{}", ex);
+        @Override
+        protected double computeMinWidth(double height) {
+            return snappedLeftInset() +
+                   Math.max(
+                           LayoutUtils.snappedBoundWidth(topBox),
+                           LayoutUtils.snappedBoundWidth(bottomBox)
+                       ) + H_SPACING +
+                   LayoutUtils.snappedBoundWidth(grid) +
+                   snappedRightInset();
+        }
+
+        @Override
+        protected double computeMinHeight(double width) {
+            double lH = LayoutUtils.snappedBoundHeight(topBox) +
+                        V_SPACING +
+                        LayoutUtils.snappedBoundHeight(bottomBox);
+            double rH = LayoutUtils.snappedBoundHeight(grid);
+            return snappedTopInset() + Math.max(lH, rH) + snappedBottomInset();
+        }
+
+        @Override
+        protected void layoutChildren() {
+            double w = getWidth();
+            double h = getHeight();
+            double[] insets = new double[]{
+                snappedTopInset(),
+                snappedRightInset(),
+                snappedBottomInset(),
+                snappedLeftInset(),
+            };
+            Rect area = Rect.of(0, 0, w, h)
+                .withHSpacing(H_SPACING)
+                .withInsets(insets);
+
+            double gridW = LayoutUtils.snappedBoundWidth(grid);
+            area.cutRight(gridW).layout(grid::resizeRelocate);
+
+            area.withVSpacing(V_SPACING)
+                .cutBottom(LayoutUtils.snappedBoundHeight(bottomBox))
+                .layout(bottomBox::resizeRelocate);
+            area.layout(topBox::resizeRelocate);
+        }
+
+        protected void animateText() {
+            Duration delay = (!mainWindow.isShowing()) ? M3Motion.EXTRA_LONG4 : Duration.ZERO;
+            Interpolator curve = M3Motion.STANDARD_ACCELERATE;
+            new ParallelBuilder() {
+                double distance = 0.0;
+
+                @Override
+                public AbstractBuilder show(Duration duration, Node... nodes) {
+                    for (Node node : nodes) {
+                        KeyFrame kf0 = KeyFrames.of(Duration.ZERO, node.opacityProperty(), 0.0);
+                        KeyFrame fk1 = KeyFrames.of(duration, node.opacityProperty(), 1.0, curve);
+                        add(TimelineBuilder.build()
+                            .add(kf0, fk1)
+                            .setDelay(distance)
+                            .getAnimation());
+                    }
+                    distance += M3Motion.MEDIUM4.toMillis();
+                    return this;
+                }
             }
-        }
-
-        protected Recent getSelectedItem() {
-            return recentsTable.getSelectionModel().getSelectedItem();
+            .show(M3Motion.MEDIUM4, logoView, title)
+            .show(M3Motion.LONG4, header)
+            .show(M3Motion.LONG4, subHeader)
+            .setDelay(delay)
+            .getAnimation()
+            .play();
         }
     }
 }

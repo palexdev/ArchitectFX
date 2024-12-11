@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import io.github.palexdev.architectfx.frontend.views.base.View;
+import io.github.palexdev.architectfx.frontend.views.View;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.Wrapper;
 
