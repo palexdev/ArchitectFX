@@ -48,7 +48,6 @@ public class VBoxSkin extends SkinBase<Box> {
         root = new VBox();
         root.getStyleClass().add("container");
         root.alignmentProperty().bindBidirectional(box.alignmentProperty());
-        root.paddingProperty().bindBidirectional(box.paddingProperty());
         root.spacingProperty().bindBidirectional(box.spacingProperty());
         Bindings.bindContent(root.getChildren(), box.getContainerChildren());
         getChildren().add(root);
