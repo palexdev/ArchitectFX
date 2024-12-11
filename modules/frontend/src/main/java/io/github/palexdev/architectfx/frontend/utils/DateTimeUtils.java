@@ -46,4 +46,25 @@ public class DateTimeUtils {
     public static long epochMilli() {
         return Instant.now().toEpochMilli();
     }
+
+    public static String modifiedToHuman(long millis) {
+        long elapsed = epochMilli() - millis;
+        long seconds = elapsed / 1000;
+        if (seconds < 60) {
+            return "Modified a few seconds ago";
+        }
+
+        long minutes = seconds / 60;
+        if (minutes < 60) {
+            return "Modified %d minute%s ago".formatted(minutes, minutes == 1 ? "" : "s");
+        }
+
+        long hours = minutes / 60;
+        if (hours < 24) {
+            return "Modified %d hour%s ago".formatted(hours, hours == 1 ? "" : "s");
+        }
+
+        long days = hours / 24;
+        return "Modified %d day%s ago".formatted(days, days == 1 ? "" : "s");
+    }
 }
