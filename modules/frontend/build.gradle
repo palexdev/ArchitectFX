@@ -10,7 +10,10 @@ dependencies {
     implementation "io.github.palexdev:mfxcore:$mfxcore"
     implementation "io.github.palexdev:mfxcomponents:$materialfx"
     implementation "io.github.palexdev:virtualizedfx:$virtualizedfx"
+    implementation "io.github.palexdev:rectcut-java:$rectcut"
     implementation "fr.brouillard.oss:cssfx:$cssfx"
+
+    implementation "io.github.palexdev:imcache:$imcache"
 
     implementation name: 'nfx-core-1.0.2'
     implementation name: 'nfx-core-1.0.2', classifier: 'sources'
@@ -20,7 +23,7 @@ dependencies {
 }
 
 javafx {
-    modules = ['javafx.fxml', 'javafx.graphics']
+    modules = ['javafx.fxml', 'javafx.graphics', 'javafx.swing']
 }
 
 application {
