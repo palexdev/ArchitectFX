@@ -36,7 +36,6 @@ import io.github.palexdev.architectfx.frontend.events.AppEvent.AppCloseEvent;
 import io.github.palexdev.architectfx.frontend.events.DialogEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
-import io.github.palexdev.architectfx.frontend.utils.DateTimeUtils;
 import io.github.palexdev.architectfx.frontend.utils.KeyValueProperty;
 import io.github.palexdev.architectfx.frontend.utils.ProgressProperty;
 import io.github.palexdev.architectfx.frontend.views.LivePreview;
@@ -46,6 +45,7 @@ import io.github.palexdev.mfxcore.observables.When;
 import io.inverno.core.annotation.Bean;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Pair;
 import org.tinylog.Logger;
@@ -80,7 +80,7 @@ public class AppModel {
     public AppModel(AppSettings settings, IEventBus events) {
         this.settings = settings;
         this.events = events;
-        this.recents = settings.loadRecents();
+        this.recents = FXCollections.observableArrayList(settings.loadRecents());
         events.subscribe(AppCloseEvent.class, e -> settings.saveRecents(recents));
     }
 
@@ -95,10 +95,13 @@ public class AppModel {
             settings.lastTool().set(tool.name());
 
             // We have to work with lists for simplicity, but we need to make sure that there are no duplicate files!
-            Recent recent = new Recent(file.toPath(), DateTimeUtils.epochMilli());
+            Recent recent = new Recent(file.toPath());
             Set<Recent> tmp = new HashSet<>(recents);
             if (tmp.add(recent)) {
-                Platform.runLater(() -> recents.add(recent));
+                Platform.runLater(() -> {
+                    recents.add(recent);
+                    FXCollections.sort(recents);
+                });
             }
 
             settings.lastDir().set(file.getParent());

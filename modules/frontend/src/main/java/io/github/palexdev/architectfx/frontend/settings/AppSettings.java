@@ -19,6 +19,7 @@
 package io.github.palexdev.architectfx.frontend.settings;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import io.github.palexdev.architectfx.frontend.model.Recent;
@@ -29,7 +30,6 @@ import io.github.palexdev.mfxcore.settings.Settings;
 import io.github.palexdev.mfxcore.settings.StringSetting;
 import io.inverno.core.annotation.Bean;
 import javafx.application.Application;
-import javafx.collections.ObservableList;
 
 @Bean
 public class AppSettings extends Settings {
@@ -63,7 +63,7 @@ public class AppSettings extends Settings {
     //================================================================================
     // Methods
     //================================================================================
-    public ObservableList<Recent> loadRecents() {
+    public List<Recent> loadRecents() {
         String yaml = recents.get();
         return Recent.load(yaml);
     }
