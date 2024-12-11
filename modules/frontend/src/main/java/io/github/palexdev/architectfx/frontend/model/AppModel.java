@@ -20,11 +20,14 @@ package io.github.palexdev.architectfx.frontend.model;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
+import fr.brouillard.oss.cssfx.CSSFX;
 import io.github.palexdev.architectfx.backend.model.Document;
 import io.github.palexdev.architectfx.backend.utils.Async;
 import io.github.palexdev.architectfx.backend.utils.Progress;
@@ -72,7 +75,24 @@ public class AppModel {
             }
         }
     };
-    private final KeyValueProperty<File, Document> document = new KeyValueProperty<>();
+    private final KeyValueProperty<File, Document> document = new KeyValueProperty<>() {
+        @Override
+        protected void invalidated() {
+            Pair<File, Document> val = get();
+            if (val != null && val.getValue() != null) {
+
+                // FIXME I don't remember why, probably to supports live css changes, needs testing (try-catch error!)
+                CSSFX.onlyFor(val.getValue().rootNode())
+                    .addConverter(uri -> {
+                        try {
+                            return Paths.get(URI.create(uri));
+                        } catch (Exception ignored) {}
+                        return null;
+                    })
+                    .start();
+            }
+        }
+    };
 
     //================================================================================
     // Constructors
