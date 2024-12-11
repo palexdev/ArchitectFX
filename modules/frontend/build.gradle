@@ -44,6 +44,10 @@ tasks.register('zipAssets', Zip) {
     archiveFileName = "assets.zip"
 
     from "src/main/resources/io/github/palexdev/architectfx/frontend/css"
+    from ("src/main/resources/io/github/palexdev/architectfx/frontend/assets") {
+        exclude "assets.zip"
+        into "assets"
+    }
 
     outputs.upToDateWhen { false }
 
@@ -64,7 +68,8 @@ def generatedOutputDir = file("$generatedSources")
 
 compileJava {
     doFirst {
-        generatedOutputDir.exists() || generatedOutputDir.mkdirs()
+        delete generatedOutputDir
+        generatedOutputDir.mkdirs()
         options.compilerArgs = [
                 '-s', "${generatedSources}"
         ]
