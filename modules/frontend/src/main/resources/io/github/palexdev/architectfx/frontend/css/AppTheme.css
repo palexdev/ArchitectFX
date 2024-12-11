@@ -65,3 +65,7 @@
   -md-sys-color-fail-container: #7A2A22;
   -md-sys-color-on-fail-container: #FFDAD6;
 }
+
+.root {
+  -fx-border-color: -md-sys-color-outline-variant transparent transparent transparent;
+}

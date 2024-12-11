@@ -58,12 +58,12 @@
 
 /* Close */
 .preview > .sidebar > .container > .mfx-icon-button.close > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-left-long";
+  -mfx-description: 'fas-left-long';
 }
 
 /* Pin Sidebar */
 .preview > .sidebar > .container > .mfx-icon-button.pin > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-thumbtack";
+  -mfx-description: 'fas-thumbtack';
 }
 
 /* Show in explorer */
@@ -75,28 +75,28 @@
 .preview > .sidebar > .container > .mfx-icon-button.play-pause > .mfx-icon-wrapper {
   -mfx-animated: true;
   -mfx-animation-preset: SLIDE_LEFT_RIGHT;
-  -mfx-icon: "fas-pause";
+  -mfx-icon: 'fas-pause';
 }
 
 .preview > .sidebar > .container > .mfx-icon-button.play-pause:paused > .mfx-icon-wrapper {
-  -mfx-icon: "fas-play"
+  -mfx-icon: 'fas-play'
 }
 
 /* Auto Reload */
 .preview > .sidebar > .container > .mfx-icon-button.auto-reload > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-repeat"
+  -mfx-description: 'fas-repeat'
 }
 
 /* Always on Top */
 .preview > .sidebar > .container > .mfx-icon-button.aot > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-layer-group";
+  -mfx-description: 'fas-layer-group';
 }
 
 /* Theme Mode */
 .preview > .sidebar > .container > .mfx-icon-button.theme-mode > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-moon";
+  -mfx-description: 'fas-moon';
 }
 
-.preview > .sidebar > .container > .mfx-icon-button.theme-mode:dark > .mfx-icon-wrapper > .mfx-font-icon {
-  -mfx-description: "fas-sun";
+.root:dark .preview > .sidebar > .container > .mfx-icon-button.theme-mode > .mfx-icon-wrapper > .mfx-font-icon {
+  -mfx-description: 'fas-sun';
 }
