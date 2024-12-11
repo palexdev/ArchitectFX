@@ -208,9 +208,9 @@ public class InitView extends View<InitPane> {
         protected double computeMinWidth(double height) {
             return snappedLeftInset() +
                    Math.max(
-                           LayoutUtils.snappedBoundWidth(topBox),
-                           LayoutUtils.snappedBoundWidth(bottomBox)
-                       ) + H_SPACING +
+                       LayoutUtils.snappedBoundWidth(topBox),
+                       LayoutUtils.snappedBoundWidth(bottomBox)
+                   ) + H_SPACING +
                    LayoutUtils.snappedBoundWidth(grid) +
                    snappedRightInset();
         }
@@ -267,12 +267,12 @@ public class InitView extends View<InitPane> {
                     return this;
                 }
             }
-            .show(M3Motion.MEDIUM4, logoView, title)
-            .show(M3Motion.LONG4, header)
-            .show(M3Motion.LONG4, subHeader)
-            .setDelay(delay)
-            .getAnimation()
-            .play();
+                .show(M3Motion.MEDIUM4, logoView, title)
+                .show(M3Motion.LONG4, header)
+                .show(M3Motion.LONG4, subHeader)
+                .setDelay(delay)
+                .getAnimation()
+                .play();
         }
     }
 }
