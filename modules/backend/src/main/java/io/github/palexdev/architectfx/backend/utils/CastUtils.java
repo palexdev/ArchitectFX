@@ -3,7 +3,7 @@ package io.github.palexdev.architectfx.backend.utils;
 import java.util.List;
 import java.util.Map;
 
-@SuppressWarnings({"rawtypes","unchecked"})
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class CastUtils {
 
     //================================================================================

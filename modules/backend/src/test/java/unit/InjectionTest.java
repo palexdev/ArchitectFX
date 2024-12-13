@@ -35,10 +35,10 @@ public class InjectionTest {
         InjectTestClass root = new DummyLoader<InjectTestClass>()
             .setConfig(() -> new UILoader.Config()
                 .setResolverFactory(uri -> {
-                        Resolver resolver = new DefaultResolver(uri);
-                        resolver.context().setInjections(injections);
-                        return resolver;
-                    })
+                    Resolver resolver = new DefaultResolver(uri);
+                    resolver.context().setInjections(injections);
+                    return resolver;
+                })
             )
             .load(new ByteArrayInputStream(doc.getBytes()), null)
             .root();
