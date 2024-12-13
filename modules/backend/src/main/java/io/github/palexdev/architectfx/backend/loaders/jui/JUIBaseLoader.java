@@ -84,7 +84,7 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
 
             // 3) Instantiate controller
             Optional<Object> controller = (document.getController() != null) ?
-                Optional.of(createObj(document.getController())) :
+                Optional.ofNullable(createObj(document.getController())) :
                 Optional.empty();
 
             // 4) Instantiate UI graph
