@@ -105,7 +105,7 @@ public interface Resolver {
         private Scanner scanner;
         private Reflector reflector;
         private final URI location;
-        private final Map<String, Object> injections = new HashMap<>(); // TODO implement classpath scanning
+        private final Map<String, Object> injections = new HashMap<>();
 
         // State
         private final Map<String, UIObj> byId = new HashMap<>();

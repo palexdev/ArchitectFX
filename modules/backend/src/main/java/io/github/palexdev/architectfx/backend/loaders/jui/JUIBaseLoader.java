@@ -99,6 +99,7 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             // 6) Finally return result
             return new Loaded<>(document, root, controller.orElse(null));
         } finally {
+            config.setControllerFactory(null);
             resolver = null;
         }
     }
