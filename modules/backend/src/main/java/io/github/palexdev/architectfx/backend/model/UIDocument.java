@@ -44,7 +44,7 @@ public class UIDocument {
     private final Set<String> dependencies = new HashSet<>();
     private final Set<String> imports = new ImportsSet();
     private final UIObj root;
-    private UIObj controller; // TODO this could be changed to a supplier to support both controller in the document and by "factory" in one go
+    private UIObj controller;
 
     //================================================================================
     // Constructors

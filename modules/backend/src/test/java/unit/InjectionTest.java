@@ -43,16 +43,16 @@ public class InjectionTest {
             .load(new ByteArrayInputStream(doc.getBytes()), null)
             .root();
 
-        assertEquals("STR", root.getAString());
-        assertEquals(4, root.getAnInt());
-        assertEquals(10.5, root.getADouble());
+        assertEquals("STR", root.aString);
+        assertEquals(4, root.anInt);
+        assertEquals(10.5, root.aDouble);
 
-        assertNotNull(root.getNested());
-        assertSame(injections.get("aNested"), root.getNested());
-        assertNull(root.getNested().getAString());
-        assertEquals(0, root.getNested().getAnInt());
-        assertNull(root.getNested().getADouble());
-        assertNull(root.getNested().getNested());
+        assertNotNull(root.nested);
+        assertSame(injections.get("aNested"), root.nested);
+        assertNull(root.nested.aString);
+        assertEquals(0, root.nested.anInt);
+        assertNull(root.nested.aDouble);
+        assertNull(root.nested.nested);
     }
 
     @Test
@@ -73,9 +73,41 @@ public class InjectionTest {
         controller.init();
 
         InjectTestClass root = loaded.root();
-        assertEquals("done", root.getAString());
-        assertEquals(1, root.getAnInt());
-        assertEquals(Double.POSITIVE_INFINITY, root.getADouble());
-        assertNotNull(root.getNested());
+        assertEquals("done", root.aString);
+        assertEquals(1, root.anInt);
+        assertEquals(Double.POSITIVE_INFINITY, root.aDouble);
+        assertNotNull(root.nested);
+    }
+
+    @Test
+    void testControllerFactory() throws IOException {
+        String doc = """
+            .controller: misc.InjectTestClass$Controller {}
+            
+            InjectTestClass {
+              .cid: 'obj'
+            }
+            """;
+
+        JUIBaseLoader.Loaded<InjectTestClass> loaded = new DummyLoader<InjectTestClass>()
+            .setConfig(() -> new UILoader.Config().setControllerFactory(() -> new InjectTestClass.Controller() {
+                @Override
+                public void init() {
+                    super.init();
+                    obj.aDouble = Double.NEGATIVE_INFINITY;
+                    obj.nested = null;
+                }
+            }))
+            .load(new ByteArrayInputStream(doc.getBytes()), null);
+
+        InjectTestClass.Controller controller = loaded.controller(InjectTestClass.Controller.class);
+        assertNotNull(controller);
+        controller.init();
+
+        InjectTestClass root = loaded.root();
+        assertEquals("done", root.aString);
+        assertEquals(1, root.anInt);
+        assertEquals(Double.NEGATIVE_INFINITY, root.aDouble);
+        assertNull(root.nested);
     }
 }

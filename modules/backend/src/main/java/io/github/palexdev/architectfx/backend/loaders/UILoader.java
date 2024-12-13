@@ -19,12 +19,16 @@
 package io.github.palexdev.architectfx.backend.loaders;
 
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.model.UIDocument;
 import io.github.palexdev.architectfx.backend.resolver.DefaultResolver;
@@ -72,12 +76,30 @@ public interface UILoader<T> {
     //================================================================================
     // Inner Classes
     //================================================================================
+
+    /// This class holds data to configure and keep track of the loading process.\
+    /// By design, loaders are intended to be reusable, which means that all the data here is retained and used for each
+    /// subsequent load. An exception to this "rule" is the `controller factory`, which **should** be reset every time.
+    /// The logic is that every document has its own controller, so it's the user's responsibility to set the appropriate
+    /// one before the process starts.\
+    /// Last but not least, the `controller factory` specified here takes precedence over the controller parsed in the
+    /// document specified by [UIDocument] (depends on the loader's implementation though).
     class Config {
+        private Supplier<Object> controllerFactory;
         private Function<URI, Resolver> resolverFactory;
         private Consumer<Progress> onProgress;
 
         public Config() {
             resolverFactory = DefaultResolver::new;
+        }
+
+        public Supplier<Object> getControllerFactory() {
+            return controllerFactory;
+        }
+
+        public Config setControllerFactory(Supplier<Object> controllerFactory) {
+            this.controllerFactory = controllerFactory;
+            return this;
         }
 
         public Resolver resolver(URI location) {

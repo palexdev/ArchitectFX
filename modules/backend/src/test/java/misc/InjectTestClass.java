@@ -1,10 +1,10 @@
 package misc;
 
 public class InjectTestClass {
-    private String aString;
-    private int anInt;
-    private Double aDouble;
-    private InjectTestClass nested;
+    public String aString;
+    public int anInt;
+    public Double aDouble;
+    public InjectTestClass nested;
 
     public InjectTestClass() {}
 
@@ -15,24 +15,8 @@ public class InjectTestClass {
         this.nested = nested;
     }
 
-    public String getAString() {
-        return aString;
-    }
-
-    public int getAnInt() {
-        return anInt;
-    }
-
-    public Double getADouble() {
-        return aDouble;
-    }
-
-    public InjectTestClass getNested() {
-        return nested;
-    }
-
     public static class Controller {
-        private InjectTestClass obj;
+        protected InjectTestClass obj;
 
         public void init() {
             obj.aString = "done";

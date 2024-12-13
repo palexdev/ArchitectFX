@@ -82,10 +82,13 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             // 2) Handle imports
             resolver.context().setImports(document.getImports());
 
-            // 3) Instantiate controller
-            Optional<Object> controller = (document.getController() != null) ?
-                Optional.ofNullable(createObj(document.getController())) :
-                Optional.empty();
+            // 3) Handle controller
+            Optional<Object> controller = Optional.empty();
+            if (config.getControllerFactory() != null) {
+                controller = Optional.ofNullable(config.getControllerFactory().get());
+            } else if (document.getController() != null) {
+                controller = Optional.ofNullable(createObj(document.getController()));
+            }
 
             // 4) Instantiate UI graph
             T root = createObj(document.getRoot());
