@@ -84,6 +84,7 @@ public class DefaultResolver implements Resolver {
             case ObjConstructor.Factory f -> resolveMethodsChain(f.methods());
             case null, default -> reflector.instantiate(type);
         };
+        if (instance == null) return null;
         context.getInstances().put(obj, instance);
         context.pushNode(obj);
 
