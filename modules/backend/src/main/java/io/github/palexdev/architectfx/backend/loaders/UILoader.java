@@ -23,12 +23,14 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.github.palexdev.architectfx.backend.model.UIDocument;
 import io.github.palexdev.architectfx.backend.resolver.DefaultResolver;
 import io.github.palexdev.architectfx.backend.resolver.Resolver;
 import io.github.palexdev.architectfx.backend.utils.CastUtils;
+import io.github.palexdev.architectfx.backend.utils.Progress;
 
 /// Base API and entry point in the system to load and convert a UI document into an actual UI graph that you can visualize.
 /// Depending on the framework, a loader must specify how to attach a list of children to a parent by implementing
@@ -54,6 +56,17 @@ public interface UILoader<T> {
 
     void attachChildren(T parent, List<T> children) throws IOException;
 
+    default void onProgress(Progress progress) {
+        Config config = config();
+        if (config == null) return;
+        if (config.onProgress == null) return;
+        config.onProgress.accept(progress);
+    }
+
+    default void onProgress(String description, double progress) {
+        onProgress(Progress.of(description, progress));
+    }
+
     Config config();
 
     //================================================================================
@@ -61,6 +74,7 @@ public interface UILoader<T> {
     //================================================================================
     class Config {
         private Function<URI, Resolver> resolverFactory;
+        private Consumer<Progress> onProgress;
 
         public Config() {
             resolverFactory = DefaultResolver::new;
@@ -76,6 +90,15 @@ public interface UILoader<T> {
 
         public Config setResolverFactory(Function<URI, Resolver> resolverFactory) {
             this.resolverFactory = resolverFactory;
+            return this;
+        }
+
+        public Consumer<Progress> getOnProgress() {
+            return onProgress;
+        }
+
+        public Config setOnProgress(Consumer<Progress> onProgress) {
+            this.onProgress = onProgress;
             return this;
         }
     }
