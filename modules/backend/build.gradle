@@ -1,11 +1,22 @@
+plugins {
+    id 'antlr'
+}
+
 version = "$afx_backend"
 
 dependencies {
+    antlr "org.antlr:antlr4:$antlr"
+    implementation "org.antlr:antlr4-runtime:$antlr"
+
     implementation "org.jooq:joor:$joor"
     implementation "io.github.classgraph:classgraph:$classgraph"
 
     implementation name: 'jresolve-21.0.3'
     implementation name: 'jresolve-21.0.3', classifier: 'sources'
+}
+
+generateGrammarSource {
+    arguments += ['-no-listener', '-package', 'io.github.palexdev.architectfx.backend.jui']
 }
 
 javafx {
@@ -16,16 +27,6 @@ test {
     jvmArgs += [
             '--add-exports', 'javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
     ]
-    filter {
-        excludeTestsMatching "JMH*"
-    }
-}
-
-tasks.register('jmh', Test) {
-    useJUnitPlatform()
-    filter {
-        excludeTestsMatching "unit.*"
-    }
 }
 
 tasks.register('testRun', JavaExec) {

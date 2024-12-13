@@ -1,0 +1,225 @@
+.deps {
+  'io.github.palexdev:materialfx:11.17.0'
+}
+
+.imports {
+    'io.github.palexdev.materialfx.controls.*',
+    'javafx.geometry.*',
+    'javafx.scene.control.Label',
+    'javafx.scene.layout.*',
+    'javafx.scene.paint.Color'
+}
+
+.controller: FieldsController {}
+
+GridPane {
+  # Set global theme
+  UserAgentBuilder.builder()
+    .themes(Theme[JavaFXThemes.MODENA, MaterialFXStylesheets.DEFAULT])
+    .setDeploy(true)
+    .setResolveAssets(true)
+    .build()
+    .setGlobal()
+
+  alignment: Pos.CENTER
+  hgap: 20.0
+  vgap: 20.0
+  padding: Insets::(20.0, 30.0, 20.0, 30.0) {}
+  styleClass = listOf('grid-pane')
+  stylesheets = listOf(
+    url('css/DefaultTheme.css'),
+    url('css/TextFields.css')
+  )
+
+  columnConstraints = listOf(
+    ColumnConstraints { halignment: HPos.CENTER },
+    ColumnConstraints { halignment: HPos.CENTER },
+    ColumnConstraints { halignment: HPos.CENTER },
+    ColumnConstraints { halignment: HPos.CENTER },
+    ColumnConstraints { halignment: HPos.CENTER },
+    ColumnConstraints { halignment: HPos.CENTER }
+  )
+  rowConstraints = listOf(
+    RowConstraints { minHeight: 10.0 prefHeight: 32.0},
+    RowConstraints { minHeight: 10.0 prefHeight: 64.0},
+    RowConstraints { minHeight: 10.0 prefHeight: 64.0},
+    RowConstraints { minHeight: 10.0 prefHeight: 10.0},
+    RowConstraints { minHeight: 10.0 prefHeight: 32.0},
+    RowConstraints { minHeight: 10.0 prefHeight: 150.0 valignment: VPos.BASELINE}
+  )
+
+  # First section
+  StackPane {
+    minWidth: 300.0
+    minHeight: 150.0
+    styleClass = listOf('grid-background')
+
+    GridPane.setColumnSpan(this, Integer.MAX_VALUE)
+    GridPane.setRowSpan(this, 3)
+    GridPane.setMargin(this, Insets::(0.0, -15.0, -7.0, -15.0){})
+  }
+  Label::('Text Fields and Password Fields') {
+    alignment: Pos.CENTER
+    maxWidth: Double.MAX_VALUE
+    maxHeight: Double.MAX_VALUE
+    styleClass = listOf('header-label')
+
+    GridPane.setColumnSpan(this, Integer.MAX_VALUE)
+  }
+  MFXTextField {
+    floatingText: 'Inline Mode'
+
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXTextField {
+    floatMode: FloatMode.BORDER
+    floatingText: 'Border Mode'
+
+    GridPane.setColumnIndex(this, 1)
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXTextField {
+    borderGap: 2.0
+    floatMode: FloatMode.ABOVE
+    floatingText: 'Above Mode'
+
+    GridPane.setColumnIndex(this, 2)
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXTextField {
+    floatMode: FloatMode.DISABLED
+    floatingText: 'No Floating Text'
+
+    GridPane.setColumnIndex(this, 3)
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXTextField {
+    id: 'customField'
+    floatingText: 'Custom'
+    promptText: 'Prompt Text'
+
+    GridPane.setColumnIndex(this, 4)
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXTextField {
+    disable: true
+    floatingText: 'Disabled'
+    text: 'Text'
+
+    GridPane.setColumnIndex(this, 5)
+    GridPane.setRowIndex(this, 1)
+  }
+  MFXPasswordField {
+    floatingText: 'Inline Mode'
+
+    GridPane.setRowIndex(this, 2)
+  }
+  MFXPasswordField {
+    floatMode: FloatMode.BORDER
+    floatingText: 'Border Mode'
+
+    GridPane.setColumnIndex(this, 1)
+    GridPane.setRowIndex(this, 2)
+  }
+  MFXPasswordField {
+    borderGap: 2.0
+    floatMode: FloatMode.ABOVE
+    floatingText: 'Above Mode'
+
+    GridPane.setColumnIndex(this, 2)
+    GridPane.setRowIndex(this, 2)
+  }
+  MFXPasswordField {
+    floatMode: FloatMode.DISABLED
+    floatingText: 'No Floating Text'
+
+    GridPane.setColumnIndex(this, 3)
+    GridPane.setRowIndex(this, 2)
+  }
+  MFXPasswordField {
+    id: 'customPassword'
+    floatingText: 'Custom'
+    promptText: 'Prompt Text'
+
+    GridPane.setColumnIndex(this, 4)
+    GridPane.setRowIndex(this, 2)
+  }
+  MFXPasswordField {
+    disable: true
+    floatingText: 'Disabled'
+    text: 'Text'
+
+    GridPane.setColumnIndex(this, 5)
+    GridPane.setRowIndex(this, 2)
+  }
+
+  # Second section
+  StackPane {
+    minWidth: 300.0
+    minHeight: 150.0
+    styleClass = listOf('grid-background')
+
+    GridPane.setRowIndex(this, 4)
+    GridPane.setColumnSpan(this, Integer.MAX_VALUE)
+    GridPane.setRowSpan(this, Integer.MAX_VALUE)
+    GridPane.setMargin(this, Insets::(0.0, -15.0, -15.0, -15.0){})
+  }
+  Label::('Features') {
+    alignment: Pos.CENTER
+    maxWidth: Double.MAX_VALUE
+    maxHeight: Double.MAX_VALUE
+    styleClass = listOf('header-label')
+
+    GridPane.setRowIndex(this, 4)
+    GridPane.setColumnSpan(this, Integer.MAX_VALUE)
+  }
+  MFXTextField {
+    animated: false
+    floatingText: 'Not Animated'
+
+    GridPane.setRowIndex(this, 5)
+  }
+  MFXTextField {
+    allowEdit: false
+    caretVisible: false
+    selectable: false
+    floatingText: 'As Label'
+    text: "Label's text"
+
+    GridPane.setColumnIndex(this, 1)
+    GridPane.setRowIndex(this, 5)
+  }
+  MFXTextField {
+    .cid: 'textField'
+    floatingText: 'Characters Limit'
+
+    GridPane.setColumnIndex(this, 2)
+    GridPane.setRowIndex(this, 5)
+  }
+
+  # Special password field
+  VBox {
+    spacing: 5.0
+    padding: Insets::(0.0, 10.0, 0.0, 0.0) {}
+
+    GridPane.setColumnIndex(this, 3)
+    GridPane.setRowIndex(this, 5)
+    GridPane.setColumnSpan(this, Integer.MAX_VALUE)
+
+    MFXPasswordField {
+      .cid: 'passwordField'
+      id: 'validatedField'
+      floatingText: 'Validated'
+      maxWidth: 200.0
+    }
+    Label {
+      .cid: 'validationLabel'
+      id: 'validationLabel'
+      visible: false
+      textFill: Color.web('#ef6e6b')
+      wrapText: true
+      maxWidth: Double.MAX_VALUE
+      minHeight: -Infinity
+    }
+  }
+}

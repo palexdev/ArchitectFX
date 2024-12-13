@@ -26,7 +26,6 @@ subprojects {
         // Inverno Framework :D
         annotationProcessor "io.inverno:inverno-core-compiler:$inverno"
         implementation "io.inverno:inverno-core:$inverno"
-        implementation "org.yaml:snakeyaml:$snakeyaml"
         implementation "org.tinylog:tinylog-impl:$tinylog"
         implementation "org.tinylog:slf4j-tinylog:$tinylog"
 
@@ -39,8 +38,6 @@ subprojects {
         testImplementation "org.testfx:testfx-core:$testfx"
         testImplementation "org.testfx:testfx-junit5:$testfx"
         testImplementation "org.testfx:openjfx-monocle:$testfxMonocle"
-        testImplementation "org.openjdk.jmh:jmh-core:$jmh"
-        testAnnotationProcessor "org.openjdk.jmh:jmh-generator-annprocess:$jmh"
     }
 
     java {

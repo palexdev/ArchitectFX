@@ -9,8 +9,8 @@ module afx.backend {
     // DI
     requires static io.inverno.core.annotation;
 
-    // YAML
-    requires org.yaml.snakeyaml;
+    // ANTLR
+    requires org.antlr.antlr4.runtime;
 
     // Reflection
     requires io.github.classgraph;
@@ -29,14 +29,21 @@ module afx.backend {
     // Enums Package
     exports io.github.palexdev.architectfx.backend.enums;
 
+    // JUI package
+    exports io.github.palexdev.architectfx.backend.jui;
+
+    // Loaders Package
+    exports io.github.palexdev.architectfx.backend.loaders;
+    exports io.github.palexdev.architectfx.backend.loaders.jui;
+
     // Model Package
     exports io.github.palexdev.architectfx.backend.model;
-    exports io.github.palexdev.architectfx.backend.model.config;
+    exports io.github.palexdev.architectfx.backend.model.types;
+
+    // Resolver Package
+    exports io.github.palexdev.architectfx.backend.resolver;
 
     // Utils Package
     exports io.github.palexdev.architectfx.backend.utils;
     exports io.github.palexdev.architectfx.backend.utils.reflection;
-
-    // Yaml Package
-    exports io.github.palexdev.architectfx.backend.yaml;
 }

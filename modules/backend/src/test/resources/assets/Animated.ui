@@ -1,0 +1,13 @@
+.deps {
+  'io.github.palexdev:materialfx:11.17.0'
+}
+
+.imports {
+  'io.github.palexdev.materialfx.controls.*',
+  'javafx.geometry.*',
+  'javafx.scene.layout.*'
+}
+
+StackPane {
+  MFXProgressSpinner {}
+}

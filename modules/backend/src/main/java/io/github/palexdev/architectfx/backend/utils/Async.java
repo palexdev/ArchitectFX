@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.backend.utils;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 
 public class Async {
     //================================================================================
@@ -55,11 +56,13 @@ public class Async {
         }, executor);
     }
 
+    /// Uses [CompletableFuture#delayedExecutor(long, TimeUnit, Executor)] and [CompletableFuture#runAsync(Runnable, Executor)].
     public static CompletableFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
         Executor delayed = CompletableFuture.delayedExecutor(delay, unit, executor);
         return CompletableFuture.runAsync(command, delayed);
     }
 
+    /// Uses [CompletableFuture#delayedExecutor(long, TimeUnit, Executor)] and [CompletableFuture#supplyAsync(Supplier, Executor)].
     public static <T> CompletableFuture<T> schedule(Callable<T> callable, long delay, TimeUnit unit) {
         Executor delayed = CompletableFuture.delayedExecutor(delay, unit, executor);
         return CompletableFuture.supplyAsync(() -> {

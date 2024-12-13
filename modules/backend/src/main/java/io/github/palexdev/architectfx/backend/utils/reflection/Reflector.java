@@ -1,65 +1,38 @@
-/*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
- * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
- *
- * ArchitectFX is free software: you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public License
- * as published by the Free Software Foundation; either version 3 of the License,
- * or (at your option) any later version.
- *
- * ArchitectFX is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- * See the GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package io.github.palexdev.architectfx.backend.utils.reflection;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
 
-import javax.lang.model.SourceVersion;
-
-import io.github.palexdev.architectfx.backend.deps.DependencyManager;
-import io.github.palexdev.architectfx.backend.deps.DynamicClassLoader;
-import io.github.palexdev.architectfx.backend.model.Property;
-import io.github.palexdev.architectfx.backend.utils.Tuple2;
-import io.github.palexdev.architectfx.backend.utils.Tuple3;
+import io.github.palexdev.architectfx.backend.enums.CollectionType;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
 
 /// Utility class designed to specifically deal with reflection. This is not a singleton because some of its operations
-/// depend on the [DynamicClassLoader] (given by the [DependencyManager]) and the [ClassScanner].
+/// depend on the [Scanner], which also deals with reflection, but it's more specific.
 public class Reflector {
     //================================================================================
     // Properties
     //================================================================================
-    private DependencyManager dm;
-    private ClassScanner scanner;
+    private final Scanner scanner;
 
-    // ================================================================================
+    //================================================================================
     // Constructors
-    // ================================================================================
-    public Reflector(DependencyManager dm, ClassScanner scanner) {
-        this.dm = dm;
+    //================================================================================
+    public Reflector(Scanner scanner) {
         this.scanner = scanner;
     }
 
-    // ================================================================================
-    // Static Methods
-    // ================================================================================
+    //================================================================================
+    // Methods
+    //================================================================================
 
     /// Attempts at creating an instance of the given class with the given arguments.
     ///
     /// @return the created object or `null` if something went wrong
     /// @see Reflect
-    public <T> T create(Class<?> klass, Object... args) {
+    public <T> T instantiate(Class<?> klass, Object... args) {
         try {
+
             return Reflect.onClass(klass)
                 .create(args)
                 .get();
@@ -69,194 +42,145 @@ public class Reflector {
         }
     }
 
-    /// Given the name of a class, which can be simple or fully qualified, find the related `Class` with
-    /// [ClassScanner#findClass(String)] and delegates to [#create(Class,Object...)].
+    /// Given the name of a class, which can be simple or fully qualified, finds the related [Class] with
+    /// [Scanner#findClass(String)] and delegates to [#instantiate(Class,Object...)].
     ///
     /// @return the created object or `null` if the creation failed or the class could not be found
-    public <T> T create(String className, Object... args) {
+    public <T> T instantiate(String className, Object... args) {
         try {
             Class<?> klass = scanner.findClass(className);
-            return create(klass, args);
-        } catch (ClassNotFoundException | IllegalStateException ex) {
+            return instantiate(klass, args);
+        } catch (ClassNotFoundException ex) {
             Logger.error("Failed to create class {}:\n{}", className, ex);
             return null;
         }
     }
 
-    /// This method is specifically to create objects through factories/builders.
+    /// Invokes a method with the given name and arguments on the given object.
     ///
-    /// For simplicity, the `factoryName` is expected to be in these formats: `package.FactoryClass.staticMethod` or
-    /// `FactoryClass.staticMethod`.
+    /// If the object is a [String] or a [Class] it assumes you want to invoke a static method. In the first case, the
+    /// string is resolved to a class using [Scanner#findClass(String)].
     ///
-    /// If the class is found, proceeds to invoke the specified static method with the given args.
-    ///
-    /// @return the object created by the factory's method, or `null` if something went wrong
-    /// @see Reflect
-    /// @see Reflect#onClass(String, ClassLoader)
-    public <T> T invokeFactory(String factoryName, Object... args) {
+    /// @return the result of the invoked method, wrapped in an [Optional] object
+    public <T> Optional<T> invoke(Object target, String name, Object... args) {
         try {
-            Tuple2<Class<?>, String> mInfo = getMethodInfo(factoryName);
-            if (mInfo.a() == null)
-                throw new IllegalArgumentException("Factory class not defined");
-            Logger.trace("Invoking factory {} with args {}", mInfo, args);
-            return Reflect.onClass(mInfo.a().getName(), dm.loader())
-                .call(mInfo.b(), args)
-                .get();
-        } catch (Exception ex) {
-            Logger.error("Failed to invoke factory {} because:\n{}", factoryName, ex);
+            if (target == null)
+                throw new IllegalArgumentException("No target given for method invocation");
+
+            // Static call
+            Class<?> klass = switch (target) {
+                case String s -> scanner.findClass(s);
+                case Class<?> c -> c;
+                default -> null;
+            };
+            if (klass != null) {
+                return Optional.ofNullable(
+                    Reflect.onClass(klass)
+                        .call(name, args)
+                        .get()
+                );
+            }
+
+            // Instance call
+            return Optional.ofNullable(
+                Reflect.on(target)
+                    .call(name, args)
+                    .get()
+            );
+        } catch (ReflectException | ClassNotFoundException ex) {
+            Logger.error("Failed to invoke method {} because:\n{}", name, ex);
+            return Optional.empty();
+        }
+    }
+
+    /// Retrieves the value of a field with the given name from the given object.
+    ///
+    /// If the object is a [String], it is first resolved to a class using [Scanner#findClass(String)].
+    ///
+    /// Delegates to [Getter#read(Object, String)].
+    public <T> T get(Object target, String name) {
+        try {
+            if (target == null)
+                throw new IllegalArgumentException("No target given for field retrieval");
+
+            // Static field, replace target with the found class
+            if (target instanceof String s)
+                target = scanner.findClass(s);
+
+            // Instance field, accessor prioritized
+            return Getter.read(target, name);
+        } catch (ReflectException | ClassNotFoundException ex) {
+            Logger.error("Failed to get field {} because:\n{}", name, ex);
             return null;
         }
     }
 
-    /// Expects the given object to be a string and delegates to [#invokeFactory(String,Object...)].
+    /// Sets the value of a field with the given name on the given object.
     ///
-    /// @return the created object or `null` if the creation failed or the `factory` is not a string
-    public <T> T invokeFactory(Object factoryName, Object... args) {
-        if (factoryName instanceof String s) {
-            return invokeFactory(s, args);
-        }
-        Logger.error("Expected factory as String but was: {}", Objects.toString(factoryName));
-        return null;
-    }
-
-    /// This method gathers information about a _static field_.
-    /// The given `obj` parameter is expected to be a string.
+    /// If the object is a [String], it is first resolved to a class using [Scanner#findClass(String)]
     ///
-    /// Basically two things can happen:
-    ///  1) The string is either of these two formats: `package.Class.staticField`, `Class.staticField`.
-    /// In such cases, if the class is found by the [ClassScanner], this will return a tuple which specifies in order:
-    /// the class which "owns" the field, the name of the field and the field's value. Otherwise, falls in case 2.
-    ///  2) Assumes that it is not a static field, returns a tuple with `null` "owner" class, the extracted field
-    /// name and `null` value.
-    ///
-    /// To my surprise, enum constants are considered static fields too. The `allowEnums` parameter allows to
-    /// regulate such behavior and eventually fall in case 2.
-    ///
-    /// Note: yes, this is a naive approach for instance fields because we don't really need info about them
-    public Tuple3<Class<?>, String, Object> getFieldInfo(Object obj, boolean allowEnums) {
-        if (obj instanceof String s) {
-            try {
-                if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s))
-                    return null;
-                int lastDot = s.lastIndexOf('.');
-                String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
-                String sField = s.substring(lastDot + 1);
-
-                Class<?> klass;
-                if (sClass == null ||
-                    (klass = scanner.findClass(sClass)) == null ||
-                    (klass.isEnum() && !allowEnums))
-                    return Tuple3.of(null, sField, null);
-
-                Object val = Reflect.onClass(klass).get(sField);
-                return Tuple3.of(klass, sField, val);
-            } catch (Exception ex) {
-                Logger.error("Failed to retrieve field info\n{}", ex);
-            }
-        }
-        return null;
-    }
-
-    /// This method gathers information about a _static method_.
-    /// The given `obj` parameter is expected to be a string.
-    ///
-    /// Basically two things can happen:
-    ///  1) The string is either of these two formats: `package.Class.staticMethod`, `Class.staticMethod`.
-    /// In such cases, if the class is found by the [ClassScanner], this will return a tuple which specifies in order:
-    /// the class which "owns" the method and the method's value. Otherwise, falls in case 2.
-    ///  2) Assumes that it is not a static method, returns a tuple with `null` "owner" class and the extracted method name.
-    public Tuple2<Class<?>, String> getMethodInfo(Object obj) {
-        if (obj instanceof String s) {
-            try {
-                if (!SourceVersion.isIdentifier(s) && !SourceVersion.isName(s)) return null;
-                int lastDot = s.lastIndexOf('.');
-                String sClass = (lastDot == -1) ? null : s.substring(0, lastDot);
-                String sMethod = s.substring(lastDot + 1);
-                Class<?> klass = null;
-                if (sClass != null) klass = scanner.findClass(sClass);
-                return Tuple2.of(klass, sMethod);
-            } catch (Exception ex) {
-                Logger.error("Failed to retrieve method info\n{}", ex);
-            }
-        }
-        return null;
-    }
-
-    /// Sets to `null` the references to the [DependencyManager] and the [ClassScanner].
-    public void dispose() {
-        dm = null;
-        scanner = null;
-    }
-
-    //================================================================================
-    // Static Methods
-    //================================================================================
-
-    /// This method is responsible for adding the elements in the given `list` to a collection in the given `obj` which
-    /// has the given `name`.
-    ///
-    /// In other words, this is a naive approach to populate collections with reflection.
-    /// A certain object is expected to have a collection with a certain name and a **getter** in the form:
-    /// `get + name` (with the first letter of name being capitalized).
-    ///
-    /// This method retrieves the collection with the resolved getter and adds all elements to it.
-    ///
-    /// @see Reflect
-    /// @see #resolveGetter(String)
-    public static void addToCollection(Object obj, String name, List<?> list) {
-        // Retrieve collection via getter
-        Collection<? super Object> collection;
+    /// Delegates to [Setter#write(Object, String, Object)].
+    public void set(Object target, String name, Object value) {
         try {
-            String getter = resolveGetter(name);
-            Logger.debug("Attempting to retrieve collection {} via getter {}", name, getter);
-            collection = Reflect.on(obj).call(getter).get();
-            if (collection == null)
-                throw new IllegalArgumentException(
-                    "Could not retrieve collection for name %s via getter %s".formatted(name, getter)
-                );
-        } catch (IllegalArgumentException | ReflectException ex) {
-            Logger.error("Failed to retrieve collection {} because:\n{}", name, ex);
-            return;
-        }
+            if (target == null)
+                throw new IllegalArgumentException("No target given for field set");
 
-        Logger.trace("Adding values to retrieved collection...");
-        collection.addAll(list);
+            // Static field, replace target with found class
+            if (target instanceof String s)
+                target = scanner.findClass(s);
+
+            // Instance field, accessor prioritized
+            Setter.write(target, name, value);
+        } catch (ReflectException | ClassNotFoundException ex) {
+            Logger.error("Failed to set field {} because:\n{}", name, ex);
+        }
     }
 
-    /// This method is responsible for setting the given `property` in the given `obj`.
-    ///
-    /// It's a naive approach since it expects that the object offers a setter in the form: `set + property.name`
-    /// (with the first letter of the name being capitalized)
-    ///
-    /// @see Reflect
-    /// @see #resolveSetter(String)
-    public static void setProperty(Object obj, Property property) {
-        String name = property.name();
-        Object value = property.value();
-        // Do it via setter
+    /// Handles a collection with the given name on the given target object. The values to add are specified as a generic
+    /// object. The handling is delegated to a [CollectionHandler], chosen according to the type by
+    /// [CollectionHandler#handlerFor(CollectionType)].
+    public void handleCollection(Object target, String name, CollectionType type, Object value, boolean clear) {
         try {
-            String setter = resolveSetter(name);
-            Logger.debug(
-                "Attempting to set property of type {} via setter {} to {}",
-                property.type(), setter, value
+            if (target == null)
+                throw new IllegalArgumentException("No target given for collection handling");
+
+            CollectionHandler handler = CollectionHandler.handlerFor(type);
+
+            // Static field, replace target with found class
+            if (target instanceof String s)
+                target = scanner.findClass(s);
+
+            // Instance field
+            handler.handle(target, name, value, clear);
+        } catch (ReflectException | ClassNotFoundException ex) {
+            Logger.error("Failed to handle collection {} because:\n{}", name, ex);
+        }
+    }
+
+    /// Ensures that a field and a given object are compatible with the given type.
+    ///
+    /// - The field is extracted from the `target` with the given name, with direct access
+    /// - Both the field's type and the given `value` must be compatible with the given `expectedType`
+    ///
+    /// @return for performance reasons (this may be called before executing other actions), in case of success,
+    /// returns the retrieved field wrapped in a [Reflect] object
+    /// @throws ReflectException if the field or the value are not compatible with `expectedType`
+    public static Reflect checkTypes(Object target, String name, Object value, Class<?> expectedType) {
+        if (!expectedType.isInstance(value))
+            throw new ReflectException(
+                "Expected target object to be of type %s but got %s"
+                    .formatted(expectedType, value.getClass())
             );
-            Reflect.on(obj).call(setter, value);
-        } catch (ReflectException ex) {
-            Logger.error("Failed to set {} value because:\n{}", property.type(), ex);
-        }
-    }
 
-    /// Naive approach to generate a `getter` name from a `field` name.
-    ///
-    /// Simply does: `"get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)`
-    public static String resolveGetter(String fieldName) {
-        return "get" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-    }
+        Reflect field = ((target instanceof Class<?> c) ?
+            Reflect.onClass(c).field(name) :
+            Reflect.on(target)).field(name);
+        if (!expectedType.isAssignableFrom(field.type()))
+            throw new ReflectException(
+                "Expected source obj to be of type %s for name %s but got %s"
+                    .formatted(name, expectedType, field.type())
+            );
 
-    /// Naive approach to generate a `setter` name from a `field` name.
-    ///
-    /// Simply does: `"set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1)`
-    public static String resolveSetter(String fieldName) {
-        return "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
+        return field;
     }
 }

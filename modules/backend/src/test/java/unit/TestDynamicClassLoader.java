@@ -2,7 +2,7 @@ package unit;
 
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
 import io.github.palexdev.architectfx.backend.deps.DynamicClassLoader;
-import io.github.palexdev.architectfx.backend.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.backend.utils.reflection.Scanner;
 import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
 import javafx.geometry.Insets;
 import org.joor.Reflect;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
-import misc.TestUtils;
 
 import static io.github.palexdev.architectfx.backend.deps.MavenHelper.artifact;
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,15 +35,15 @@ public class TestDynamicClassLoader {
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         );
-        ClassScanner scanner = new ClassScanner(dm);
-        Reflector reflector = new Reflector(dm, scanner);
-        Object obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        Scanner scanner = new Scanner(dm);
+        Reflector reflector = new Reflector(scanner);
+        Object obj = reflector.instantiate("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNotNull(obj);
         assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-        double w = TestUtils.getProperty(obj, "width");
+        double w = reflector.get(obj, "width");
         assertEquals(69.0, w);
-        double h = TestUtils.getProperty(obj, "height");
+        double h = reflector.get(obj, "height");
         assertEquals(420.0, h);
     }
 
@@ -52,25 +51,25 @@ public class TestDynamicClassLoader {
     @Test
     void testCleanup() {
         DependencyManager dm = new DependencyManager();
-        ClassScanner scanner = new ClassScanner(dm);
-        Reflector reflector = new Reflector(dm, scanner);
+        Scanner scanner = new Scanner(dm);
+        Reflector reflector = new Reflector(scanner);
         dm.cleanDeps();
         assertEquals(0, dm.dependencies().size());
 
-        Object obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        Object obj = reflector.instantiate("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNull(obj);
 
         dm.addDeps(
             artifact("io.github.palexdev", "materialfx", "11.17.0"),
             artifact("io.github.palexdev", "virtualizedfx", "21.6.0")
         );
-        obj = reflector.create("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
+        obj = reflector.instantiate("io.github.palexdev.mfxcore.base.beans.Size", 69.0, 420.0);
         assertNotNull(obj);
         assertEquals("io.github.palexdev.mfxcore.base.beans.Size", obj.getClass().getName());
 
-        double w = TestUtils.getProperty(obj, "width");
+        double w = reflector.get(obj, "width");
         assertEquals(69.0, w);
-        double h = TestUtils.getProperty(obj, "height");
+        double h = reflector.get(obj, "height");
         assertEquals(420.0, h);
     }
 }

@@ -1,0 +1,39 @@
+.deps {
+  'io.github.palexdev:materialfx:11.17.0',
+  'io.github.palexdev:mfxcomponents:11.26.8'
+}
+
+.imports {
+  'io.github.palexdev.mfxcore.builders.nodes.*',
+  'io.github.palexdev.mfxcore.utils.*',
+  'javafx.scene.Node',
+  'javafx.scene.geometry.*',
+  'javafx.scene.layout.*',
+  'javafx.scene.paint.Color',
+  'javafx.scene.shape.Rectangle',
+  'io.github.palexdev.mfxcore.controls.Label'
+}
+
+StackPane {
+  # Builder
+  .builder: StackPaneBuilder.stackPane().addStyleClasses(String['pane']).getNode()
+  # Configs
+  StackPane.setMargin(this, Insets::(10.0){})
+  # Properties
+  background: Background.fill(Color.web('#FF0000'))
+  border: Border.stroke(Color.BLUE)
+  padding: Insets::(2.0, 5.0, 2.0, 5.0){}
+
+  # Children
+  Label::('Hello world!') {
+    font: Font.font("JetBrains Mono Regular", 16.0)
+    style: '-fx-text-fill: red'
+  }
+
+  # NOTE!! While it's true that the Rectangle will be shown in the UI, it won't appear as a node in the tree but rather
+  # as an argument for the StackPane's constructor. In other words, the Rectangle will not be recognized as a child of
+  # StackPane and its parent will be null
+  StackPane::(Node[Rectangle {
+    style: '-fx-stroke: red'
+  }]) {}
+}
