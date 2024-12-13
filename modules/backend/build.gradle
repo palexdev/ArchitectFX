@@ -33,3 +33,5 @@ tasks.register('testRun', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'app.Launcher'
 }
+
+sourcesJar.dependsOn(generateGrammarSource)
