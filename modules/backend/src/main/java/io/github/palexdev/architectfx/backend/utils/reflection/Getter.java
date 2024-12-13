@@ -3,7 +3,7 @@ package io.github.palexdev.architectfx.backend.utils.reflection;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 
-/// API to retrieve a certain field/value from a target (an object or a class) given its name.
+/// API to retrieve a certain field/value from a target object (can be a class if it's static) given its name.
 ///
 /// There are two internal concrete implementations which can extract the field/value by direct access or through the
 /// corresponding getter method (this is given by [#getterFor(String)]).
@@ -13,9 +13,6 @@ public sealed interface Getter permits Getter.Direct, Getter.Accessor {
 
     /// Retrieves a field/value for the given name from the given target object.
     <T> T get(Object target, String name);
-
-    /// Retrieves a field/value for the given name from the given target class (this is for static members).
-    <T> T get(Class<?> target, String name);
 
     /// Tries to retrieve a field for the given name from the given object first by invoking the getter, and in case of
     /// failure with direct access.
@@ -58,12 +55,10 @@ public sealed interface Getter permits Getter.Direct, Getter.Accessor {
 
         @Override
         public <T> T get(Object target, String name) {
-            return Reflect.on(target).get(name);
-        }
-
-        @Override
-        public <T> T get(Class<?> target, String name) {
-            return Reflect.onClass(target).get(name);
+            Reflect reflect = (target instanceof Class<?> c) ?
+                Reflect.onClass(c) :
+                Reflect.on(target);
+            return reflect.get(name);
         }
     }
 
@@ -78,13 +73,10 @@ public sealed interface Getter permits Getter.Direct, Getter.Accessor {
         @Override
         public <T> T get(Object target, String name) {
             String getter = getterFor(name);
-            return Reflect.on(target).call(getter).get();
-        }
-
-        @Override
-        public <T> T get(Class<?> target, String name) {
-            String getter = getterFor(name);
-            return Reflect.onClass(target).call(getter).get();
+            Reflect reflect = (target instanceof Class<?> c) ?
+                Reflect.onClass(c) :
+                Reflect.on(target);
+            return reflect.call(getter).get();
         }
     }
 }

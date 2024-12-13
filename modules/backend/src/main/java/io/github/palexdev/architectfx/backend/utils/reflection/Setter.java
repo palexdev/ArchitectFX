@@ -3,7 +3,7 @@ package io.github.palexdev.architectfx.backend.utils.reflection;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 
-/// API to set a certain field on a target (an object or a class) given its name and the target value.
+/// API to set a certain field on a target object (can be a class if it's static) given its name and the target value.
 ///
 /// There are two internal concrete implementations which can set the field by direct access or through the
 /// corresponding setter method (this is given by [#setterFor(String)]).
@@ -13,9 +13,6 @@ public sealed interface Setter permits Setter.Direct, Setter.Accessor {
 
     /// Sets the field with the given name on the given object to the given value.
     <T> T set(Object target, String name, Object value);
-
-    /// Sets the field with the given name on the given class to the given value.
-    <T> T set(Class<?> target, String name, Object value);
 
     /// Tries to set a field with the given name on the given object first by invoking the setter, and in case of
     /// failure with direct access.
@@ -58,12 +55,10 @@ public sealed interface Setter permits Setter.Direct, Setter.Accessor {
 
         @Override
         public <T> T set(Object target, String name, Object value) {
-            return Reflect.on(target).set(name, value).get();
-        }
-
-        @Override
-        public <T> T set(Class<?> target, String name, Object value) {
-            return Reflect.onClass(target).set(name, value).get();
+            Reflect reflect = (target instanceof Class<?> c) ?
+                Reflect.onClass(c) :
+                Reflect.on(target);
+            return reflect.set(name, value).get();
         }
     }
 
@@ -78,13 +73,10 @@ public sealed interface Setter permits Setter.Direct, Setter.Accessor {
         @Override
         public <T> T set(Object target, String name, Object value) {
             String setter = setterFor(name);
-            return Reflect.on(target).call(setter, value).get();
-        }
-
-        @Override
-        public <T> T set(Class<?> target, String name, Object value) {
-            String setter = setterFor(name);
-            return Reflect.onClass(target).call(setter, value).get();
+            Reflect reflect = (target instanceof Class<?> c) ?
+                Reflect.onClass(c) :
+                Reflect.on(target);
+            return reflect.call(setter, value).get();
         }
     }
 }
