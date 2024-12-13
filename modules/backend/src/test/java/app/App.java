@@ -15,7 +15,7 @@ public class App extends Application {
         long start = System.nanoTime();
 
         Parent root = (Parent) new JUIFXLoader().load(
-            App.class.getClassLoader().getResource("assets/TextFields.ui")
+            App.class.getClassLoader().getResource("assets/TextFields.jui")
         ).root();
 
         long end = System.nanoTime();
