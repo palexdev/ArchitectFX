@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import io.github.palexdev.architectfx.backend.utils.Async;
-import io.github.palexdev.architectfx.backend.utils.CastUtils;
 import io.github.palexdev.architectfx.frontend.Resources;
 import io.github.palexdev.imcache.cache.DiskCache;
 import io.github.palexdev.imcache.core.ImImage;
@@ -38,7 +37,6 @@ import javafx.beans.property.ReadOnlyLongWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.image.Image;
 import org.tinylog.Logger;
-import org.yaml.snakeyaml.Yaml;
 
 public class Recent implements Comparable<Recent> {
     //================================================================================
@@ -120,19 +118,16 @@ public class Recent implements Comparable<Recent> {
         return file != null && Files.exists(file) && !Files.isDirectory(file);
     }
 
-    public static List<Recent> load(String yaml) {
+    public static List<Recent> load(String s) {
         List<Recent> recents = new ArrayList<>();
         try {
-            SequencedMap<String, Object> map = new Yaml().load(yaml);
-            List<Object> list = CastUtils.asGenericList(map.get("recents"));
-            for (Object obj : list) {
-                try {
-                    Path file = Path.of(((String) obj));
-                    Recent recent = new Recent(file);
-                    recents.add(recent);
-                } catch (Exception ex) {
-                    Logger.warn(ex.getMessage());
-                }
+            String[] lines = s.split("\n");
+            if (lines.length <= 2) return recents;
+
+            for (int i = 1; i < lines.length - 1; i++) {
+                String line = lines[i];
+                Path path = Path.of(line.substring(0, line.length() - 1));
+                recents.add(new Recent(path));
             }
         } catch (Exception ex) {
             Logger.error("Failed to load recents:\n{}", ex);
@@ -142,22 +137,17 @@ public class Recent implements Comparable<Recent> {
     }
 
     public static String save(Collection<Recent> recents) {
-        StringBuilder sb = new StringBuilder("recents: ");
-        if (recents.isEmpty()) {
-            sb.append("[]");
-            return sb.toString();
-        }
+        if (recents.isEmpty()) return "[]";
 
-        sb.append("\n");
+        StringBuilder sb = new StringBuilder("[\n");
         for (Recent recent : recents) {
             if (!recent.isValid()) {
                 Logger.warn("Invalid recent:\n- {}\n- {}", recent.file(), recent.lastModified());
                 continue;
             }
-            String path = recent.file().toString().replace("\\", "\\\\");
-            sb.append("  - \"").append(path).append("\"\n");
+            sb.append("  ").append(recent.file().toString()).append(",\n");
         }
-        return sb.toString();
+        return sb.append("]").toString();
     }
 
     //================================================================================
@@ -197,7 +187,7 @@ public class Recent implements Comparable<Recent> {
     public String toString() {
         return "Recent{" +
                "file=" + file +
-               ", lastModified=" + lastModified +
+               ", lastModified=" + lastModified() +
                '}';
     }
 

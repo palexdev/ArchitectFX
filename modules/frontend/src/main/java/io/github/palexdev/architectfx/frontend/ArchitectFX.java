@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import io.github.palexdev.architectfx.backend.enums.OSType;
 import io.github.palexdev.architectfx.backend.utils.OSUtils;
+import io.github.palexdev.architectfx.backend.utils.OSUtils.OSType;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.SettingsEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;

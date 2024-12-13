@@ -19,9 +19,6 @@ module afx.frontend {
     requires static io.inverno.core.annotation;
     requires io.inverno.core;
 
-    // Yaml
-    requires org.yaml.snakeyaml;
-
     // Logging
     requires org.tinylog.api;
     requires org.tinylog.api.slf4j;

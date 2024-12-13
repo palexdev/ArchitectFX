@@ -18,9 +18,9 @@
 
 package io.github.palexdev.architectfx.frontend.model;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,10 +28,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import fr.brouillard.oss.cssfx.CSSFX;
-import io.github.palexdev.architectfx.backend.model.Document;
+import io.github.palexdev.architectfx.backend.loaders.UILoader;
+import io.github.palexdev.architectfx.backend.loaders.jui.JUIFXLoader;
 import io.github.palexdev.architectfx.backend.utils.Async;
 import io.github.palexdev.architectfx.backend.utils.Progress;
-import io.github.palexdev.architectfx.backend.yaml.YamlLoader;
 import io.github.palexdev.architectfx.frontend.components.dialogs.ProgressDialog;
 import io.github.palexdev.architectfx.frontend.components.dialogs.base.DialogsService;
 import io.github.palexdev.architectfx.frontend.enums.Tool;
@@ -39,7 +39,6 @@ import io.github.palexdev.architectfx.frontend.events.AppEvent.AppCloseEvent;
 import io.github.palexdev.architectfx.frontend.events.DialogEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
-import io.github.palexdev.architectfx.frontend.utils.KeyValueProperty;
 import io.github.palexdev.architectfx.frontend.utils.ProgressProperty;
 import io.github.palexdev.architectfx.frontend.views.LivePreview;
 import io.github.palexdev.mfxcomponents.window.popups.PopupWindowState;
@@ -48,9 +47,10 @@ import io.github.palexdev.mfxcore.observables.When;
 import io.inverno.core.annotation.Bean;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Pair;
+import javafx.scene.Node;
 import org.tinylog.Logger;
 
 @Bean
@@ -63,7 +63,7 @@ public class AppModel {
     private final IEventBus events;
 
     private Tool lastTool;
-    private YamlLoader lastLoader;
+    private JUIFXLoader lastLoader;
     private CompletableFuture<?> loadTask;
     private final ProgressProperty progress = new ProgressProperty() {
         @Override
@@ -75,14 +75,13 @@ public class AppModel {
             }
         }
     };
-    private final KeyValueProperty<File, Document> document = new KeyValueProperty<>() {
+    private final ReadOnlyObjectWrapper<UILoader.Loaded<Node>> loaderResult = new ReadOnlyObjectWrapper<>() {
         @Override
         protected void invalidated() {
-            Pair<File, Document> val = get();
-            if (val != null && val.getValue() != null) {
-
+            UILoader.Loaded<Node> result = get();
+            if (result != null) {
                 // FIXME I don't remember why, probably to supports live css changes, needs testing (try-catch error!)
-                CSSFX.onlyFor(val.getValue().rootNode())
+                CSSFX.onlyFor(result.root())
                     .addConverter(uri -> {
                         try {
                             return Paths.get(URI.create(uri));
@@ -107,15 +106,16 @@ public class AppModel {
     //================================================================================
     // Methods
     //================================================================================
-    public void run(Tool tool, File file) {
+    public void run(Tool tool, URI uri) {
         // Load document async
-        loadTask = load(tool, file).thenRun(() -> {
+        loadTask = load(tool, uri).thenRun(() -> {
             // Save tool for next session
             lastTool = tool;
             settings.lastTool().set(tool.name());
 
             // We have to work with lists for simplicity, but we need to make sure that there are no duplicate files!
-            Recent recent = new Recent(file.toPath());
+            Path toPath = Path.of(uri);
+            Recent recent = new Recent(toPath);
             Set<Recent> tmp = new HashSet<>(recents);
             if (tmp.add(recent)) {
                 Platform.runLater(() -> {
@@ -124,19 +124,19 @@ public class AppModel {
                 });
             }
 
-            settings.lastDir().set(file.getParent());
+            settings.lastDir().set(toPath.getParent().toString());
         }).exceptionally(ex -> {
             setProgress(Progress.CANCELED);
             Logger.error(ex.getMessage());
-            setDocument(null, null);
+            setLoaderResult(null);
             return null;
         });
     }
 
-    protected CompletableFuture<Void> load(Tool tool, File file) {
+    protected CompletableFuture<Void> load(Tool tool, URI uri) {
         // Init loader, show dialog
         lastLoader = tool.loader();
-        lastLoader.setOnProgress(this::setProgress);
+        lastLoader.config().setOnProgress(this::setProgress);
         progress.reset(); // Needed otherwise subsequent calls will not make the dialog appear
         events.publish(new DialogEvent.ShowProgress(() -> new DialogsService.DialogConfig<ProgressDialog>()
             .implicitOwner()
@@ -159,8 +159,8 @@ public class AppModel {
 
         return Async.run(() -> {
             try {
-                Document loaded = lastLoader.load(file);
-                setDocument(file, loaded);
+                UILoader.Loaded<Node> loaded = lastLoader.load(Path.of(uri).toFile());
+                setLoaderResult(loaded);
             } catch (IOException ex) {
                 throw new CompletionException(ex);
             }
@@ -168,7 +168,6 @@ public class AppModel {
     }
 
     protected void dispose() {
-        if (lastLoader != null) lastLoader.close();
         if (lastTool != null) lastTool.dispose();
     }
 
@@ -195,15 +194,15 @@ public class AppModel {
         this.progress.set(progress);
     }
 
-    public Pair<File, Document> getDocument() {
-        return document.get();
+    public UILoader.Loaded<Node> getLoaderResult() {
+        return loaderResult.get();
     }
 
-    public ReadOnlyObjectProperty<Pair<File, Document>> documentProperty() {
-        return document.getReadOnlyProperty();
+    public ReadOnlyObjectProperty<UILoader.Loaded<Node>> loaderResultProperty() {
+        return loaderResult.getReadOnlyProperty();
     }
 
-    protected void setDocument(File file, Document document) {
-        this.document.setPair(file, document);
+    protected void setLoaderResult(UILoader.Loaded<Node> loaderResult) {
+        this.loaderResult.set(loaderResult);
     }
 }

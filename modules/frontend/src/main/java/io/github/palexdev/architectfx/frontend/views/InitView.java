@@ -190,7 +190,7 @@ public class InitView extends View<InitPane> {
                 .process(e -> {
                     switch (e.getEventType()) {
                         case EventType<?> t when t == RecentCell.RecentCellEvent.LIVE_PREVIEW_EVENT ->
-                            model.run(Tool.PREVIEW, e.getRecent().file().toFile());
+                            model.run(Tool.PREVIEW, e.getRecent().file().toUri());
                         case EventType<?> t when t == RecentCell.RecentCellEvent.FILE_EXPLORER_EVENT ->
                             hostServices.showDocument(e.getRecent().file().getParent().toUri().toString());
                         case EventType<?> t when t == RecentCell.RecentCellEvent.REMOVE_EVENT ->

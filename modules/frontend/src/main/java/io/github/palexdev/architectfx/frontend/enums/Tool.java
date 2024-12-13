@@ -23,49 +23,48 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
-import io.github.palexdev.architectfx.backend.model.Document;
-import io.github.palexdev.architectfx.backend.utils.reflection.ClassScanner;
+import io.github.palexdev.architectfx.backend.loaders.UILoader.Loaded;
+import io.github.palexdev.architectfx.backend.loaders.jui.JUIFXLoader;
+import io.github.palexdev.architectfx.backend.resolver.DefaultResolver;
+import io.github.palexdev.architectfx.backend.resolver.Resolver;
 import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
-import io.github.palexdev.architectfx.backend.yaml.YamlDeserializer;
-import io.github.palexdev.architectfx.backend.yaml.YamlDeserializer.YamlDeserializerConfig;
-import io.github.palexdev.architectfx.backend.yaml.YamlLoader;
-import io.github.palexdev.architectfx.backend.yaml.YamlParser;
+import io.github.palexdev.architectfx.backend.utils.reflection.Scanner;
+import javafx.scene.Node;
 
 public enum Tool {
     EDIT {
         @Override
-        public Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException {
+        public Loaded<Node> load(File file, Consumer<JUIFXLoader> loaderConfig) throws IOException {
             throw new UnsupportedOperationException("Not implemented yet.");
         }
     },
     PREVIEW {
         private DependencyManager dm;
-        private ClassScanner scanner;
+        private Scanner scanner;
         private Reflector reflector;
 
         @Override
-        public Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException {
+        public Loaded<Node> load(File file, Consumer<JUIFXLoader> loaderConfig) throws IOException {
             return loader(loaderConfig).load(file);
         }
 
         @Override
-        public Consumer<YamlLoader> defaultConfig() {
+        public Consumer<JUIFXLoader> defaultConfig() {
             if (dm == null || scanner == null || reflector == null) {
                 dm = new DependencyManager();
-                scanner = new ClassScanner(dm);
-                reflector = new Reflector(dm, scanner);
+                scanner = new Scanner(dm);
+                reflector = new Reflector(scanner);
             }
-            return loader -> loader.withDeserializer(
-                () -> new YamlDeserializer(
-                    d -> new YamlDeserializerConfig(dm, scanner, reflector, new YamlParser(d, scanner, reflector), true)
-                )
+            return loader -> loader.config().setResolverFactory(
+                uri -> {
+                    Resolver.Context context = new Resolver.Context(dm, scanner, reflector, uri);
+                    return new DefaultResolver(context);
+                }
             );
         }
 
         @Override
         public void dispose() {
-            scanner.dispose();
-            reflector.dispose();
             dm = null;
             scanner = null;
             reflector = null;
@@ -73,23 +72,23 @@ public enum Tool {
     },
     ;
 
-    public abstract Document load(File file, Consumer<YamlLoader> loaderConfig) throws IOException;
+    public abstract Loaded<Node> load(File file, Consumer<JUIFXLoader> loaderConfig) throws IOException;
 
-    public Document load(File file) throws IOException {
+    public Loaded<Node> load(File file) throws IOException {
         return load(file, defaultConfig());
     }
 
-    public YamlLoader loader(Consumer<YamlLoader> loaderConfig) {
-        YamlLoader loader = new YamlLoader();
+    public JUIFXLoader loader(Consumer<JUIFXLoader> loaderConfig) {
+        JUIFXLoader loader = new JUIFXLoader();
         loaderConfig.accept(loader);
         return loader;
     }
 
-    public YamlLoader loader() {
+    public JUIFXLoader loader() {
         return loader(defaultConfig());
     }
 
-    public Consumer<YamlLoader> defaultConfig() {
+    public Consumer<JUIFXLoader> defaultConfig() {
         return loader -> {};
     }
 

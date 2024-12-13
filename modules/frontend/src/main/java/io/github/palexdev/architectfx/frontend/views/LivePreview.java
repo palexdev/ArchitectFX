@@ -18,13 +18,13 @@
 
 package io.github.palexdev.architectfx.frontend.views;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import io.github.palexdev.architectfx.backend.model.Document;
+import io.github.palexdev.architectfx.backend.loaders.UILoader;
 import io.github.palexdev.architectfx.frontend.components.CountdownIcon;
 import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
@@ -58,7 +58,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
@@ -69,7 +68,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import org.tinylog.Logger;
 
 import static io.github.palexdev.mfxcore.events.WhenEvent.intercept;
@@ -176,11 +174,11 @@ public class LivePreview extends View<LivePreviewPane> {
             addSeparator();
 
             button("show", (b, e) ->
-                    Optional.ofNullable(model.getDocument())
-                        .map(Pair::getKey)
-                        .ifPresent(f -> {
+                    Optional.ofNullable(model.getLoaderResult())
+                        .map(r -> r.document().getLocation())
+                        .ifPresent(uri -> {
                             try {
-                                String parent = f.toPath().getParent().toUri().toString();
+                                String parent = Path.of(uri).getParent().toString();
                                 hostServices.showDocument(parent);
                             } catch (Exception ex) {
                                 Logger.warn("Could not show file in file manager because:\n{}", ex);
@@ -279,7 +277,7 @@ public class LivePreview extends View<LivePreviewPane> {
         {
             setContent(container);
             // Config
-            onChanged(model.documentProperty())
+            onChanged(model.loaderResultProperty())
                 .then((o, n) -> {
                     if (disablingPause) return;
                     Platform.runLater(() -> update(o, n));
@@ -289,9 +287,9 @@ public class LivePreview extends View<LivePreviewPane> {
                 .listen();
         }
 
-        protected void update(Pair<File, Document> oldDoc, Pair<File, Document> newDoc) {
-            lpModel.onDocumentSet(newDoc);
-            if (newDoc == null || newDoc.getValue() == null) {
+        protected void update(UILoader.Loaded<Node> oldRes, UILoader.Loaded<Node> newRes) {
+            lpModel.onDocumentSet(newRes);
+            if (newRes == null) {
                 container.getChildren().clear();
                 return;
             }
@@ -301,13 +299,13 @@ public class LivePreview extends View<LivePreviewPane> {
             // For example, if the document loads Nodes with animations, those could be captured at the wrong time.
             // A possible workaround would be to reset the pause state a few seconds/milliseconds
             // after the view is loaded. However, there's no way of telling how much time is needed for it to "stabilize".
-            if (oldDoc != null && !Objects.equals(oldDoc, newDoc)) {
+            if (!Objects.equals(oldRes, newRes)) {
                 disablingPause = true;
                 lpModel.setPaused(false);
                 disablingPause = false;
             }
 
-            Parent newRoot = newDoc.getValue().rootNode();
+            Node newRoot = newRes.root();
             if (Animations.isPlaying(animation)) animation.stop();
             if (lpModel.isPaused()) {
 
@@ -330,9 +328,8 @@ public class LivePreview extends View<LivePreviewPane> {
                 container.getChildren().setAll(newRoot);
                 wasPaused = false;
             } else {
-                Parent oldRoot = Optional.ofNullable(oldDoc)
-                    .map(Pair::getValue)
-                    .map(Document::rootNode)
+                Node oldRoot = Optional.ofNullable(oldRes)
+                    .map(UILoader.Loaded::root)
                     .orElse(null);
                 animateUpdate(oldRoot, newRoot);
             }

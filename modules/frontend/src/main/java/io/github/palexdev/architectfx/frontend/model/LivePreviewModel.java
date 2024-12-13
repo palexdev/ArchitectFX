@@ -18,11 +18,13 @@
 
 package io.github.palexdev.architectfx.frontend.model;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-import io.github.palexdev.architectfx.backend.model.Document;
+import io.github.palexdev.architectfx.backend.loaders.UILoader;
 import io.github.palexdev.architectfx.backend.utils.Async;
 import io.github.palexdev.architectfx.backend.utils.Progress;
 import io.github.palexdev.architectfx.frontend.components.CountdownIcon.CountdownStatus;
@@ -35,8 +37,8 @@ import io.inverno.core.annotation.BeanSocket;
 import io.methvin.watcher.DirectoryChangeEvent.EventType;
 import io.methvin.watcher.DirectoryWatcher;
 import javafx.beans.property.*;
+import javafx.scene.Node;
 import javafx.util.Duration;
-import javafx.util.Pair;
 import org.tinylog.Logger;
 
 @Bean
@@ -47,7 +49,7 @@ public class LivePreviewModel {
     private final AppModel appModel;
     private final AppSettings settings;
 
-    private File oldFile;
+    private URI oldLocation;
     private DirectoryWatcher watcher;
     private CompletableFuture<?> watcherTask;
     private boolean autoReload;
@@ -81,32 +83,33 @@ public class LivePreviewModel {
     // Methods
     //================================================================================
 
-    public void onDocumentSet(Pair<File, Document> document) {
-        if (document == null) {
+    public void onDocumentSet(UILoader.Loaded<Node> result) {
+        if (result == null) {
             closeWatcher();
             return;
         }
-        watchDocument(document);
-        oldFile = document.getKey();
+        watchDocument(result);
+        oldLocation = result.document().getLocation();
     }
 
-    protected void watchDocument(Pair<File, Document> document) {
-        if (document == null ||
-            document.getValue() == null ||
-            document.getKey() == oldFile
+    protected void watchDocument(UILoader.Loaded<Node> result) {
+        if (result == null ||
+            Objects.equals(result.document().getLocation(), oldLocation)
         ) return;
 
         if (watcher != null && !watcher.isClosed())
             throw new IllegalStateException("Previous watcher is still running...");
 
         try {
-            File file = document.getKey();
-            if (file == oldFile) return;
+            URI location = result.document().getLocation();
+            if (Objects.equals(location, oldLocation)) return;
+
+            Path toPath = Path.of(location);
             watcher = DirectoryWatcher.builder()
-                .path(file.getParentFile().toPath())
+                .path(toPath)
                 .fileHashing(true)
                 .listener(e -> {
-                    if (e.path().equals(file.toPath()) && e.eventType() == EventType.MODIFY) {
+                    if (e.path().equals(toPath) && e.eventType() == EventType.MODIFY) {
                         setFileModified(true);
                         if (isAutoReload()) {
                             int delay = settings.autoReloadDelay().get();
@@ -157,7 +160,7 @@ public class LivePreviewModel {
         Tool tool = appModel.getLastTool();
         try {
             setFileModified(false);
-            appModel.load(tool, oldFile).get();
+            appModel.load(tool, oldLocation).get();
         } catch (Exception ex) {
             Logger.error("Failed to reload document because:\n{}", ex);
             setFileModified(true);
@@ -165,7 +168,7 @@ public class LivePreviewModel {
     }
 
     public void dispose() {
-        oldFile = null;
+        oldLocation = null;
         closeWatcher();
         appModel.dispose();
     }
