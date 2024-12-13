@@ -66,7 +66,7 @@ public interface Resolver {
     String resolveURL(URLValue value);
 
     <T> T resolveValue(Value<?> value);
-    
+
     default Object[] resolveArgs(Value<?>[] values) {
         Object[] resolved = new Object[values.length];
         for (int i = 0; i < values.length; i++) {
@@ -84,7 +84,7 @@ public interface Resolver {
     //================================================================================
     // Inner Classes
     //================================================================================
-    
+
     /// Support internal class which defines the dependencies needed to turn a [UIDocument] into a UI graph, as well as
     /// keeping track of the process' state.
     ///
