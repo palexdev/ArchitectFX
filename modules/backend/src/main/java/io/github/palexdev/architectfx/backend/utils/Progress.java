@@ -29,7 +29,7 @@ public record Progress(String description, double progress) {
     public static final Progress INDETERMINATE = new Progress("Indeterminate", -1.0);
 
     /// Special progress that can be used to indicate that a certain task has been canceled.
-    public static final Progress CANCELED = new Progress("Canceled", Double.NaN);
+    public static final Progress CANCELED = new Progress("Canceled", Double.MIN_VALUE);
 
     //================================================================================
     // Constructors
@@ -40,5 +40,12 @@ public record Progress(String description, double progress) {
 
     public static Progress of(String description, double progress) {
         return new Progress(description, progress);
+    }
+
+    //================================================================================
+    // Methods
+    //================================================================================
+    public boolean isDone() {
+        return progress == 1.0;
     }
 }
