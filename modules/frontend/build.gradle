@@ -15,9 +15,6 @@ dependencies {
 
     implementation "io.github.palexdev:imcache:$imcache"
 
-    implementation name: 'nfx-core-1.0.2'
-    implementation name: 'nfx-core-1.0.2', classifier: 'sources'
-
     implementation name: 'directory-watcher-0.19.0'
     implementation name: 'directory-watcher-0.19.0', classifier: 'sources'
 }

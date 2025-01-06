@@ -29,9 +29,6 @@ subprojects {
         implementation "org.tinylog:tinylog-impl:$tinylog"
         implementation "org.tinylog:slf4j-tinylog:$tinylog"
 
-        implementation name: 'pragmatica-core-0.3.0'
-        implementation name: 'pragmatica-core-0.3.0', classifier: 'sources'
-
         // Test
         testImplementation platform("org.junit:junit-bom:$junit")
         testImplementation 'org.junit.jupiter:junit-jupiter'
