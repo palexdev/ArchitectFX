@@ -65,7 +65,7 @@ public class ThemeEngine {
             Logger.warn("Warning, corrupted theme settings! Fallback to default");
             setThemeMode(ThemeMode.valueOf(settings.themeMode().defValue()));
         }
-        events.subscribe(AppEvent.AppCloseEvent.class,e -> settings.themeMode().set(getThemeMode().name()));
+        events.subscribe(AppEvent.AppCloseEvent.class, e -> settings.themeMode().set(getThemeMode().name()));
     }
 
     //================================================================================

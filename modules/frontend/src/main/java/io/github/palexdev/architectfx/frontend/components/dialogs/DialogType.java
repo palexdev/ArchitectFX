@@ -29,8 +29,7 @@ public enum DialogType {
         public void show(DialogsService service, DialogConfigurator config) {
             service.showProgressDialog(config);
         }
-    }
-    ;
+    };
 
     public abstract <D extends Dialog> void show(DialogsService service, DialogConfigurator<D> config);
 }

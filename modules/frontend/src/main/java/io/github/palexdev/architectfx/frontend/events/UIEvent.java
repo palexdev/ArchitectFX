@@ -55,7 +55,7 @@ public abstract class UIEvent extends Event {
         }
 
         public ViewSwitchEvent(Pane parent, Class<? extends View<?, ?>> view, BiFunction<Node, Node, Animation> animation) {
-            super(new Object[] {parent, view, animation});
+            super(new Object[]{parent, view, animation});
             this.parent = parent;
             this.view = view;
             this.animation = animation;
