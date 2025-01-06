@@ -7,6 +7,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
+import io.github.palexdev.architectfx.backend.deps.DynamicClassLoader;
 import io.github.palexdev.architectfx.backend.utils.ImportsSet;
 import org.tinylog.Logger;
 
@@ -78,6 +79,18 @@ public class Scanner {
         Set.class
     };
 
+    private static String[] JAVAFX_MODULES = new String[0];
+
+    static {
+        try {
+            JAVAFX_MODULES = Arrays.stream(System.getProperty("jdk.module.path").split(";"))
+                .filter(s -> s.contains("javafx-"))
+                .toArray(String[]::new);
+        } catch (Exception ex) {
+            Logger.error("JavaFX modules were not found on the classpath because:\n{}", ex);
+        }
+    }
+
     //================================================================================
     // Properties
     //================================================================================
@@ -96,6 +109,14 @@ public class Scanner {
         this.dm = dm;
         this.imports = imports;
         addToScanCache(CORE_CLASS_CACHE);
+        try {
+            Path[] toPaths = Arrays.stream(JAVAFX_MODULES)
+                .map(Path::of)
+                .toArray(Path[]::new);
+            dm.addDeps(toPaths);
+        } catch (Exception ex) {
+            Logger.error("Failed to add JavaFX modules to the DependencyManager");
+        }
     }
 
     //================================================================================
@@ -221,7 +242,13 @@ public class Scanner {
         ALL {
             @Override
             public ClassGraph build(DependencyManager dm) {
-                return new ClassGraph();
+                return new ClassGraph()
+                    .addClassLoader(new DynamicClassLoader()
+                        .addJars(Arrays.stream(JAVAFX_MODULES)
+                            .map(Path::of)
+                            .toArray(Path[]::new)
+                        )
+                    );
             }
         },
         DEPS {
