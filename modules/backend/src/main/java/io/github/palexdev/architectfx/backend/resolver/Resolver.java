@@ -191,8 +191,16 @@ public interface Resolver {
             return byId;
         }
 
+        public Map<String, UIObj> getNodesByIdUnmodifiable() {
+            return Collections.unmodifiableMap(byId);
+        }
+
         protected Map<UIObj, Object> getInstances() {
             return instances;
+        }
+
+        public Map<UIObj, Object> getInstancesUnmodifiable() {
+            return Collections.unmodifiableMap(instances);
         }
 
         public Object getInstanceByNodeId(String id) {
