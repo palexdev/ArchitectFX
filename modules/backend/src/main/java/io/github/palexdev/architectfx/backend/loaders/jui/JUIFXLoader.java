@@ -35,7 +35,7 @@ public class JUIFXLoader extends JUIBaseLoader<Node> {
     // Overridden Methods
     //================================================================================
     @Override
-    public void attachChildren(Node parent, List<Node> children) throws IOException {
+    public void attachChildren(Node parent, List<Node> children) {
         if (parent instanceof Pane p) {
             p.getChildren().addAll(children);
             return;
@@ -47,6 +47,6 @@ public class JUIFXLoader extends JUIBaseLoader<Node> {
             return;
         }
 
-        throw new IOException("Cannot attach children to node of type: " + parent.getClass().getName());
+        throw new RuntimeException("Cannot attach children to node of type: " + parent.getClass().getName());
     }
 }
