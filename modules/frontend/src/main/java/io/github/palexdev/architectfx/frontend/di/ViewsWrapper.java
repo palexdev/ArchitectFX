@@ -16,42 +16,35 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.theming;
+package io.github.palexdev.architectfx.frontend.di;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
-import java.io.InputStream;
-import java.net.URL;
+import io.github.palexdev.architectfx.frontend.views.View;
+import io.inverno.core.annotation.Bean;
+import io.inverno.core.annotation.Wrapper;
 
-import io.github.palexdev.architectfx.frontend.Resources;
-import io.github.palexdev.mfxcomponents.theming.base.Theme;
+@Bean
+@Wrapper
+@SuppressWarnings("rawtypes")
+public class ViewsWrapper implements Supplier<Map<Class<? extends View>, View<?, ?>>> {
+    private final Map<Class<? extends View>, View<?, ?>> views;
 
-public enum AppTheme implements Theme {
-    DEFAULT("css/AppTheme.css"),
-    ;
-
-    private final String path;
-
-    AppTheme(String path) {
-        this.path = path;
+    public ViewsWrapper(List<View<?, ?>> views) {
+        this.views = views.stream()
+            .collect(Collectors.toMap(
+                View::getClass,
+                Function.identity()
+            ));
     }
 
     @Override
-    public String path() {
-        return path;
-    }
-
-    @Override
-    public URL asURL(String path) {
-        return Resources.loadURL(path);
-    }
-
-    @Override
-    public InputStream assets() {
-        return Resources.loadStream("assets/assets.zip");
-    }
-
-    @Override
-    public String deployName() {
-        return "architectfx-assets";
+    public Map<Class<? extends View>, View<?, ?>> get() {
+        return views;
     }
 }
+

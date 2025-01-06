@@ -16,16 +16,28 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.events;
+package io.github.palexdev.architectfx.frontend.utils;
 
-import io.github.palexdev.mfxcore.events.Event;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
-public abstract class AppEvent extends Event {
+public class CollectionUtils {
 
     //================================================================================
-    // Impl
+    // Constructors
     //================================================================================
-    public static class AppCloseEvent extends AppEvent {}
+    private CollectionUtils() {}
 
-    public static class AppReadyEvent extends AppEvent {}
+    //================================================================================
+    // Static Methods
+    //================================================================================
+    public static <T> boolean addUnique(Collection<T> collection, T element) {
+        Set<T> set = new LinkedHashSet<>(collection);
+        if (set.add(element)) {
+            collection.add(element);
+            return true;
+        }
+        return false;
+    }
 }

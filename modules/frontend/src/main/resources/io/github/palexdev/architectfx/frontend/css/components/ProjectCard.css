@@ -16,16 +16,27 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.events;
+.project-card {
+  -fx-background-color: -surface;
+  -fx-background-radius: 12px;
+  -fx-padding: 4px 8px 4px 8px;
+  -fx-preview-radius: 24px;
+}
 
-import io.github.palexdev.mfxcore.events.Event;
+.project-card > .title {
+  -fx-font-family: 'Montserrat SemiBold';
+  -fx-font-size: 14px;
+  -fx-fill: -md-sys-color-on-surface;
+}
 
-public abstract class AppEvent extends Event {
+.project-card > .modified {
+  -fx-font-family: 'Montserrat Medium';
+  -fx-font-size: 12px;
+  -fx-fill: -md-sys-color-on-surface;
+}
 
-    //================================================================================
-    // Impl
-    //================================================================================
-    public static class AppCloseEvent extends AppEvent {}
-
-    public static class AppReadyEvent extends AppEvent {}
+.project-card > StackPane {
+  -fx-border-color: -on-surface;
+  -fx-border-radius: 12px;
+  -fx-border-insets: -1px;
 }

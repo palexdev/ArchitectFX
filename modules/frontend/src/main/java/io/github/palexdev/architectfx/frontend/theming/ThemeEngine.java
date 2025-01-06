@@ -27,6 +27,8 @@ import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.utils.EnumUtils;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.BeanSocket;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import org.tinylog.Logger;
 
 @Bean
@@ -35,29 +37,43 @@ public class ThemeEngine {
     // Properties
     //================================================================================
     private final IEventBus events;
-    private MaterialThemes currentMaterialTheme;
-    private ThemeMode mode;
+    private MaterialThemes currentMaterialTheme; // TODO generalize in the future
+    private final ObjectProperty<ThemeMode> themeMode = new SimpleObjectProperty<>() {
+        @Override
+        public void set(ThemeMode newValue) {
+            ThemeMode oldValue = get();
+            super.set(newValue);
+            if (oldValue != null) {
+                ThemeEngine.this.currentMaterialTheme = currentMaterialTheme.getVariant();
+                events.publish(new UIEvent.ThemeSwitchEvent());
+                loadTheme();
+            }
+        }
+    };
 
     //================================================================================
     // Constructors
     //================================================================================
-    public ThemeEngine(AppSettings settings, IEventBus events) {
+    public ThemeEngine(IEventBus events, AppSettings settings) {
         this.events = events;
         try {
-            this.mode = EnumUtils.valueOfIgnoreCase(
+            setThemeMode(EnumUtils.valueOfIgnoreCase(
                 ThemeMode.class,
                 settings.themeMode().get()
-            );
+            ));
         } catch (Exception ex) {
             Logger.warn("Warning, corrupted theme settings! Fallback to default");
-            this.mode = ThemeMode.valueOf(settings.themeMode().defValue());
+            setThemeMode(ThemeMode.valueOf(settings.themeMode().defValue()));
         }
-        events.subscribe(AppEvent.AppCloseEvent.class, e -> settings.themeMode().set(mode.name()));
+        events.subscribe(AppEvent.AppCloseEvent.class,e -> settings.themeMode().set(getThemeMode().name()));
     }
 
+    //================================================================================
+    // Methods
+    //================================================================================
     public void loadTheme() {
         if (currentMaterialTheme == null)
-            currentMaterialTheme = mode == ThemeMode.LIGHT ? MaterialThemes.INDIGO_LIGHT : MaterialThemes.INDIGO_DARK;
+            currentMaterialTheme = getThemeMode() == ThemeMode.LIGHT ? MaterialThemes.PURPLE_LIGHT : MaterialThemes.PURPLE_DARK;
         UserAgentBuilder.builder()
             .themes(currentMaterialTheme)
             .themes(AppTheme.DEFAULT)
@@ -68,19 +84,20 @@ public class ThemeEngine {
     }
 
     public ThemeMode getThemeMode() {
-        return mode;
+        return themeMode.get();
+    }
+
+    public ObjectProperty<ThemeMode> themeModeProperty() {
+        return themeMode;
     }
 
     @BeanSocket(enabled = false)
     public void setThemeMode(ThemeMode mode) {
-        this.mode = mode;
-        this.currentMaterialTheme = currentMaterialTheme.getVariant();
-        events.publish(new UIEvent.ThemeSwitchEvent());
-        loadTheme();
+        this.themeMode.set(mode);
     }
 
     public void nextMode() {
-        ThemeMode next = EnumUtils.next(ThemeMode.class, mode);
+        ThemeMode next = EnumUtils.next(ThemeMode.class, getThemeMode());
         setThemeMode(next);
     }
 }

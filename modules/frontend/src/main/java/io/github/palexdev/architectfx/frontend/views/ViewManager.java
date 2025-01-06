@@ -18,30 +18,29 @@
 
 package io.github.palexdev.architectfx.frontend.views;
 
+import java.util.Arrays;
 import java.util.Map;
-import java.util.Optional;
 
 import io.github.palexdev.architectfx.frontend.ArchitectFX;
 import io.github.palexdev.architectfx.frontend.Resources;
+import io.github.palexdev.architectfx.frontend.components.layout.RootPane;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
 import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
-import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
-import io.github.palexdev.mfxcomponents.theming.enums.PseudoClasses;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
-import io.github.palexdev.mfxcore.observables.When;
-import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
+import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
+import javafx.beans.property.ObjectProperty;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.SnapshotParameters;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
@@ -49,123 +48,103 @@ import javafx.stage.StageStyle;
 @SuppressWarnings("rawtypes")
 public class ViewManager {
     //================================================================================
+    // Static Properties
+    //================================================================================
+    public static final Image LIGHT_LOGO = new Image(Resources.loadStream("assets/logo-light.png"));
+    public static final Image DARK_LOGO = new Image(Resources.loadStream("assets/logo-dark.png"));
+
+    //================================================================================
     // Properties
     //================================================================================
     private final Stage mainWindow;
-    private final Pane rootPane;
-    private final Map<Class<? extends View>, View<?>> views;
-    private final AppSettings settings;
+    private final RootPane rootPane;
+    private final Map<Class<? extends View>, View<?, ?>> views;
     private final ThemeEngine themeEngine;
-
-    // Assets
-    public static final Image LIGHT_LOGO = new Image(Resources.loadStream("assets/iconlight.png"));
-    public static final Image DARK_LOGO = new Image(Resources.loadStream("assets/icondark.png"));
+    private final AppSettings settings;
 
     //================================================================================
     // Constructors
     //================================================================================
     public ViewManager(
         Stage mainWindow,
-        Pane rootPane,
-        Map<Class<? extends View>, View<?>> views, IEventBus events,
-        AppSettings settings, ThemeEngine themeEngine
+        RootPane rootPane,
+        Map<Class<? extends View>, View<?, ?>> views,
+        IEventBus events,
+        ThemeEngine themeEngine,
+        AppSettings settings
     ) {
         this.mainWindow = mainWindow;
         this.rootPane = rootPane;
         this.views = views;
-        this.settings = settings;
         this.themeEngine = themeEngine;
+        this.settings = settings;
         events.subscribe(AppEvent.AppReadyEvent.class, e -> onAppReady());
         events.subscribe(UIEvent.ViewSwitchEvent.class, this::onViewSwitchRequest);
-        events.subscribe(UIEvent.ThemeSwitchEvent.class, this::onThemeSwitched);
+        events.subscribe(UIEvent.ThemeSwitchEvent.class, e -> onThemeSwitched());
     }
 
     //================================================================================
     // Methods
     //================================================================================
+    private void onAppReady() {
+        onThemeSwitched();
+        rootPane.onLayout(this::ensureWindowSizes);
+        initMainWindow();
+        // Delay centering because of how we handle windows's min sizes
+        PauseBuilder.build()
+            .setDuration(M3Motion.LONG2)
+            .setOnFinished(e -> mainWindow.centerOnScreen())
+            .getAnimation()
+            .play();
+    }
+
     private void initMainWindow() {
-        // Get minimum sizes
+        ((ObjectProperty<ThemeMode>) rootPane.themeModeProperty()).bind(themeEngine.themeModeProperty());
+
         Size size = settings.getWindowSize();
-        Scene scene = new Scene(rootPane);
+        Scene scene = new Scene(rootPane, size.getWidth(), size.getHeight(), Color.TRANSPARENT);
         mainWindow.setScene(scene);
-        mainWindow.initStyle(StageStyle.UNIFIED);
-        mainWindow.setWidth(size.getWidth());
-        mainWindow.setHeight(size.getHeight());
+        mainWindow.titleProperty().bind(ArchitectFX.windowTitle);
+        mainWindow.initStyle(StageStyle.TRANSPARENT);
 
-        When.onInvalidated(rootPane.boundsInParentProperty())
-            .then(b -> {
-                double minW = rootPane.minWidth(-1);
-                double minH = rootPane.minHeight(-1);
-                mainWindow.setMinWidth(minW);
-                mainWindow.setMinHeight(minH);
-            })
-            .executeNow()
-            .listen();
-
-        handleThemeMode();
-        onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitView.class));
+        onViewSwitchRequest(new UIEvent.ViewSwitchEvent(InitialView.class));
         mainWindow.show();
     }
 
-    private void onAppReady() {
-        initMainWindow();
-        mainWindow.centerOnScreen();
-    }
-
-    private void onViewSwitchRequest(UIEvent.ViewSwitchEvent event) {
-        View<?> view = views.get(event.data());
+    private void onViewSwitchRequest(UIEvent.ViewSwitchEvent e) {
+        View<?, ?> view = views.get(e.view());
         if (view == null)
-            throw new IllegalStateException("Unknown view: " + event.data());
+            throw new IllegalStateException("Unknown view: " + Arrays.toString(e.data()));
+
         ArchitectFX.windowTitle.set(ArchitectFX.APP_TITLE + " - " + view.title());
-        view.onSwitching();
-        rootPane.getChildren().setAll(view.toRegion());
-    }
 
-    private void onThemeSwitched(UIEvent.ThemeSwitchEvent event) {
-        if (rootPane.getScene() == null || rootPane.getScene().getWindow() == null)
+        Region toRegion = view.toRegion();
+        if (e.parent() == null) {
+            rootPane.setContent(toRegion);
             return;
+        }
 
-        // "Disable" pane
-        rootPane.setMouseTransparent(true);
-
-        // Snapshot
-        WritableImage snapshot = UIUtils.snapshot(
-            rootPane,
-            rootPane.getWidth(), rootPane.getHeight(),
-            new SnapshotParameters()
-        );
-        ImageView view = new ImageView(snapshot);
-        view.setSmooth(false);
-        view.setFitWidth(rootPane.getWidth());
-        view.setFitHeight(rootPane.getHeight());
-        view.setPreserveRatio(false);
-        // This ensures that the snapshot overlaps perfectly with the current view pane
-        Optional.ofNullable(rootPane.getChildren())
-            .map(l -> !l.isEmpty() ? l.getFirst() : null)
-            .ifPresent(n -> {
-                view.setTranslateX(n.getLayoutX());
-                view.setTranslateY(n.getLayoutY());
-            });
-        view.setOpacity(1.0);
-        rootPane.getChildren().add(view);
-
-        handleThemeMode();
-
-        // Fade out and remove
-        ConsumerTransition.of(
-            frac -> view.setOpacity(1.0 - (1.0 * frac)),
-            M3Motion.EXTRA_LONG4,
-            M3Motion.STANDARD
-        ).setOnFinishedFluent(e -> {
-            rootPane.getChildren().remove(view);
-            rootPane.setMouseTransparent(false);
-        }).play();
+        Pane root = e.parent();
+        if (e.animation() != null) {
+            Node old = root.getChildren().isEmpty() ? null : root.getChildren().getFirst();
+            if (toRegion != old) e.animation().apply(old, toRegion).play();
+            return;
+        }
+        root.getChildren().setAll(toRegion);
     }
 
-    private void handleThemeMode() {
+    protected void ensureWindowSizes() {
+        Size min = Size.of(
+            rootPane.minWidth(-1),
+            rootPane.minHeight(-1)
+        );
+        if (mainWindow.getWidth() < min.getWidth()) mainWindow.setWidth(min.getWidth());
+        if (mainWindow.getHeight() < min.getHeight()) mainWindow.setHeight(min.getHeight());
+    }
+
+    private void onThemeSwitched() {
         ThemeMode mode = themeEngine.getThemeMode();
         Image icon = mode == ThemeMode.LIGHT ? LIGHT_LOGO : DARK_LOGO;
         mainWindow.getIcons().setAll(icon);
-        PseudoClasses.setOn(rootPane, "dark", mode == ThemeMode.DARK);
     }
 }

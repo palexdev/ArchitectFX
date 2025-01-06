@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -19,46 +19,73 @@
 package io.github.palexdev.architectfx.frontend.components.dialogs;
 
 import java.util.List;
+import java.util.Optional;
 
 import io.github.palexdev.architectfx.backend.utils.Progress;
 import io.github.palexdev.architectfx.frontend.components.dialogs.base.Dialog;
-import io.github.palexdev.architectfx.frontend.utils.ProgressProperty;
+import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXButton;
 import io.github.palexdev.mfxcomponents.controls.progress.MFXProgressIndicator;
 import io.github.palexdev.mfxcomponents.controls.progress.ProgressDisplayMode;
 import io.github.palexdev.mfxcore.controls.Label;
 import javafx.application.Platform;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.Node;
-import javafx.scene.layout.VBox;
 
 public class ProgressDialog extends Dialog {
     //================================================================================
     // Properties
     //================================================================================
-    private ProgressProperty progress;
+    private final ObjectProperty<Progress> progress = new SimpleObjectProperty<>(Progress.INDETERMINATE) {
+        @Override
+        protected void invalidated() {
+            Progress progress = get();
+            if (progress != null &&
+                (Progress.CANCELED == progress || progress.isDone())
+            ) Platform.runLater(ProgressDialog.this::hide);
+        }
+    };
+    private Runnable onCancel = () -> {};
 
-    private MFXProgressIndicator indicator;
-    private Label desc;
+    //================================================================================
+    // Constructors
+    //================================================================================
+    public ProgressDialog() {
+        super();
+        setContent(buildContent());
+    }
+
+    //================================================================================
+    // Methods
+    //================================================================================
+    protected void cancel() {
+        Optional.ofNullable(onCancel)
+            .ifPresent(Runnable::run);
+    }
 
     //================================================================================
     // Overridden Methods
     //================================================================================
     @Override
     protected Node buildContent() {
-        indicator = new MFXProgressIndicator();
+        MFXProgressIndicator indicator = new MFXProgressIndicator();
         indicator.setDisplayMode(ProgressDisplayMode.CIRCULAR);
-        indicator.setProgress(progressProperty().getProgress());
+        indicator.progressProperty().bind(progress.map(Progress::progress));
 
         MFXButton cancel = new MFXButton("Cancel").outlined();
-        cancel.setOnAction(e -> progressProperty().set(Progress.CANCELED));
-        cancel.getStyleClass().add("warning");
+        cancel.setOnAction(e -> cancel());
+        cancel.getStyleClass().add("warn");
 
-        desc = new Label();
-        desc.setText(progressProperty().getDescription());
+        Label descLabel = new Label();
+        descLabel.textProperty().bind(progress.map(Progress::description));
 
-        VBox container = new VBox(24.0, indicator, desc, cancel);
-        container.getStyleClass().add("box");
-        return container;
+        return new Box(
+            Box.Direction.COLUMN,
+            indicator,
+            descLabel,
+            cancel
+        );
     }
 
     @Override
@@ -79,22 +106,19 @@ public class ProgressDialog extends Dialog {
         return progress.get();
     }
 
-    public ProgressProperty progressProperty() {
-        if (progress == null) progress = new ProgressProperty() {
-            @Override
-            protected void invalidated() {
-                Progress current = get();
-
-                Platform.runLater(() -> {
-                    indicator.setProgress(current.progress());
-                    desc.setText(current.description());
-                });
-
-                if (current == Progress.CANCELED || current.progress() == 1.0) {
-                    Platform.runLater(ProgressDialog.this::hide);
-                }
-            }
-        };
+    public ObjectProperty<Progress> progressProperty() {
         return progress;
+    }
+
+    public void setProgress(Progress progress) {
+        this.progress.set(progress);
+    }
+
+    public Runnable getOnCancel() {
+        return onCancel;
+    }
+
+    public void setOnCancel(Runnable onCancel) {
+        this.onCancel = onCancel;
     }
 }

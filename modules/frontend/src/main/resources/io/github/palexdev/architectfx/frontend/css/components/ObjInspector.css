@@ -1,0 +1,115 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.inspector {
+  -fx-alignment: TOP_CENTER;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 12px;
+  -fx-border-width: 0.05em;
+  -fx-padding: 12px;
+  -fx-spacing: 24px;
+}
+
+/* Header */
+.inspector .header {
+  -fx-fill: -md-sys-color-on-surface;
+  -fx-font-family: 'Montserrat SemiBold';
+  -fx-font-size: 22px;
+}
+
+/* Tree View */
+.inspector .vfx-scroll-pane {
+  -vfx-clip-border-radius: 12px;
+}
+
+.inspector .vfx-scroll-pane .viewport {
+  -fx-padding: 0px 8px 0px 8px;
+}
+
+.inspector .vfx-list {
+  -vfx-cell-size: 56px;
+  -fx-padding: 0px 4px 0px 4px;
+  -vfx-spacing: 4px;
+}
+
+.inspector .vfx-list .cell-base {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+  -fx-background-radius: 6px;
+  -fx-border-color: transparent transparent transparent -md-sys-color-tertiary;
+  -fx-border-radius: 0px 6px 6px 0px;
+  -fx-border-width: 1px 1px 1px 3px;
+}
+
+.inspector .vfx-list .cell-base > .label.type {
+  -fx-font-family: 'Montserrat Medium';
+  -fx-font-size: 14px;
+  -fx-padding: 4px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.inspector .vfx-list .cell-base > .label.classes {
+  -fx-font-family: 'Montserrat Medium';
+  -fx-font-size: 12px;
+  -fx-padding: 4px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.inspector .vfx-list .cell-base:hover,
+.inspector .vfx-list .cell-base:selected {
+  -fx-border-color: -md-sys-color-tertiary;
+}
+
+.inspector .vfx-list .cell-base > Path {
+  -fx-stroke: -md-sys-color-tertiary;
+  -fx-stroke-width: 3.0;
+  -fx-stroke-line-cap: ROUND;
+  -fx-stroke-line-join: ROUND;
+}
+
+/* Actions */
+.inspector .actions {
+  -fx-background-color: -md-sys-color-surface-container-low;
+  -fx-background-radius: 12px;
+  -fx-padding: 8px;
+  -fx-spacing: 12px;
+}
+
+.inspector .actions .mfx-icon-button {
+  -fx-background-radius: 12px;
+  -mfx-size: 32px;
+}
+
+.inspector .actions .mfx-icon-button:selected {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+}
+
+.inspector .actions .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.inspector .actions .mfx-icon-button .mfx-font-icon {
+  -mfx-size: 20px;
+}
+
+.inspector .actions .ids .mfx-font-icon {
+  -mfx-description: 'fas-info';
+}
+
+.inspector .actions .details .mfx-font-icon {
+  -mfx-description: 'fas-list';
+}

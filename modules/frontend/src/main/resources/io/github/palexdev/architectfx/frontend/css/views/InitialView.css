@@ -1,0 +1,107 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Sidebar */
+.initial-view > .sidebar {
+  -fx-padding: 0px 24px 0px 0px;
+  -fx-spacing: 12px;
+}
+
+/* Buttons */
+.initial-view > .sidebar .mfx-button {
+  -fx-alignment: CENTER_LEFT;
+  -fx-font-family: 'Montserrat Medium';
+  -fx-graphic-text-gap: 4px;
+  -fx-min-width: 200px;
+  -fx-padding: 8px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.initial-view > .sidebar .mfx-button:selected {
+  -fx-background-color: -md-sys-color-primary;
+  -fx-background-radius: 12px;
+  -fx-text-fill: -md-sys-color-on-primary;
+}
+
+.initial-view > .sidebar .mfx-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.initial-view > .sidebar .mfx-button .mfx-icon-button {
+  -fx-background-color: transparent;
+  -mfx-size: 24px;
+}
+
+.initial-view > .sidebar .mfx-button .mfx-icon-button:selected {
+  -fx-background-color: -md-sys-color-primary;
+  -fx-border-color: transparent;
+}
+
+.initial-view > .sidebar .mfx-button .mfx-icon-button .mfx-font-icon {
+  -mfx-color: -md-sys-color-outline;
+  -mfx-size: 24px;
+}
+
+.initial-view > .sidebar .mfx-button .mfx-icon-button:selected .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-primary;
+}
+
+.initial-view > .sidebar .projects .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-folder';
+}
+
+.initial-view > .sidebar .dependencies .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-puzzle-piece';
+}
+
+.initial-view > .sidebar .settings .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-gear';
+}
+
+/* Actions */
+.initial-view > .sidebar .actions {
+  -fx-padding: 4px;
+  -fx-spacing: 18px;
+}
+
+.initial-view > .sidebar .actions .mfx-icon-button {
+  -fx-background-radius: 12px;
+}
+
+.initial-view > .sidebar .actions .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.initial-view > .sidebar .actions .git .mfx-font-icon {
+  -mfx-description: 'fab-github';
+}
+
+.initial-view > .sidebar .actions .theme .mfx-font-icon {
+  -mfx-description: 'fas-sun';
+}
+
+.root:dark .initial-view > .sidebar .actions .theme .mfx-font-icon {
+  -mfx-description: 'fas-moon';
+}
+
+/* Content */
+.initial-view > .content {
+  -fx-background-color: -on-surface;
+  -fx-background-radius: 12px;
+  -fx-padding: 16px;
+}

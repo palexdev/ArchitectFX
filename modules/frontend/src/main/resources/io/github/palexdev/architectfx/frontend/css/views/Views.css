@@ -16,5 +16,6 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "InitView.css";
+@import "InitialView.css";
+@import "ProjectsView.css";
 @import "LivePreview.css";

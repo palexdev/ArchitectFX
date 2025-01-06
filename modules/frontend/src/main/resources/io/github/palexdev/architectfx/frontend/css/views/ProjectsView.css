@@ -1,0 +1,98 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Filter */
+.projects-view > .filter {
+  -fx-background-color: -surface;
+  -fx-background-radius: 12px;
+  -fx-padding: 8px 12px 8px 12px;
+  -fx-spacing: 12px;
+}
+
+.projects-view > .filter .field-box {
+  -fx-border-color: -md-sys-color-outline-variant;
+  -fx-border-radius: 12px;
+  -fx-padding: 8px;
+  -fx-spacing: 8px;
+}
+
+.projects-view > .filter .field-box .mfx-font-icon.leading {
+  -mfx-color: -md-sys-color-on-surface;
+  -mfx-description: 'fas-magnifying-glass';
+}
+
+.projects-view > .filter .text-field {
+  -fx-font-family: 'Montserrat Medium';
+  -fx-font-size: 14px;
+  -fx-prompt-text-fill: -md-sys-color-on-surface;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.projects-view > .filter .text-field:hover {
+  -fx-cursor: TEXT;
+}
+
+.projects-view > .filter .mfx-segmented-button {
+  -mfx-density: 2;
+}
+
+.projects-view > .filter .mfx-segmented-button > .segment {
+  -fx-font-family: 'Montserrat SemiBold';
+  -fx-font-size: 12px;
+  -fx-text-fill: -md-sys-color-on-surface-variant;
+}
+
+.projects-view > .filter .sort-mode {
+  -fx-border-radius: 12px;
+  -mfx-size: 24px;
+}
+
+.projects-view > .filter .sort-mode > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.projects-view > .filter .sort-mode .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-surface;
+  -mfx-size: 16px;
+}
+
+.projects-view > .filter .sort-mode:ascending .mfx-font-icon {
+  -mfx-description: 'fas-arrow-down-short-wide';
+}
+
+.projects-view > .filter .sort-mode:descending .mfx-font-icon {
+  -mfx-description: 'fas-arrow-up-wide-short';
+}
+
+/* Grid */
+.projects-view .vfx-grid {
+  -vfx-alignment: TOP_CENTER;
+  -vfx-cell-size: "250 240";
+  -vfx-v-spacing: 24px;
+  -vfx-h-spacing: 24px;
+}
+
+/* Import Button */
+.projects-view > .mfx-button.fab.import {
+  -fx-font-family: 'Montserrat Medium';
+  -fx-font-size: 14px;
+}
+
+.projects-view > .mfx-button.fab.import .mfx-font-icon{
+  -mfx-description: 'fas-plus';
+}

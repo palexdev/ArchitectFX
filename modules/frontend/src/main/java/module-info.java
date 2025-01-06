@@ -11,7 +11,6 @@ module afx.frontend {
     requires javafx.swing;
     requires fr.brouillard.oss.cssfx;
     requires mfx.components;
-    requires nfx.core;
     requires VirtualizedFX;
     requires rectcut;
 
@@ -25,7 +24,6 @@ module afx.frontend {
 
     // Misc
     requires directory.watcher;
-    requires pragmatica.core;
     requires ImCache;
 
     //***** Exports *****//
@@ -34,21 +32,13 @@ module afx.frontend {
 
     // Components Package
     exports io.github.palexdev.architectfx.frontend.components;
-    exports io.github.palexdev.architectfx.frontend.components.base;
     exports io.github.palexdev.architectfx.frontend.components.dialogs;
     exports io.github.palexdev.architectfx.frontend.components.dialogs.base;
     exports io.github.palexdev.architectfx.frontend.components.layout;
     exports io.github.palexdev.architectfx.frontend.components.selection;
-    exports io.github.palexdev.architectfx.frontend.components.vfx;
-    exports io.github.palexdev.architectfx.frontend.components.vfx.cells;
-    exports io.github.palexdev.architectfx.frontend.components.vfx.columns;
-    exports io.github.palexdev.architectfx.frontend.components.vfx.rows;
 
     // DI Package
     exports io.github.palexdev.architectfx.frontend.di;
-
-    // Enums package
-    exports io.github.palexdev.architectfx.frontend.enums;
 
     // Events Package
     exports io.github.palexdev.architectfx.frontend.events;
@@ -68,4 +58,5 @@ module afx.frontend {
 
     // Views Package
     exports io.github.palexdev.architectfx.frontend.views;
+    exports io.github.palexdev.architectfx.frontend.views.content;
 }

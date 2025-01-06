@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -27,22 +27,26 @@
   -fx-spacing: 24px;
 }
 
-.progress-dialog .box > .label {
+.progress-dialog .box > .container > .label {
   -fx-font-family: "Montserrat Medium";
   -fx-font-size: 14px;
   -fx-text-fill: -md-sys-color-on-surface-variant;
 }
 
-.progress-dialog .box > .mfx-button.warning {
+.progress-dialog .box > .container > .mfx-button.warn {
   -fx-border-color: -md-sys-color-warn;
   -fx-font-family: "Montserrat Medium";
   -fx-text-fill: -md-sys-color-on-surface-variant;
 }
 
-.progress-dialog .box > .mfx-button.warning > .surface > .bg {
+.progress-dialog .box > .container > .mfx-button.warn > .surface > .bg {
   -fx-background-color: -md-sys-color-warn;
 }
 
-.progress-dialog .box > .mfx-button.warning > .surface > .mfx-ripple-generator {
-  -mfx-ripple-color: derive(-md-sys-color-warn, 16%);
+.progress-dialog .box > .container > .mfx-button.warn > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: rgb(139, 80, 0, 0.16);
+}
+
+.root:dark .progress-dialog .box > .container > .mfx-button.warn > .surface > .mfx-ripple-generator {
+  -mfx-ripple-color: rgba(255, 202, 151, 0.16);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -16,16 +16,20 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.events;
+.live-preview > .bounds-overlay {
+  -fx-background-color: rgba(37, 37, 37, 0.5);
+  -fx-background-insets: 2px;
+  -fx-background-radius: 3px;
+  -fx-border-color: rgb(87, 87, 87);
+  -fx-border-insets: 1px;
+  -fx-border-radius: 3px;
+  -fx-border-style: segments(5) line-cap round;
+}
 
-import io.github.palexdev.mfxcore.events.Event;
-
-public abstract class AppEvent extends Event {
-
-    //================================================================================
-    // Impl
-    //================================================================================
-    public static class AppCloseEvent extends AppEvent {}
-
-    public static class AppReadyEvent extends AppEvent {}
+.live-preview > .bounds-overlay > .label {
+  -fx-alignment: CENTER;
+  -fx-font-family: 'Montserrat SemiBold';
+  -fx-font-size: 14px;
+  -fx-font-style: italic;
+  -fx-text-fill: white;
 }

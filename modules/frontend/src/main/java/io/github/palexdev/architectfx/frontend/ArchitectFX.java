@@ -19,17 +19,21 @@
 package io.github.palexdev.architectfx.frontend;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ConcurrentModificationException;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.utils.OSUtils;
-import io.github.palexdev.architectfx.backend.utils.OSUtils.OSType;
+import io.github.palexdev.architectfx.frontend.components.layout.RootPane;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.SettingsEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
+import io.github.palexdev.architectfx.frontend.utils.FileUtils;
 import io.github.palexdev.architectfx.frontend.views.ViewManager;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.settings.Settings;
@@ -38,41 +42,32 @@ import io.inverno.core.annotation.Wrapper;
 import io.inverno.core.v1.StandardBanner;
 import javafx.application.Application;
 import javafx.application.HostServices;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.scene.Node;
-import javafx.scene.Scene;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.pragmatica.lang.Result;
-import org.pragmatica.lang.utils.Causes;
 import org.tinylog.Logger;
-import xss.it.nfx.NfxWindow;
 
 public class ArchitectFX extends Application {
     //================================================================================
-    // Properties
+    // Static Properties
     //================================================================================
     public static final String APP_TITLE = "ArchitectFX";
     public static final String GIT = "https://github.com/palexdev/ArchitectFX";
     public static final StringProperty windowTitle = new SimpleStringProperty(APP_TITLE);
-
-    // Module
-    private Frontend frontend;
 
     // Extra beans
     private static ArchitectFX app;
     private static Stage stage;
     private static Parameters parameters;
     private static HostServices hostServices;
-    private static StackPane root;
+    private static RootPane root;
 
     // Dependencies
-    private static ViewManager viewManager;
     private static IEventBus events;
-    private static AppSettings settings;
+    private static ViewManager viewManager;
     private static ThemeEngine themeEngine;
+    private static AppSettings settings;
 
     //================================================================================
     // Startup/Shutdown
@@ -83,54 +78,41 @@ public class ArchitectFX extends Application {
 
     @Override
     public void start(Stage stage) {
-        // Init stage
-        stage = getMainWindow(stage);
+        Thread.currentThread().setUncaughtExceptionHandler((t, e) -> {
+            if (e instanceof ConcurrentModificationException)
+                // Shut the fuck up
+                return;
+            e.printStackTrace(); // TODO use logging?
+        });
 
         // Init extra beans
         ArchitectFX.app = this;
         ArchitectFX.stage = stage;
         ArchitectFX.parameters = getParameters();
         ArchitectFX.hostServices = getHostServices();
-        ArchitectFX.root = new StackPane() {
-
-            @Override
-            protected double computeMinWidth(double height) {
-                Node content = getContent();
-                return content != null ? content.minWidth(height) + 16.0 : 0.0;
-            }
-
-            @Override
-            protected double computeMinHeight(double width) {
-                Node content = getContent();
-                return content != null ? content.minHeight(width) + 40.0 : 0.0;
-            }
-
-            Node getContent() {
-                return getChildren().isEmpty() ? null : getChildren().getFirst();
-            }
-        };
+        ArchitectFX.root = new RootPane(stage);
 
         // Bootstrap
-        bootstrap().accept(
-            fail -> Logger.error(fail.message()),
-            success -> {
-                frontend = success;
+        bootstrap().ifPresentOrElse(
+            f -> {
+                Logger.info("Bootstrap completed successfully...");
                 events.publish(new AppEvent.AppReadyEvent()); // Start app, show main window
-                Logger.info("Bootstrap completed successfully!");
+            },
+            () -> {
+                Logger.error("Bootstrap failed, closing app!");
+                Platform.exit();
             }
         );
     }
 
     @Override
     public void stop() {
+        if (stage.getWidth() > 0.0) settings.windowWidth().set(stage.getWidth());
+        if (stage.getHeight() > 0.0) settings.windowHeight().set(stage.getHeight());
         events.publish(new AppEvent.AppCloseEvent());
-        double w = (!Double.isNaN(stage.getWidth()) ? stage.getWidth() : settings.windowWidth().defValue());
-        double h = (!Double.isNaN(stage.getHeight()) ? stage.getHeight() : settings.windowHeight().defValue());
-        settings.windowWidth().set(w);
-        settings.windowHeight().set(h);
     }
 
-    private Result<Frontend> bootstrap() {
+    private Optional<Frontend> bootstrap() {
         // First of all, start Inverno modules
         Logger.info(() -> {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -141,10 +123,10 @@ public class ArchitectFX extends Application {
 
         // Ensure supported platform
         if (!OSUtils.isSupportedPlatform()) {
-            return Result.err(Causes.cause("Unsupported OS detected %s.%nApp will shutdown!".formatted(OSUtils.os())));
+            Logger.error("Unsupported OS detected %s.%nApp will shutdown!".formatted(OSUtils.os()));
+            return Optional.empty();
         }
 
-        // TODO init theme before anything else
         themeEngine.loadTheme();
 
         // Check if settings reset has been requested via arguments
@@ -152,33 +134,32 @@ public class ArchitectFX extends Application {
         if (settings.isResetSettings()) Settings.resetAll();
         events.subscribe(SettingsEvent.ResetSettingsEvent.class, e -> Settings.reset(e.data()));
 
-        return Result.success(frontend);
+        return Optional.of(frontend);
     }
 
     //================================================================================
-    // Misc
+    // Static Methods
     //================================================================================
-    private Stage getMainWindow(Stage stage) {
-        // Special stage only for Windows
-        if (OSUtils.os() == OSType.Windows) {
-            NfxWindow window = new NfxWindow();
-            window.titleBarColorProperty().bind(
-                window.sceneProperty()
-                    .flatMap(Scene::rootProperty)
-                    .flatMap(r -> ((Region) r).backgroundProperty())
-                    .map(b -> {
-                        List<BackgroundFill> fills = Optional.ofNullable(b)
-                            .map(Background::getFills)
-                            .orElse(List.of());
-                        Color bg = fills.isEmpty() ? Color.WHITE : (Color) fills.getFirst().getFill();
-                        Logger.debug("Bg will be: {}", bg);
-                        return bg;
-                    })
+    public static Path appBaseDir() {
+        try {
+            return FileUtils.createDirectory(
+                Paths.get(System.getProperty("user.home"), ".architectfx")
             );
-            stage = window;
+        } catch (IOException ex) {
+            Logger.error("Could not get app base dir:\n{}", ex);
+            return null;
         }
-        stage.titleProperty().bind(windowTitle);
-        return stage;
+    }
+
+    public static Path appCacheDir() {
+        try {
+            Path baseDir = appBaseDir();
+            if (baseDir == null) return null;
+            return FileUtils.createDirectory(baseDir.resolve("cache"));
+        } catch (IOException ex) {
+            Logger.error("Could not get app cache dir because:\n{}", ex);
+            return null;
+        }
     }
 
     //================================================================================
@@ -190,16 +171,16 @@ public class ArchitectFX extends Application {
         private final ArchitectFX app;
 
         public App(
-            ViewManager viewManger,
             IEventBus events,
-            AppSettings settings,
-            ThemeEngine themeEngine
+            ViewManager viewManger,
+            ThemeEngine themeEngine,
+            AppSettings settings
         ) {
             app = ArchitectFX.app;
-            ArchitectFX.viewManager = viewManger;
             ArchitectFX.events = events;
-            ArchitectFX.settings = settings;
+            ArchitectFX.viewManager = viewManger;
             ArchitectFX.themeEngine = themeEngine;
+            ArchitectFX.settings = settings;
         }
 
         @Override
@@ -219,9 +200,9 @@ public class ArchitectFX extends Application {
 
     @Bean
     @Wrapper
-    public static class RootPane implements Supplier<Pane> {
+    public static class RootPaneWrap implements Supplier<RootPane> {
         @Override
-        public Pane get() {
+        public RootPane get() {
             return ArchitectFX.root;
         }
     }
@@ -243,5 +224,4 @@ public class ArchitectFX extends Application {
             return ArchitectFX.hostServices;
         }
     }
-
 }

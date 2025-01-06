@@ -66,10 +66,22 @@ public class Box extends Control implements MFXStyleable {
     // Static Methods
     //================================================================================
     public static Region separator() {
+        return separator("separator");
+    }
+
+    public static Region separator(String... styleClasses) {
         Region r = new Region();
         r.getStyleClass().add("separator");
+        r.getStyleClass().addAll(styleClasses);
         HBoxSkin.setHgrow(r, Priority.ALWAYS);
         VBoxSkin.setVgrow(r, Priority.ALWAYS);
+        return r;
+    }
+
+    public static Region separator(double size) {
+        Region r = new Region();
+        r.getStyleClass().add("separator");
+        r.setPrefSize(size, size);
         return r;
     }
 
@@ -130,6 +142,11 @@ public class Box extends Control implements MFXStyleable {
             return VBoxSkin.getMargin(child);
         }
         return HBoxSkin.getMargin(child);
+    }
+
+    public Box addStyleClass(String... classes) {
+        getStyleClass().addAll(classes);
+        return this;
     }
 
     //================================================================================

@@ -18,29 +18,40 @@
 
 package io.github.palexdev.architectfx.frontend.utils.ui;
 
-import java.util.function.BiConsumer;
+import java.awt.image.BufferedImage;
+import java.net.URI;
+import java.nio.file.Paths;
 
 import fr.brouillard.oss.cssfx.CSSFX;
+import fr.brouillard.oss.cssfx.api.URIToPathConverter;
 import io.github.palexdev.architectfx.frontend.Resources;
-import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
 import io.github.palexdev.mfxcomponents.window.MFXPlainContent;
 import io.github.palexdev.mfxcomponents.window.popups.MFXTooltip;
 import io.github.palexdev.mfxcore.base.beans.Size;
-import io.github.palexdev.mfxcore.builders.nodes.RegionBuilder;
 import io.github.palexdev.mfxcore.utils.fx.NodeUtils;
+import io.github.palexdev.mfxcore.utils.fx.SwingFXUtils;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
-import javafx.event.ActionEvent;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.SnapshotParameters;
+import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.transform.Transform;
 import javafx.stage.Screen;
 import javafx.util.Duration;
 
 public class UIUtils {
+    //================================================================================
+    // Static Properties
+    //================================================================================
+    public static final URIToPathConverter CSSFX_URI_CONVERTER = uri -> {
+        try {
+            return Paths.get(URI.create(uri));
+        } catch (Exception ignored) {}
+        return null;
+    };
 
     //================================================================================
     // Constructors
@@ -50,38 +61,6 @@ public class UIUtils {
     //================================================================================
     // Static Methods
     //================================================================================
-
-    public static MFXIconButton iconButton(
-        String styleClass,
-        BiConsumer<MFXIconButton, ActionEvent> handler,
-        String tooltip,
-        Pos tooltipPos
-    ) {
-        MFXIconButton button = RegionBuilder.region(new MFXIconButton().tonal())
-            .addStyleClasses(styleClass)
-            .getNode();
-        if (handler != null) button.setOnAction(e -> handler.accept(button, e));
-        if (tooltip != null) UIUtils.installTooltip(button, tooltip, tooltipPos);
-        return button;
-    }
-
-    public static MFXIconButton iconToggle(
-        String styleClass,
-        BiConsumer<MFXIconButton, Boolean> selectionHandler,
-        boolean selected,
-        String tooltip,
-        Pos tooltipPos
-    ) {
-        MFXIconButton toggle = iconButton(
-            styleClass,
-            (b, e) -> selectionHandler.accept(b, b.isSelected()),
-            tooltip,
-            tooltipPos
-        );
-        toggle.setSelected(selected);
-        return toggle;
-    }
-
     public static Size getWindowSize(double minW, double minH, double prefW, double prefH) {
         Size clampedMin = clampWindowSizes(Size.of(minW, minH));
         Size clampedPref = clampWindowSizes(Size.of(prefW, prefH));
@@ -125,6 +104,16 @@ public class UIUtils {
             return snapshot;
         }
         return node.snapshot(parameters, null);
+    }
+
+    public static Image transform(Image src, io.github.palexdev.imcache.transforms.Transform... transforms) {
+        if (transforms.length == 0) return src;
+
+        BufferedImage out = SwingFXUtils.fromFXImage(src, null);
+        for (io.github.palexdev.imcache.transforms.Transform transform : transforms) {
+            out = transform.transform(out);
+        }
+        return SwingFXUtils.toFXImage(out, null);
     }
 
     public static void debugTheme(Parent parent, String theme) {

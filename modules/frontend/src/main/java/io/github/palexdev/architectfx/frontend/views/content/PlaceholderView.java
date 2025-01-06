@@ -16,34 +16,46 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.events;
+package io.github.palexdev.architectfx.frontend.views.content;
 
-import io.github.palexdev.mfxcore.events.Event;
-import io.github.palexdev.mfxcore.settings.Settings;
+import io.github.palexdev.architectfx.frontend.views.View;
+import io.github.palexdev.mfxcore.events.bus.IEventBus;
+import io.github.palexdev.mfxcore.utils.fx.CSSFragment;
+import io.inverno.core.annotation.Bean;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.TextAlignment;
 
-public abstract class SettingsEvent extends Event {
+@Bean
+public class PlaceholderView extends View<Pane, Void> {
 
     //================================================================================
     // Constructors
     //================================================================================
-    public SettingsEvent() {}
-
-    public SettingsEvent(Object data) {
-        super(data);
+    public PlaceholderView(IEventBus events) {
+        super(events);
     }
 
     //================================================================================
-    // Impl
+    // Overridden Methods
     //================================================================================
-    public static class ResetSettingsEvent extends SettingsEvent {
-        public ResetSettingsEvent(Class<? extends Settings> klass) {
-            super(klass);
-        }
+    @Override
+    protected Pane build() {
+        Label label = new Label("Not implemented yet...\nStay tuned!");
+        label.getStyleClass().add("placeholder");
+        StackPane pane = new StackPane(label);
 
-        @SuppressWarnings("unchecked")
-        @Override
-        public Class<? extends Settings> data() {
-            return ((Class<? extends Settings>) super.data());
-        }
+        // Inline styles because this is temporary
+        CSSFragment.Builder.build()
+            .select("> .label")
+            .fontFamily("Montserrat Bold")
+            .style("-fx-font-style: italic")
+            .fontSize(57.0)
+            .textAlignment(TextAlignment.CENTER)
+            .textFill("-md-sys-color-on-surface")
+            .applyOn(pane);
+
+        return pane;
     }
 }

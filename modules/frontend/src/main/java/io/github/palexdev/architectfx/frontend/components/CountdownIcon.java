@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -18,68 +18,44 @@
 
 package io.github.palexdev.architectfx.frontend.components;
 
-import java.util.List;
-import java.util.function.Supplier;
 
-import io.github.palexdev.mfxcomponents.controls.base.MFXControl;
+import java.util.Optional;
+
 import io.github.palexdev.mfxcomponents.controls.base.MFXSkinBase;
-import io.github.palexdev.mfxcore.behavior.BehaviorBase;
+import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
+import io.github.palexdev.mfxcomponents.controls.progress.MFXProgressIndicator;
+import io.github.palexdev.mfxcomponents.controls.progress.ProgressDisplayMode;
+import io.github.palexdev.mfxcomponents.skins.MFXIconButtonSkin;
 import io.github.palexdev.mfxcore.observables.When;
-import io.github.palexdev.mfxcore.utils.fx.StyleUtils;
 import io.github.palexdev.mfxeffects.animations.Animations;
-import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
-import io.github.palexdev.mfxeffects.enums.Interpolators;
-import io.github.palexdev.mfxresources.fonts.MFXIconWrapper;
+import io.github.palexdev.mfxeffects.animations.Animations.KeyFrames;
+import io.github.palexdev.mfxeffects.animations.Animations.TimelineBuilder;
 import javafx.animation.Animation;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.shape.Rectangle;
+import javafx.geometry.HPos;
+import javafx.geometry.VPos;
 import javafx.util.Duration;
 
-public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavior> {
+public class CountdownIcon extends MFXIconButton {
     //================================================================================
     // Properties
     //================================================================================
-    private final ObjectProperty<Duration> countdown = new SimpleObjectProperty<>(Duration.ZERO);
-    private final ObjectProperty<CountdownStatus> status = new SimpleObjectProperty<>(CountdownStatus.STOPPED);
-    private When<?> onStatus;
-
-    //================================================================================
-    // Constructors
-    //================================================================================
-    public CountdownIcon() {
-        this(Duration.ZERO);
-    }
-
-    public CountdownIcon(double millis) {
-        this(Duration.millis(millis));
-    }
-
-    public CountdownIcon(Duration countdown) {
-        setCountdown(countdown);
-        getStyleClass().setAll(defaultStyleClasses());
-        setDefaultBehaviorProvider();
-    }
+    private final ReadOnlyBooleanWrapper playing = new ReadOnlyBooleanWrapper(false);
+    private final ObjectProperty<Duration> duration = new SimpleObjectProperty<>(Duration.ZERO);
+    private Runnable countdownAction;
 
     //================================================================================
     // Methods
     //================================================================================
-    public void start() {
-        setStatus(CountdownStatus.STARTED);
+    public void play() {
+        setPlaying(true);
     }
 
     public void stop() {
-        setStatus(CountdownStatus.STOPPED);
-    }
-
-    public void setOnStatus(CountdownStatus status, Runnable action) {
-        if (onStatus != null)
-            onStatus.dispose();
-        onStatus = When.onInvalidated(statusProperty())
-            .condition(s -> s == status)
-            .then(s -> action.run())
-            .listen();
+        setPlaying(false);
     }
 
     //================================================================================
@@ -90,137 +66,104 @@ public class CountdownIcon extends MFXControl<CountdownIcon.CountdownIconBehavio
         return new CountdownIconSkin(this);
     }
 
-    @Override
-    public List<String> defaultStyleClasses() {
-        return List.of("countdown-icon");
-    }
-
-    @Override
-    public Supplier<CountdownIconBehavior> defaultBehaviorProvider() {
-        return () -> new CountdownIconBehavior(this);
-    }
-
     //================================================================================
     // Getters/Setters
     //================================================================================
-    public Duration getCountdown() {
-        return countdown.get();
+    public boolean isPlaying() {
+        return playing.get();
     }
 
-    public ObjectProperty<Duration> countdownProperty() {
-        return countdown;
+    public ReadOnlyBooleanProperty playingProperty() {
+        return playing.getReadOnlyProperty();
     }
 
-    public void setCountdown(Duration countdown) {
-        this.countdown.set(countdown);
+    protected void setPlaying(boolean playing) {
+        this.playing.set(playing);
     }
 
-    public CountdownStatus getStatus() {
-        return status.get();
+    public Duration getDuration() {
+        return duration.get();
     }
 
-    public ObjectProperty<CountdownStatus> statusProperty() {
-        return status;
+    public ObjectProperty<Duration> durationProperty() {
+        return duration;
     }
 
-    public void setStatus(CountdownStatus status) {
-        this.status.set(status);
+    public void setDuration(Duration duration) {
+        this.duration.set(duration);
+    }
+
+    public void setDuration(long millis) {
+        this.duration.set(Duration.millis(millis));
+    }
+
+    public Runnable getCountdownAction() {
+        return countdownAction;
+    }
+
+    public void setCountdownAction(Runnable countdownAction) {
+        this.countdownAction = countdownAction;
     }
 
     //================================================================================
-    // Internal Classes
+    // Inner Classes
     //================================================================================
-    public static class CountdownIconBehavior extends BehaviorBase<CountdownIcon> {
-        public CountdownIconBehavior(CountdownIcon icon) {
-            super(icon);
-        }
-    }
+    public static class CountdownIconSkin extends MFXIconButtonSkin {
+        private final MFXProgressIndicator indicator;
+        private Animation countdownAnimation;
 
-    public static class CountdownIconSkin extends MFXSkinBase<CountdownIcon, CountdownIconBehavior> {
-        private final Rectangle bg;
-        private final MFXIconWrapper iconWrapper;
+        public CountdownIconSkin(CountdownIcon button) {
+            super(button);
 
-        private Animation bgAnimation;
-
-        public CountdownIconSkin(CountdownIcon icon) {
-            super(icon);
-
-            bg = new Rectangle();
-            bg.setManaged(false);
-            bg.getStyleClass().add("bg");
-
-            Rectangle clip = new Rectangle();
-            clip.widthProperty().bind(icon.widthProperty());
-            clip.heightProperty().bind(icon.heightProperty());
-            bg.setClip(clip);
+            indicator = new MFXProgressIndicator(0.0);
+            indicator.setDisplayMode(ProgressDisplayMode.CIRCULAR);
+            indicator.setAnimated(false);
+            indicator.setMouseTransparent(true);
+            indicator.setVisible(false);
+            getChildren().add(indicator);
 
             listeners(
-                When.onInvalidated(icon.countdownProperty())
-                    .then(c -> updateAnimation())
-                    .executeNow(),
-                When.onInvalidated(icon.statusProperty())
-                    .then(this::playStop),
-                When.onInvalidated(icon.backgroundProperty())
-                    .then(b -> {
-                        CornerRadii radius = StyleUtils.parseCornerRadius(icon);
-                        clip.setArcWidth(radius.getTopLeftHorizontalRadius() * 2);
-                        clip.setArcHeight(radius.getTopLeftHorizontalRadius() * 2);
-                    })
-                    .executeNow()
+                When.onInvalidated(button.playingProperty())
+                    .then(this::countdown)
             );
-
-            iconWrapper = new MFXIconWrapper();
-
-            getChildren().addAll(bg, iconWrapper);
         }
 
-        protected void updateAnimation() {
-            CountdownIcon icon = getSkinnable();
-            if (Animations.isPlaying(bgAnimation))
-                bgAnimation.stop();
-
-            bgAnimation = ConsumerTransition.of(f -> {
-                    double newW = icon.getWidth() - (icon.getWidth() * f);
-                    bg.setWidth(newW);
-                }, icon.getCountdown(), Interpolators.LINEAR)
-                .setOnFinishedFluent(e -> icon.setStatus(CountdownStatus.FINISHED));
-            playStop(icon.getStatus());
-        }
-
-        protected void playStop(CountdownStatus status) {
-            if (Animations.isPlaying(bgAnimation) || status == CountdownStatus.STOPPED) {
-                bgAnimation.stop();
+        protected void countdown(boolean play) {
+            if (Animations.isPlaying(countdownAnimation))
+                countdownAnimation.stop();
+            if (!play) {
+                indicator.setVisible(false);
                 return;
             }
-            bgAnimation.playFromStart();
-        }
 
-        @Override
-        public double computeMaxWidth(double height, double topInset, double rightInset, double bottomInset, double leftInset) {
-            return getSkinnable().prefWidth(height);
-        }
+            CountdownIcon button = (CountdownIcon) getSkinnable();
+            Duration duration = button.getDuration();
+            if (Duration.ZERO.equals(duration)) {
+                Optional.ofNullable(button.getCountdownAction()).ifPresent(Runnable::run);
+                return;
+            }
 
-        @Override
-        public double computeMaxHeight(double width, double topInset, double rightInset, double bottomInset, double leftInset) {
-            return getSkinnable().prefHeight(width);
+            countdownAnimation = TimelineBuilder.build()
+                .add(KeyFrames.of(Duration.ZERO, indicator.progressProperty(), 1.0))
+                .add(KeyFrames.of(duration, indicator.progressProperty(), 0.0))
+                .setOnFinished(e -> {
+                    indicator.setVisible(false);
+                    Optional.ofNullable(button.getCountdownAction()).ifPresent(Runnable::run);
+                })
+                .getAnimation();
+            indicator.setVisible(true);
+            countdownAnimation.play();
         }
 
         @Override
         protected void layoutChildren(double x, double y, double w, double h) {
-            double hInsets = snappedLeftInset() + snappedRightInset();
-            double vInsets = snappedTopInset() + snappedBottomInset();
-            bg.setHeight(h + vInsets);
-            bg.setWidth(w + hInsets);
-            bg.relocate(0, 0);
-
-            iconWrapper.resizeRelocate(0, 0, w + hInsets, h + vInsets);
-
+            super.layoutChildren(x, y, w, h);
+            indicator.resize(w + 4, h + 4);
+            positionInArea(
+                indicator,
+                x, y, w, h, 0,
+                HPos.CENTER, VPos.CENTER
+            );
         }
-    }
-
-    public enum CountdownStatus {
-        STOPPED,
-        STARTED,
-        FINISHED
     }
 }

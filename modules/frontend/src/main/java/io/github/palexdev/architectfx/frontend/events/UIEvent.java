@@ -18,8 +18,13 @@
 
 package io.github.palexdev.architectfx.frontend.events;
 
+import java.util.function.BiFunction;
+
 import io.github.palexdev.architectfx.frontend.views.View;
 import io.github.palexdev.mfxcore.events.Event;
+import javafx.animation.Animation;
+import javafx.scene.Node;
+import javafx.scene.layout.Pane;
 
 public abstract class UIEvent extends Event {
 
@@ -36,15 +41,41 @@ public abstract class UIEvent extends Event {
     // Impl
     //================================================================================
 
-    @SuppressWarnings("unchecked")
     public static class ViewSwitchEvent extends UIEvent {
-        public ViewSwitchEvent(Class<? extends View<?>> view) {
-            super(view);
+        private final Pane parent;
+        private final Class<? extends View<?, ?>> view;
+        private final BiFunction<Node, Node, Animation> animation;
+
+        public ViewSwitchEvent(Class<? extends View<?, ?>> view) {
+            this(null, view, null);
+        }
+
+        public ViewSwitchEvent(Pane parent, Class<? extends View<?, ?>> view) {
+            this(parent, view, null);
+        }
+
+        public ViewSwitchEvent(Pane parent, Class<? extends View<?, ?>> view, BiFunction<Node, Node, Animation> animation) {
+            super(new Object[] {parent, view, animation});
+            this.parent = parent;
+            this.view = view;
+            this.animation = animation;
+        }
+
+        public Pane parent() {
+            return parent;
+        }
+
+        public Class<? extends View<?, ?>> view() {
+            return view;
+        }
+
+        public BiFunction<Node, Node, Animation> animation() {
+            return animation;
         }
 
         @Override
-        public Class<? extends View<?>> data() {
-            return (Class<? extends View<?>>) super.data();
+        public Object[] data() {
+            return (Object[]) super.data();
         }
     }
 

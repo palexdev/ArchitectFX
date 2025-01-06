@@ -18,6 +18,7 @@
 
 package io.github.palexdev.architectfx.frontend.theming;
 
+
 public enum ThemeMode {
     LIGHT,
     DARK

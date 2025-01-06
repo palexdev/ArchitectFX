@@ -1,0 +1,66 @@
+/*
+ * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.project-card-overlay {
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 12px;
+  -fx-border-width: 0.05em;
+  -fx-padding: 8px;
+}
+
+.project-card-overlay > .mfx-icon-button {
+  -fx-background-radius: 12px;
+  -mfx-size: 24px;
+}
+
+.project-card-overlay > .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.project-card-overlay > .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-plus';
+  -mfx-size: 16px;
+}
+
+/* Delete */
+.project-card-overlay > .mfx-icon-button.delete {
+  -fx-background-color: -md-sys-color-err-container;
+}
+
+.root:dark .project-card-overlay > .mfx-icon-button.delete {
+  -fx-background-color: -md-sys-color-err;
+}
+
+.project-card-overlay > .mfx-icon-button.delete > .surface > .bg {
+  -fx-background-color: -md-sys-color-on-error;
+}
+
+.project-card-overlay > .mfx-icon-button.delete .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-error;
+  -mfx-description: 'fas-trash';
+}
+
+/* Preview */
+.project-card-overlay > .mfx-icon-button.preview .mfx-font-icon {
+  -mfx-description: 'fas-eye';
+}
+
+/* Show in... */
+.project-card-overlay > .mfx-icon-button.show .mfx-font-icon {
+  -mfx-description: 'fas-folder';
+}

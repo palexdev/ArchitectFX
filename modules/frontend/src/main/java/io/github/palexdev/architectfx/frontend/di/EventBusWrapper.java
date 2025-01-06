@@ -39,3 +39,4 @@ public class EventBusWrapper implements Supplier<IEventBus> {
         return events;
     }
 }
+

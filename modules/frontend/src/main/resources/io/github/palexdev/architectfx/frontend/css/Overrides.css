@@ -16,28 +16,10 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-.root .mfx-button.outlined,
-.root .mfx-icon-button.outlined,
-.root .mfx-icon-button.filled-tonal {
-  -fx-background-radius: 12px;
-  -fx-border-radius: 12px;
-}
-
-.root .mfx-icon-button.outlined:disabled {
-  -fx-opacity: 38%;
-}
-
-.root .mfx-button.outlined > .surface > .bg,
-.root .mfx-icon-button.outlined > .surface > .bg,
-.root .mfx-icon-button.filled-tonal > .surface > .bg {
-  -fx-background-radius: 12px;
-  -fx-border-radius: 12px;
-}
-
 .root .mfx-tooltip .content > .plain {
   -fx-background-radius: 6px;
 }
 
 .root .mfx-tooltip .content > .plain > .label {
-  -fx-font-family: "Montserrat SemiBold";
+  -fx-font-family: 'Montserrat SemiBold';
 }

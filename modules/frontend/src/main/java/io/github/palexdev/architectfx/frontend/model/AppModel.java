@@ -18,191 +18,149 @@
 
 package io.github.palexdev.architectfx.frontend.model;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.Comparator;
 
-import fr.brouillard.oss.cssfx.CSSFX;
-import io.github.palexdev.architectfx.backend.loaders.UILoader;
-import io.github.palexdev.architectfx.backend.loaders.jui.JUIFXLoader;
-import io.github.palexdev.architectfx.backend.utils.Async;
-import io.github.palexdev.architectfx.backend.utils.Progress;
-import io.github.palexdev.architectfx.frontend.components.dialogs.ProgressDialog;
-import io.github.palexdev.architectfx.frontend.components.dialogs.base.DialogsService;
-import io.github.palexdev.architectfx.frontend.enums.Tool;
-import io.github.palexdev.architectfx.frontend.events.AppEvent.AppCloseEvent;
-import io.github.palexdev.architectfx.frontend.events.DialogEvent;
-import io.github.palexdev.architectfx.frontend.events.UIEvent;
+import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
-import io.github.palexdev.architectfx.frontend.utils.ProgressProperty;
-import io.github.palexdev.architectfx.frontend.views.LivePreview;
-import io.github.palexdev.mfxcomponents.window.popups.PopupWindowState;
+import io.github.palexdev.architectfx.frontend.utils.ui.RefineList;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
-import io.github.palexdev.mfxcore.observables.When;
+import io.github.palexdev.mfxcore.utils.StringUtils;
 import io.inverno.core.annotation.Bean;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
+import io.inverno.core.annotation.BeanSocket;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.scene.Node;
-import org.tinylog.Logger;
 
 @Bean
 public class AppModel {
     //================================================================================
     // Properties
     //================================================================================
-    private final ObservableList<Recent> recents;
-    private final AppSettings settings;
+    // Dependencies
     private final IEventBus events;
+    private final AppSettings settings;
 
-    private Tool lastTool;
-    private JUIFXLoader lastLoader;
-    private CompletableFuture<?> loadTask;
-    private final ProgressProperty progress = new ProgressProperty() {
+    // State
+    private final RefineList<Project> projects;
+    private final StringProperty filter = new SimpleStringProperty() {
         @Override
         protected void invalidated() {
-            if (get() == Progress.CANCELED && loadTask != null) {
-                loadTask.cancel(true);
-                Logger.debug("Load task has been canceled");
-                loadTask = null;
-            }
+            filterProjects();
         }
     };
-    private final ReadOnlyObjectWrapper<UILoader.Loaded<Node>> loaderResult = new ReadOnlyObjectWrapper<>() {
+    private final ObjectProperty<Project.SortBy> projectsSortBy = new SimpleObjectProperty<>() {
         @Override
         protected void invalidated() {
-            UILoader.Loaded<Node> result = get();
-            if (result != null) {
-                // FIXME I don't remember why, probably to supports live css changes, needs testing (try-catch error!)
-                CSSFX.onlyFor(result.root())
-                    .addConverter(uri -> {
-                        try {
-                            return Paths.get(URI.create(uri));
-                        } catch (Exception ignored) {}
-                        return null;
-                    })
-                    .start();
-            }
+            sortProjects();
+        }
+    };
+    private final ObjectProperty<Project.SortMode> projectsSortMode = new SimpleObjectProperty<>() {
+        @Override
+        protected void invalidated() {
+            sortProjects();
         }
     };
 
     //================================================================================
     // Constructors
     //================================================================================
-    public AppModel(AppSettings settings, IEventBus events) {
-        this.settings = settings;
+    public AppModel(IEventBus events, AppSettings settings) {
         this.events = events;
-        this.recents = FXCollections.observableArrayList(settings.loadRecents());
-        events.subscribe(AppCloseEvent.class, e -> settings.saveRecents(recents));
+        this.settings = settings;
+
+        /* Projects */
+        // TODO convert this the same way as dependencies
+        this.projects = new RefineList<>(
+            FXCollections.observableArrayList(settings.loadProjects())
+        );
+        Project.SortMode mode;
+        Project.SortBy sortBy;
+        try {
+            mode = Project.SortMode.valueOf(settings.getProjectsSortMode().get());
+            sortBy = Project.SortBy.valueOf(settings.getProjectsSort().get());
+        } catch (Exception ex) {
+            mode = Project.SortMode.valueOf(settings.getProjectsSortMode().defValue());
+            sortBy = Project.SortBy.valueOf(settings.getProjectsSort().defValue());
+        }
+        setProjectsSortMode(mode);
+        setProjectsSortBy(sortBy);
+
+        /* Events Handling */
+        events.subscribe(AppEvent.AppCloseEvent.class, e -> {
+            settings.saveProjects(projects.getSrc());
+            settings.getProjectsSortMode().set(getProjectsSortMode().name());
+            settings.getProjectsSort().set(getProjectsSortBy().name());
+        });
     }
 
     //================================================================================
     // Methods
     //================================================================================
-    public void run(Tool tool, URI uri) {
-        // Load document async
-        loadTask = load(tool, uri).thenRun(() -> {
-            // Save tool for next session
-            lastTool = tool;
-            settings.lastTool().set(tool.name());
-
-            // We have to work with lists for simplicity, but we need to make sure that there are no duplicate files!
-            Path toPath = Path.of(uri);
-            Recent recent = new Recent(toPath);
-            Set<Recent> tmp = new HashSet<>(recents);
-            if (tmp.add(recent)) {
-                Platform.runLater(() -> {
-                    recents.add(recent);
-                    FXCollections.sort(recents);
-                });
-            }
-
-            settings.lastDir().set(toPath.getParent().toString());
-        }).exceptionally(ex -> {
-            setProgress(Progress.CANCELED);
-            Logger.error(ex.getMessage());
-            setLoaderResult(null);
-            return null;
-        });
+    protected void filterProjects() {
+        String filter = getFilter();
+        if (filter == null || filter.isEmpty()) {
+            projects.setPredicate(null);
+            return;
+        }
+        projects.setPredicate(p -> StringUtils.containsIgnoreCase(p.getName(), filter));
     }
 
-    protected CompletableFuture<Void> load(Tool tool, URI uri) {
-        // Init loader, show dialog
-        lastLoader = tool.loader();
-        lastLoader.config().setOnProgress(this::setProgress);
-        progress.reset(); // Needed otherwise subsequent calls will not make the dialog appear
-        events.publish(new DialogEvent.ShowProgress(() -> new DialogsService.DialogConfig<ProgressDialog>()
-            .implicitOwner()
-            .setScrimOwner(true)
-            .extraConfig(d -> {
-                d.progressProperty().bind(progress);
-                // Switch view once closed for better transition
-                When.onInvalidated(d.stateProperty())
-                    .condition(PopupWindowState::isClosing)
-                    .then(s -> {
-                        if (getProgress() != Progress.CANCELED)
-                            Platform.runLater(
-                                () -> events.publish(new UIEvent.ViewSwitchEvent(LivePreview.class))
-                            );
-                    })
-                    .oneShot()
-                    .listen();
-            })
-        ));
-
-        return Async.run(() -> {
-            try {
-                UILoader.Loaded<Node> loaded = lastLoader.load(Path.of(uri).toFile());
-                setLoaderResult(loaded);
-            } catch (IOException ex) {
-                throw new CompletionException(ex);
-            }
-        });
-    }
-
-    protected void dispose() {
-        if (lastTool != null) lastTool.dispose();
+    protected void sortProjects() {
+        Project.SortBy sortBy = getProjectsSortBy();
+        if (sortBy == null) {
+            projects.setComparator(null);
+            return;
+        }
+        Project.SortMode mode = getProjectsSortMode();
+        Comparator<Project> comparator = (mode == Project.SortMode.ASCENDING) ?
+            sortBy.getComparator() :
+            sortBy.getComparator().reversed();
+        projects.setComparator(comparator);
     }
 
     //================================================================================
     // Getters/Setters
     //================================================================================
-    public ObservableList<Recent> recents() {
-        return recents;
+    public RefineList<Project> getProjects() {
+        return projects;
     }
 
-    public Tool getLastTool() {
-        return lastTool;
+    public String getFilter() {
+        return filter.get();
     }
 
-    public Progress getProgress() {
-        return progress.get();
+    public StringProperty filterProperty() {
+        return filter;
     }
 
-    public ReadOnlyObjectProperty<Progress> progressProperty() {
-        return progress.getReadOnlyProperty();
+    public void setFilter(String filter) {
+        this.filter.set(filter);
     }
 
-    protected void setProgress(Progress progress) {
-        this.progress.set(progress);
+    public Project.SortBy getProjectsSortBy() {
+        return projectsSortBy.get();
     }
 
-    public UILoader.Loaded<Node> getLoaderResult() {
-        return loaderResult.get();
+    public ObjectProperty<Project.SortBy> projectsSortByProperty() {
+        return projectsSortBy;
     }
 
-    public ReadOnlyObjectProperty<UILoader.Loaded<Node>> loaderResultProperty() {
-        return loaderResult.getReadOnlyProperty();
+    public void setProjectsSortBy(Project.SortBy projectsSortBy) {
+        this.projectsSortBy.set(projectsSortBy);
     }
 
-    protected void setLoaderResult(UILoader.Loaded<Node> loaderResult) {
-        this.loaderResult.set(loaderResult);
+    public Project.SortMode getProjectsSortMode() {
+        return projectsSortMode.get();
+    }
+
+    public ObjectProperty<Project.SortMode> projectsSortModeProperty() {
+        return projectsSortMode;
+    }
+
+    @BeanSocket(enabled = false)
+    public void setProjectsSortMode(Project.SortMode projectsSortMode) {
+        this.projectsSortMode.set(projectsSortMode);
     }
 }

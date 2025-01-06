@@ -18,16 +18,19 @@
 
 package io.github.palexdev.architectfx.frontend.views;
 
+import java.util.function.Supplier;
+
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 
-public abstract class View<P extends Pane> {
+public abstract class View<P extends Pane, B> {
     //================================================================================
     // Properties
     //================================================================================
     protected P root;
+    protected B behavior;
     protected final IEventBus events;
 
     //================================================================================
@@ -35,6 +38,7 @@ public abstract class View<P extends Pane> {
     //================================================================================
     protected View(IEventBus events) {
         this.events = events;
+        this.behavior = behaviorSupplier().get();
         events.subscribe(AppEvent.AppReadyEvent.class, e -> onAppReady());
     }
 
@@ -46,6 +50,10 @@ public abstract class View<P extends Pane> {
     //================================================================================
     // Methods
     //================================================================================
+    public String title() {
+        return "";
+    }
+
     public Region toRegion() {
         if (root == null) {
             root = build();
@@ -53,11 +61,9 @@ public abstract class View<P extends Pane> {
         return root;
     }
 
-    public String title() {
-        return "";
+    protected Supplier<B> behaviorSupplier() {
+        return () -> null;
     }
 
     protected void onAppReady() {}
-
-    protected void onSwitching() {}
 }

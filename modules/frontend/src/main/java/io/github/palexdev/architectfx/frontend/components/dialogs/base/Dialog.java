@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -20,6 +20,7 @@ package io.github.palexdev.architectfx.frontend.components.dialogs.base;
 
 import java.util.Optional;
 
+import io.github.palexdev.architectfx.frontend.components.Scrimmable;
 import io.github.palexdev.mfxcomponents.window.popups.MFXPopup;
 import io.github.palexdev.mfxcore.observables.When;
 import io.github.palexdev.mfxeffects.MFXScrimEffect;
@@ -27,6 +28,8 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 
@@ -47,7 +50,6 @@ public abstract class Dialog extends MFXPopup {
         setAutoHide(false);
         setConsumeAutoHidingEvents(true);
         setHideOnEscape(false);
-        setContent(buildContent());
     }
 
     //================================================================================
@@ -72,15 +74,31 @@ public abstract class Dialog extends MFXPopup {
 
             @Override
             public void scrimWindow(Window window, double opacity) {
-                super.scrimWindow(window, opacity);
-                Parent root = window.getScene().getRoot();
+                Parent root = Optional.ofNullable(window)
+                    .map(Window::getScene)
+                    .map(Scene::getRoot)
+                    .orElse(null);
+                if (root == null) return;
+                if (root instanceof Scrimmable s) {
+                    s.apply(((Rectangle) getScrimNode()), opacity);
+                } else {
+                    super.scrimWindow(window, opacity);
+                }
                 root.addEventFilter(Event.ANY, eh);
             }
 
             @Override
             public void removeEffect(Window window) {
-                super.removeEffect(window);
-                Parent root = window.getScene().getRoot();
+                Parent root = Optional.ofNullable(window)
+                    .map(Window::getScene)
+                    .map(Scene::getRoot)
+                    .orElse(null);
+                if (root == null) return;
+                if (root instanceof Scrimmable s) {
+                    s.removeScrim((Rectangle) getScrimNode());
+                } else {
+                    super.removeEffect(window);
+                }
                 root.removeEventFilter(Event.ANY, eh);
             }
         };
@@ -92,7 +110,7 @@ public abstract class Dialog extends MFXPopup {
 
     protected void unscrim() {
         Window window = getOwnerWindow();
-        if (window != null) {
+        if (scrim != null && window != null) {
             scrim.removeEffect(window);
         }
     }
@@ -118,7 +136,7 @@ public abstract class Dialog extends MFXPopup {
             .map(Stage.class::cast)
             .ifPresent(s -> {
                 aotStatus = s.isAlwaysOnTop();
-                s.setAlwaysOnTop(true);
+                //s.setAlwaysOnTop(true);
                 ownerPosWhen = When.onInvalidated(s.xProperty())
                     .then(v -> autoReposition())
                     .invalidating(s.yProperty())

@@ -22,9 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import io.github.palexdev.architectfx.frontend.model.Recent;
+import io.github.palexdev.architectfx.frontend.model.Project;
 import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
-import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.settings.BooleanSetting;
 import io.github.palexdev.mfxcore.settings.NumberSetting;
@@ -39,19 +38,19 @@ public class AppSettings extends Settings {
     // Settings
     //================================================================================
     // UI
-    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 1200.0);
-    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 500.0);
+    private final NumberSetting<Double> windowWidth = registerDouble("window.width", "", 1280.0);
+    private final NumberSetting<Double> windowHeight = registerDouble("window.height", "", 720.0);
     private final StringSetting themeMode = registerString("theme.mode", "Theme variation, light/dark", ThemeMode.LIGHT.name());
 
-    // App
-    private final StringSetting recents = registerString("recents", "YAML string that contains recently opened documents", "");
-    private final StringSetting lastDir = registerString("last.dir", "Last directory used for file input", "");
-    private final StringSetting lastTool = registerString("last.tool", "Last tool used for file input", "PREVIEW");
+    // Model
+    private final StringSetting lastDir = registerString("last.dir", "", "");
+    private final StringSetting projects = registerString("projects", "Array specifying the projects known to the app", "[]");
+    private final StringSetting projectsSort = registerString("projects.sort", "Last sort type for projects", Project.SortBy.NAME.name());
+    private final StringSetting projectsSortMode = registerString("projects.sortmode", "Last sort mode for projects", Project.SortMode.ASCENDING.name());
+    private final BooleanSetting autoReload = registerBoolean("reload.autoreload", "Whether to auto-reload a project after its file changed", true);
+    private final NumberSetting<Integer> reloadCountdown = registerInteger("reload.countdown", "Seconds after which to reload a project for which the file has changed", 3);
 
-    // Live Preview
-    private final BooleanSetting autoReload = registerBoolean("autoreload", "Specifies whether to automatically reload the document in case of modifications", true);
-    private final NumberSetting<Integer> autoReloadDelay = registerInteger("autoreload.delay", "Delay seconds for LivePreview auto-reload", 5);
-
+    // Extra
     private final Application.Parameters parameters;
     private Boolean resetSettings = null;
 
@@ -65,21 +64,18 @@ public class AppSettings extends Settings {
     //================================================================================
     // Methods
     //================================================================================
-    public List<Recent> loadRecents() {
-        String yaml = recents.get();
-        return Recent.load(yaml);
-    }
-
-    public void saveRecents(Collection<Recent> recents) {
-        String toYaml = Recent.save(recents);
-        this.recents.set(toYaml);
-    }
-
     public Size getWindowSize() {
-        return UIUtils.getWindowSize(
-            windowWidth.defValue(), windowHeight.defValue(),
-            windowWidth.get(), windowHeight.get()
-        );
+        return Size.of(windowWidth.get(), windowHeight.get());
+    }
+
+    public List<Project> loadProjects() {
+        String s = projects.get();
+        return Project.fromString(s);
+    }
+
+    public void saveProjects(Collection<Project> projects) {
+        String s = Project.toString(projects);
+        this.projects.set(s);
     }
 
     //================================================================================
@@ -109,16 +105,20 @@ public class AppSettings extends Settings {
         return lastDir;
     }
 
-    public StringSetting lastTool() {
-        return lastTool;
+    public StringSetting getProjectsSort() {
+        return projectsSort;
     }
 
-    public BooleanSetting autoReload() {
+    public StringSetting getProjectsSortMode() {
+        return projectsSortMode;
+    }
+
+    public BooleanSetting getAutoReload() {
         return autoReload;
     }
 
-    public NumberSetting<Integer> autoReloadDelay() {
-        return autoReloadDelay;
+    public NumberSetting<Integer> getReloadCountdown() {
+        return reloadCountdown;
     }
 
     public boolean isResetSettings() {

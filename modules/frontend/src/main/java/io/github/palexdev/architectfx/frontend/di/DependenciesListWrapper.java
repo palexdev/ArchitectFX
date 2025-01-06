@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -16,16 +16,30 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package io.github.palexdev.architectfx.frontend.events;
+package io.github.palexdev.architectfx.frontend.di;
 
-import io.github.palexdev.mfxcore.events.Event;
+import java.util.function.Supplier;
 
-public abstract class AppEvent extends Event {
+import io.inverno.core.annotation.Bean;
+import io.inverno.core.annotation.Wrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+@Bean
+@Wrapper
+public class DependenciesListWrapper implements Supplier<ObservableList<String>> {
+    //================================================================================
+    // Properties
+    //================================================================================
+    private final ObservableList<String> dependencies = FXCollections.observableArrayList();
+
+    /* TODO implement initializations via Settings */
 
     //================================================================================
-    // Impl
+    // Overridden Methods
     //================================================================================
-    public static class AppCloseEvent extends AppEvent {}
-
-    public static class AppReadyEvent extends AppEvent {}
+    @Override
+    public ObservableList<String> get() {
+        return dependencies;
+    }
 }
