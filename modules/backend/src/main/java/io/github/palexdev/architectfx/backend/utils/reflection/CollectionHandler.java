@@ -6,7 +6,6 @@ import java.util.Map;
 
 import io.github.palexdev.architectfx.backend.enums.CollectionType;
 import io.github.palexdev.architectfx.backend.utils.CastUtils;
-import org.joor.Reflect;
 
 /// API for handling various types of Java collections with reflection. It mainly does two things:
 /// 1) Ensures that both the target collection and the given one are of the same type
@@ -46,8 +45,7 @@ public sealed interface CollectionHandler permits CollectionHandler.GenericColle
         @Override
         public void handle(Object target, String name, Object value, boolean clear) {
             try {
-                Reflect field = Reflector.checkTypes(target, name, value, expectedType);
-                List<?> src = field.get();
+                List<?> src = Reflector.checkTypes(target, name, value, expectedType);
                 if (src == null) {
                     Setter.write(target, name, value);
                 } else {
@@ -68,8 +66,7 @@ public sealed interface CollectionHandler permits CollectionHandler.GenericColle
 
         @Override
         public void handle(Object target, String name, Object value, boolean clear) {
-            Reflect field = Reflector.checkTypes(target, name, value, Map.class);
-            Map<?, ?> src = field.get();
+            Map<?, ?> src = Reflector.checkTypes(target, name, value, Map.class);
             if (src == null) {
                 Setter.write(target, name, value);
             } else {

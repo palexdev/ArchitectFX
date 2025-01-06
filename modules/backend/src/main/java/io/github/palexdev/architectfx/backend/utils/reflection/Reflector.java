@@ -3,6 +3,7 @@ package io.github.palexdev.architectfx.backend.utils.reflection;
 import java.util.Optional;
 
 import io.github.palexdev.architectfx.backend.enums.CollectionType;
+import io.github.palexdev.architectfx.backend.utils.CastUtils;
 import org.joor.Reflect;
 import org.joor.ReflectException;
 import org.tinylog.Logger;
@@ -159,28 +160,28 @@ public class Reflector {
 
     /// Ensures that a field and a given object are compatible with the given type.
     ///
-    /// - The field is extracted from the `target` with the given name, with direct access
+    /// - The field is extracted from the `target` with the given name, using [Getter]: this is to ensure that if direct
+    /// access fails we still attempt with the relative accessor
     /// - Both the field's type and the given `value` must be compatible with the given `expectedType`
     ///
     /// @return for performance reasons (this may be called before executing other actions), in case of success,
-    /// returns the retrieved field wrapped in a [Reflect] object
+    /// returns the retrieved object
     /// @throws ReflectException if the field or the value are not compatible with `expectedType`
-    public static Reflect checkTypes(Object target, String name, Object value, Class<?> expectedType) {
+    public static <T> T checkTypes(Object target, String name, Object value, Class<?> expectedType) {
         if (!expectedType.isInstance(value))
             throw new ReflectException(
                 "Expected target object to be of type %s but got %s"
                     .formatted(expectedType, value.getClass())
             );
 
-        Reflect field = ((target instanceof Class<?> c) ?
-            Reflect.onClass(c).field(name) :
-            Reflect.on(target)).field(name);
-        if (!expectedType.isAssignableFrom(field.type()))
+        Object obj = Getter.read(target, name);
+        if (obj == null) return null;
+        if (!expectedType.isAssignableFrom(obj.getClass()))
             throw new ReflectException(
                 "Expected source obj to be of type %s for name %s but got %s"
-                    .formatted(name, expectedType, field.type())
+                    .formatted(name, expectedType, obj.getClass())
             );
 
-        return field;
+        return CastUtils.unchecked(obj);
     }
 }
