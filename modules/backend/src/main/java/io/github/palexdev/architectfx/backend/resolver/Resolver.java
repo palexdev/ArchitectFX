@@ -124,6 +124,7 @@ public interface Resolver {
             this.scanner = scanner;
             this.reflector = reflector;
             this.location = location;
+            scanner.setImports(imports);
         }
 
         protected Set<String> getImports() {
