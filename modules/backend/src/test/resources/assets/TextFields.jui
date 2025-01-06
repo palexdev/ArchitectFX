@@ -13,21 +13,13 @@
 .controller: FieldsController {}
 
 GridPane {
-  # Set global theme
-  UserAgentBuilder.builder()
-    .themes(Theme[JavaFXThemes.MODENA, MaterialFXStylesheets.DEFAULT])
-    .setDeploy(true)
-    .setResolveAssets(true)
-    .build()
-    .setGlobal()
-
   alignment: Pos.CENTER
   hgap: 20.0
   vgap: 20.0
   padding: Insets::(20.0, 30.0, 20.0, 30.0) {}
   styleClass = listOf('grid-pane')
   stylesheets = listOf(
-    url('css/DefaultTheme.css'),
+    MFXResourcesLoader.load('css/DefaultTheme.css'),
     url('css/TextFields.css')
   )
 

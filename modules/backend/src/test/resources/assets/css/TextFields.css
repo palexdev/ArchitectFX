@@ -32,6 +32,9 @@
 	-fx-font-family: 'Open Sans SemiBold';
 }
 
+.mfx-text-field .text-field:hover {
+	-fx-cursor: text;
+}
 
 #customField {
 	-fx-border-color: -common-gradient;
