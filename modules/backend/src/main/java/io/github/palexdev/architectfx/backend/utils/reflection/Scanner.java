@@ -177,6 +177,7 @@ public class Scanner {
         String query = className.contains(".") ?
             className :
             "*." + className;
+        query = query.replace("$", "*"); // Enables scanning for inner classes
         Logger.trace("Scan query: {}", query);
 
         ClassGraph cg = scope.build(dm)
