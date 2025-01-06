@@ -58,7 +58,7 @@ public interface UILoader<T> {
         return load(url.openStream(), url);
     }
 
-    void attachChildren(T parent, List<T> children) throws IOException;
+    void attachChildren(T parent, List<T> children);
 
     default void onProgress(Progress progress) {
         Config config = config();

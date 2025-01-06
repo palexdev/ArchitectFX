@@ -20,6 +20,7 @@ package io.github.palexdev.architectfx.backend.resolver;
 
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -102,6 +103,16 @@ public class DefaultResolver implements Resolver {
         // 3) Invoke methods
         for (MethodsChain chain : obj.getMethods()) {
             resolveMethodsChain(chain);
+        }
+
+        // Handle children
+        if (!obj.getChildren().isEmpty()) {
+            List<T> children = new ArrayList<>();
+            for (UIObj cObj : obj.getChildren()) {
+                T cInstance = resolveObj(cObj);
+                children.add(cInstance);
+            }
+            context.attachChildren(instance, children);
         }
 
         context.popNode();

@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.backend.resolver;
 
 import java.net.URI;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
 import io.github.palexdev.architectfx.backend.enums.CollectionType;
@@ -30,6 +31,7 @@ import io.github.palexdev.architectfx.backend.model.types.FieldRef;
 import io.github.palexdev.architectfx.backend.model.types.MethodsChain;
 import io.github.palexdev.architectfx.backend.model.types.Value;
 import io.github.palexdev.architectfx.backend.model.types.Value.*;
+import io.github.palexdev.architectfx.backend.utils.CastUtils;
 import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
 import io.github.palexdev.architectfx.backend.utils.reflection.Scanner;
 
@@ -106,6 +108,11 @@ public interface Resolver {
         private Reflector reflector;
         private final URI location;
         private final Map<String, Object> injections = new HashMap<>();
+
+        // Unfortunately since the Context doesn't know anything about the UI model
+        // we have to use a raw BiConsumer here
+        @SuppressWarnings("rawtypes")
+        private BiConsumer childrenHandler;
 
         // State
         private final Map<String, UIObj> byId = new HashMap<>();
@@ -214,6 +221,21 @@ public interface Resolver {
 
         public UIObj getCurrentNode() {
             return stack.peek();
+        }
+
+        public <T> BiConsumer<T, List<T>> getChildrenHandler() {
+            return CastUtils.unchecked(childrenHandler);
+        }
+
+        public <T> void setChildrenHandler(BiConsumer<T, List<T>> childrenHandler) {
+            this.childrenHandler = childrenHandler;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> void attachChildren(T parent, List<T> children) {
+            if (childrenHandler == null)
+                throw new NullPointerException("Cannot attach children to parent because handler was not specified");
+            childrenHandler.accept(parent, children);
         }
 
         protected void pushNode(UIObj uiNode) {

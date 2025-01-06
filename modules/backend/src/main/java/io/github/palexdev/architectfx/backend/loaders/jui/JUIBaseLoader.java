@@ -22,7 +22,6 @@ package io.github.palexdev.architectfx.backend.loaders.jui;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -32,7 +31,6 @@ import io.github.palexdev.architectfx.backend.jui.JUIParser;
 import io.github.palexdev.architectfx.backend.jui.JUIVisitor;
 import io.github.palexdev.architectfx.backend.loaders.UILoader;
 import io.github.palexdev.architectfx.backend.model.UIDocument;
-import io.github.palexdev.architectfx.backend.model.UIObj;
 import io.github.palexdev.architectfx.backend.resolver.Resolver;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -48,31 +46,13 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
     protected Resolver resolver;
 
     //================================================================================
-    // Methods
-    //================================================================================
-    protected T createObj(UIObj obj) throws IOException {
-        // Instantiate and handle children
-        //
-        // The resolver should take care of initialization and method calling
-        T instance = resolver.resolveObj(obj);
-        if (!obj.getChildren().isEmpty()) {
-            List<T> children = new ArrayList<>();
-            for (UIObj cObj : obj.getChildren()) {
-                T cInstance = createObj(cObj);
-                children.add(cInstance);
-            }
-            attachChildren(instance, children);
-        }
-        return instance;
-    }
-
-    //================================================================================
     // Overridden Methods
     //================================================================================
     @Override
     public Loaded<T> load(UIDocument document) throws IOException {
         try {
             resolver = config().resolver(document.getLocation());
+            resolver.context().setChildrenHandler(this::attachChildren);
 
             // 1) Handle dependencies
             resolver.context().getDependencyManager().addDeps(
@@ -87,11 +67,11 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             if (config.getControllerFactory() != null) {
                 controller = Optional.ofNullable(config.getControllerFactory().get());
             } else if (document.getController() != null) {
-                controller = Optional.ofNullable(createObj(document.getController()));
+                controller = Optional.ofNullable(resolver.resolveObj(document.getController()));
             }
 
             // 4) Instantiate UI graph
-            T root = createObj(document.getRoot());
+            T root = resolver.resolveObj(document.getRoot());
 
             // 5) Inject controller
             controller.ifPresent(resolver::injectController);
