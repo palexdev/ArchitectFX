@@ -51,7 +51,7 @@ import io.github.palexdev.architectfx.backend.model.types.ObjConstructor;
 /// 3) `Children`. UI nodes typically form a graph/hierarchy of nodes.
 ///
 ///
-public class UIObj {
+public class UIObj implements Iterable<UIObj> {
     //================================================================================
     // Properties
     //================================================================================
@@ -112,6 +112,12 @@ public class UIObj {
     //================================================================================
     // Overridden Methods
     //================================================================================
+
+    @Override
+    public Iterator<UIObj> iterator() {
+        return new UIObjIterator(this);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder().append("UINode{");
@@ -171,5 +177,33 @@ public class UIObj {
     /// @return whether this obj is the root of the loaded document
     public boolean isRoot() {
         return root;
+    }
+
+    //================================================================================
+    // Inner Classes
+    //================================================================================
+    public static class UIObjIterator implements Iterator<UIObj> {
+        private final Stack<UIObj> stack = new Stack<>();
+
+        public UIObjIterator(UIObj root) {
+            if (root == null)
+                throw new NullPointerException("Root element cannot be null");
+            stack.push(root);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return !stack.isEmpty();
+        }
+
+        @Override
+        public UIObj next() {
+            if (!hasNext())
+                throw new NoSuchElementException("No more elements in the tree");
+
+            UIObj curr = stack.pop();
+            curr.getChildren().forEach(stack::push);
+            return curr;
+        }
     }
 }
