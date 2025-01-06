@@ -55,14 +55,17 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             resolver.context().setChildrenHandler(this::attachChildren);
 
             // 1) Handle dependencies
+            onProgress("Adding dependencies", 0.0);
             resolver.context().getDependencyManager().addDeps(
                 document.getDependencies().toArray(String[]::new)
             );
 
             // 2) Handle imports
+            onProgress("Adding imports", 0.2);
             resolver.context().setImports(document.getImports());
 
             // 3) Handle controller
+            onProgress("Handling controller", 0.3);
             Optional<Object> controller = Optional.empty();
             if (config.getControllerFactory() != null) {
                 controller = Optional.ofNullable(config.getControllerFactory().get());
@@ -71,12 +74,15 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             }
 
             // 4) Instantiate UI graph
+            onProgress("Loading UI", 0.3);
             T root = resolver.resolveObj(document.getRoot());
 
             // 5) Inject controller
+            onProgress("Injecting controller", 0.9);
             controller.ifPresent(resolver::injectController);
 
             // 6) Finally return result
+            onProgress("Loaded!", 1.0);
             return new Loaded<>(document, root, controller.orElse(null));
         } finally {
             config.setControllerFactory(null);
