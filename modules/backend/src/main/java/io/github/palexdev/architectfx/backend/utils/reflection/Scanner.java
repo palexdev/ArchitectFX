@@ -82,7 +82,7 @@ public class Scanner {
     // Properties
     //================================================================================
     private final DependencyManager dm;
-    private final Set<String> imports;
+    private Set<String> imports;
     private final Map<String, Class<?>> classCache = new HashMap<>();
 
     //================================================================================
@@ -196,6 +196,15 @@ public class Scanner {
         for (Class<?> klass : classes) {
             classCache.put(klass.getSimpleName(), klass);
         }
+    }
+
+    public Set<String> getImports() {
+        return imports;
+    }
+
+    public void setImports(Set<String> imports) {
+        if (imports == null) imports = new ImportsSet();
+        this.imports = imports;
     }
 
     //================================================================================
