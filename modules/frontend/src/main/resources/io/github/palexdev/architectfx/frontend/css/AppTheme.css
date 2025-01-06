@@ -16,8 +16,8 @@
  * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
  */
 
-@import "fonts/Fonts.css";
 @import "Overrides.css";
+@import "fonts/Fonts.css";
 @import "components/Components.css";
 @import "dialogs/Dialogs.css";
 @import "views/Views.css";

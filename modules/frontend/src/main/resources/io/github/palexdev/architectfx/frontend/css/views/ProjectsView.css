@@ -66,16 +66,16 @@
   -fx-background-radius: 12px;
 }
 
-.projects-view > .filter .sort-mode .mfx-font-icon {
+.projects-view > .filter .sort-mode > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-color: -md-sys-color-on-surface;
   -mfx-size: 16px;
 }
 
-.projects-view > .filter .sort-mode:ascending .mfx-font-icon {
+.projects-view > .filter .sort-mode:ascending > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: 'fas-arrow-down-short-wide';
 }
 
-.projects-view > .filter .sort-mode:descending .mfx-font-icon {
+.projects-view > .filter .sort-mode:descending > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: 'fas-arrow-up-wide-short';
 }
 
@@ -93,6 +93,6 @@
   -fx-font-size: 14px;
 }
 
-.projects-view > .mfx-button.fab.import .mfx-font-icon{
+.projects-view > .mfx-button.fab.import .mfx-font-icon {
   -mfx-description: 'fas-plus';
 }

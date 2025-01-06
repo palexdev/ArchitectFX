@@ -192,9 +192,6 @@ public class RootPane extends Region implements Scrimmable {
 
         getStyleClass().add("app-root");
         getChildren().add(header);
-
-        // TODO debugging
-        UIUtils.debugTheme(this, "css/AppTheme.css");
     }
 
     //================================================================================

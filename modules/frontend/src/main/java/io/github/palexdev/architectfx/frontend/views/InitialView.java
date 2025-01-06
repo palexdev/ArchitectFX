@@ -153,7 +153,6 @@ public class InitialView extends View<InitialPane, InitialViewBehavior> {
             sidebar.setMargin(settingsBtn, InsetsBuilder.left(12.0).get());
 
             getStyleClass().add("initial-view");
-            UIUtils.debugTheme(this, "css/views/InitialView.css"); // TODO debug
         }
 
         @Override

@@ -35,7 +35,6 @@ import io.github.palexdev.architectfx.frontend.model.PreviewModel;
 import io.github.palexdev.architectfx.frontend.model.Project;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.CollectionUtils;
-import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.View;
 import io.github.palexdev.architectfx.frontend.views.content.ProjectsView.ProjectsPane;
 import io.github.palexdev.architectfx.frontend.views.content.ProjectsView.ProjectsViewBehavior;
@@ -184,9 +183,6 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             getChildren().add(importFAB);
 
             getStyleClass().add("projects-view");
-
-            // TODO debug
-            UIUtils.debugTheme(this, "css/views/ProjectsView.css");
         }
 
         @Override

@@ -23,17 +23,19 @@
   -fx-padding: 8px;
 }
 
-.project-card-overlay > .mfx-icon-button {
+.project-card-overlay > .mfx-icon-button.filled,
+.project-card-overlay > .mfx-icon-button.filled-tonal {
   -fx-background-radius: 12px;
   -mfx-size: 24px;
 }
 
-.project-card-overlay > .mfx-icon-button > .surface > .bg {
+.project-card-overlay > .mfx-icon-button.filled > .surface > .bg,
+.project-card-overlay > .mfx-icon-button.filled-tonal > .surface > .bg {
   -fx-background-radius: 12px;
 }
 
-.project-card-overlay > .mfx-icon-button .mfx-font-icon {
-  -mfx-description: 'fas-plus';
+.project-card-overlay > .mfx-icon-button.filled > .mfx-icon-wrapper > .mfx-font-icon,
+.project-card-overlay > .mfx-icon-button.filled-tonal > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-size: 16px;
 }
 
@@ -50,17 +52,17 @@
   -fx-background-color: -md-sys-color-on-error;
 }
 
-.project-card-overlay > .mfx-icon-button.delete .mfx-font-icon {
+.project-card-overlay > .mfx-icon-button.delete > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-color: -md-sys-color-on-error;
   -mfx-description: 'fas-trash';
 }
 
 /* Preview */
-.project-card-overlay > .mfx-icon-button.preview .mfx-font-icon {
+.project-card-overlay > .mfx-icon-button.preview > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: 'fas-eye';
 }
 
 /* Show in... */
-.project-card-overlay > .mfx-icon-button.show .mfx-font-icon {
+.project-card-overlay > .mfx-icon-button.show > .mfx-icon-wrapper > .mfx-font-icon {
   -mfx-description: 'fas-folder';
 }

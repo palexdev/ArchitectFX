@@ -159,8 +159,7 @@ public class PreviewModel {
             @Override
             protected void failed() {
                 setRoot(null);
-                // TODO better message
-                Logger.error(getException());
+                Logger.error("Failed to load project {} because:\n{}", project.getName(), getException());
                 setReloadCountdown(-1);
             }
         };

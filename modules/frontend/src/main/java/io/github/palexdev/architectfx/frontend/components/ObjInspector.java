@@ -164,8 +164,6 @@ public class ObjInspector extends Box {
         getContainerChildren().add(indicator);
 
         getStyleClass().add("inspector");
-        /* TODO debugging */
-        UIUtils.debugTheme(this, "css/components/ObjInspector.css");
     }
 
     //================================================================================

@@ -232,8 +232,6 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
                 .listen();
 
             getStyleClass().add("live-preview");
-            // TODO debugging
-            UIUtils.debugTheme(this, "css/views/LivePreview.css");
         }
 
         protected void animateSidebar(boolean show) {
