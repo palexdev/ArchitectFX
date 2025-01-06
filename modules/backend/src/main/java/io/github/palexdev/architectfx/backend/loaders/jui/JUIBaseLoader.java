@@ -42,6 +42,7 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
     //================================================================================
     // Properties
     //================================================================================
+    public static final String EXTENSION = "jui";
     protected Config config = new Config();
     protected Resolver resolver;
 
