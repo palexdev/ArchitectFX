@@ -31,7 +31,7 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 @Bean
 public class AppModel {
@@ -66,15 +66,12 @@ public class AppModel {
     //================================================================================
     // Constructors
     //================================================================================
-    public AppModel(IEventBus events, AppSettings settings) {
+    public AppModel(IEventBus events, AppSettings settings, ObservableList<Project> projectsList) {
         this.events = events;
         this.settings = settings;
 
         /* Projects */
-        // TODO convert this the same way as dependencies
-        this.projects = new RefineList<>(
-            FXCollections.observableArrayList(settings.loadProjects())
-        );
+        this.projects = new RefineList<>(projectsList);
         Project.SortMode mode;
         Project.SortBy sortBy;
         try {
