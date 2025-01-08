@@ -47,12 +47,14 @@ import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.github.palexdev.rectcut.Rect;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
+import io.github.palexdev.virtualizedfx.controls.behaviors.VFXScrollPaneBehavior;
 import io.github.palexdev.virtualizedfx.utils.ScrollBounds;
 import io.inverno.core.annotation.Bean;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.application.HostServices;
 import javafx.scene.Node;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
@@ -228,6 +230,14 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
                     );
                 }
             };
+            vsp.setBehaviorProvider(() -> new VFXScrollPaneBehavior(vsp) {
+                @Override
+                public void mouseDragged(MouseEvent me) {
+                    if (!me.isControlDown()) return;
+                    super.mouseDragged(me);
+                }
+            });
+            vsp.setDragToScroll(true);
             getChildren().add(vsp);
 
             boundsOverlay = new BoundsOverlay();
