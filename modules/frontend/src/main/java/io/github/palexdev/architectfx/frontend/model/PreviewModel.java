@@ -28,10 +28,12 @@ import io.github.palexdev.architectfx.frontend.components.dialogs.DialogType;
 import io.github.palexdev.architectfx.frontend.components.dialogs.ProgressDialog;
 import io.github.palexdev.architectfx.frontend.components.dialogs.base.DialogConfigurator;
 import io.github.palexdev.architectfx.frontend.events.DialogEvent;
+import io.github.palexdev.architectfx.frontend.events.ModelEvent;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.FileObserver;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
+import io.github.palexdev.architectfx.frontend.views.InitialView;
 import io.github.palexdev.architectfx.frontend.views.LivePreviewView;
 import io.github.palexdev.mfxcore.base.properties.resettable.ResettableIntegerProperty;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
@@ -39,6 +41,8 @@ import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.BeanSocket;
+import io.methvin.watcher.DirectoryChangeEvent;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -174,7 +178,18 @@ public class PreviewModel {
         Project project = getProject();
         observer = FileObserver.observeFile(project.getFile())
             .condition(e -> FileObserver.IS_CHILD.apply(e, project.getFile()))
-            .onChanged(f -> reloadCountdown.reset())
+            .onEvent((e, p) -> {
+                if (e == DirectoryChangeEvent.EventType.DELETE) {
+                    if (loadTask != null) loadTask.cancel(true);
+                    Platform.runLater(() -> {
+                        setProject(null);
+                        events.publish(new ModelEvent.ProjectDeletedEvent(project));
+                        events.publish(new UIEvent.ViewSwitchEvent(InitialView.class));
+                    });
+                    return;
+                }
+                reloadCountdown.reset();
+            })
             .listen();
     }
 

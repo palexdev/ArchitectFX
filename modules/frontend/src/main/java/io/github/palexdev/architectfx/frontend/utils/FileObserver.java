@@ -23,13 +23,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.Future;
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.github.palexdev.architectfx.backend.utils.Async;
 import io.methvin.watcher.DirectoryChangeEvent;
+import io.methvin.watcher.DirectoryChangeEvent.EventType;
 import io.methvin.watcher.DirectoryWatcher;
 import io.methvin.watcher.hashing.FileHasher;
 import io.methvin.watcher.visitor.FileTreeVisitor;
@@ -39,8 +40,8 @@ public class FileObserver {
     //================================================================================
     // Static Properties
     //================================================================================
-    public static final BiFunction<DirectoryChangeEvent, Path, Boolean> IS_CHILD = (e, p) ->
-        e.path().equals(p) && e.eventType() == DirectoryChangeEvent.EventType.MODIFY;
+    public static final BiFunction<DirectoryChangeEvent, Path, Boolean> IS_CHILD =
+        (e, p) -> e.path().equals(p);
 
     public static final FileTreeVisitor FILES_VISITOR = (file, onDirectory, onFile) -> {
         if (!Files.isDirectory(file)) return;
@@ -60,7 +61,7 @@ public class FileObserver {
     //================================================================================
     private final Path path;
     private Function<DirectoryChangeEvent, Boolean> condition = p -> true;
-    private Consumer<Path> onChanged = e -> {};
+    private BiConsumer<EventType, Path> onEvent = (e, p) -> {};
 
     private DirectoryWatcher watcher;
     private Future<?> task;
@@ -84,13 +85,13 @@ public class FileObserver {
         return this;
     }
 
-    public FileObserver onChanged(Consumer<Path> onChanged) {
-        this.onChanged = onChanged;
+    public FileObserver onEvent(BiConsumer<EventType, Path> onEvent) {
+        this.onEvent = onEvent;
         return this;
     }
 
     public FileObserver executeNow() {
-        onChanged.accept(path);
+        onEvent.accept(EventType.MODIFY, path);
         return this;
     }
 
@@ -103,7 +104,7 @@ public class FileObserver {
                 .fileTreeVisitor(FILES_VISITOR)
                 .listener(e -> {
                     if (condition.apply(e))
-                        onChanged.accept(path);
+                        onEvent.accept(e.eventType(), path);
                 })
                 .build();
            task =  watcher.watchAsync(Async.executor());

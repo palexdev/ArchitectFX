@@ -34,6 +34,7 @@ import io.github.palexdev.imcache.core.ImCache;
 import io.github.palexdev.imcache.core.ImImage;
 import io.github.palexdev.imcache.utils.ImageUtils;
 import io.github.palexdev.mfxcore.utils.fx.SwingFXUtils;
+import io.methvin.watcher.DirectoryChangeEvent.EventType;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyLongProperty;
@@ -85,7 +86,9 @@ public class Project implements Comparable<Project>, Identifiable {
         this.file = file;
         observer = FileObserver.observeFile(file)
             .condition(e -> FileObserver.IS_CHILD.apply(e, file))
-            .onChanged(f -> updateLastModified())
+            .onEvent((e, f) -> {
+                if (e == EventType.MODIFY) updateLastModified();
+            })
             .executeNow()
             .listen();
 

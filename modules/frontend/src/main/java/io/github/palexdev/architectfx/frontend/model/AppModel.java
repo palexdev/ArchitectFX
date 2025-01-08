@@ -21,6 +21,7 @@ package io.github.palexdev.architectfx.frontend.model;
 import java.util.Comparator;
 
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
+import io.github.palexdev.architectfx.frontend.events.ModelEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.ui.RefineList;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
@@ -32,6 +33,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
+import org.tinylog.Logger;
 
 @Bean
 public class AppModel {
@@ -85,6 +87,11 @@ public class AppModel {
         setProjectsSortBy(sortBy);
 
         /* Events Handling */
+        events.subscribe(ModelEvent.ProjectDeletedEvent.class, e -> {
+            Project project = e.data();
+            Logger.warn("An external agent deleted the project '{}' from the disk...", project.getName());
+            projects.remove(project);
+        });
         events.subscribe(AppEvent.AppCloseEvent.class, e -> {
             settings.saveProjects(projects.getSrc());
             settings.getProjectsSortMode().set(getProjectsSortMode().name());
