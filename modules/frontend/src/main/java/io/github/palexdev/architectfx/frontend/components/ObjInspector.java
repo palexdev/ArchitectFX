@@ -504,7 +504,7 @@ public class ObjInspector extends Box {
         @Override
         protected void layoutChildren(double x, double y, double w, double h) {
             Rect area = Rect.of(x, y, w, h)
-                .withInsets(new double[] {
+                .withInsets(new double[]{
                     snappedTopInset(),
                     snappedRightInset(),
                     snappedBottomInset(),

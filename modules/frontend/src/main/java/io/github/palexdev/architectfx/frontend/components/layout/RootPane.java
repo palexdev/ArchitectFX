@@ -286,7 +286,7 @@ public class RootPane extends Region implements Scrimmable {
         double w = Math.max(computeMinWidth(-1), getWidth());
         double h = Math.max(computeMinHeight(-1), getHeight());
         Rect area = Rect.of(0, 0, w, h)
-            .withInsets(new double[] {
+            .withInsets(new double[]{
                 snappedTopInset(),
                 snappedRightInset(),
                 snappedBottomInset(),

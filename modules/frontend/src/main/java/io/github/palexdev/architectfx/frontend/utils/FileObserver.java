@@ -107,7 +107,7 @@ public class FileObserver {
                         onEvent.accept(e.eventType(), path);
                 })
                 .build();
-           task =  watcher.watchAsync(Async.executor());
+            task = watcher.watchAsync(Async.executor());
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
