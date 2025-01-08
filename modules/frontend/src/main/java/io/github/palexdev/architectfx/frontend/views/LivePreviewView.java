@@ -24,6 +24,7 @@ import java.util.function.Supplier;
 import io.github.palexdev.architectfx.frontend.components.BoundsOverlay;
 import io.github.palexdev.architectfx.frontend.components.CountdownIcon;
 import io.github.palexdev.architectfx.frontend.components.ObjInspector;
+import io.github.palexdev.architectfx.frontend.components.ZoomControls;
 import io.github.palexdev.architectfx.frontend.components.layout.Box;
 import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.model.PreviewModel;
@@ -34,7 +35,7 @@ import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.LivePreviewView.LivePreviewBehavior;
 import io.github.palexdev.architectfx.frontend.views.LivePreviewView.LivePreviewPane;
 import io.github.palexdev.mfxcomponents.controls.buttons.MFXIconButton;
-import io.github.palexdev.mfxcore.builders.nodes.StackPaneBuilder;
+import io.github.palexdev.mfxcore.builders.bindings.ObjectBindingBuilder;
 import io.github.palexdev.mfxcore.events.WhenEvent;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.observables.When;
@@ -46,6 +47,7 @@ import io.github.palexdev.mfxeffects.animations.ConsumerTransition;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.github.palexdev.rectcut.Rect;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
+import io.github.palexdev.virtualizedfx.utils.ScrollBounds;
 import io.inverno.core.annotation.Bean;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
@@ -159,7 +161,8 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
             closeBtn.setOnAction(e -> behavior.close());
             UIUtils.installTooltip(closeBtn, "Close Project");
 
-            /* TODO add zoom!!! */
+            /* Zoom Controls */
+            ZoomControls zoomControls = new ZoomControls();
 
             sidebar = new Box(
                 Box.Direction.COLUMN,
@@ -169,6 +172,8 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
                 reloadBtn,
                 autoReloadBtn,
                 inspectBtn,
+                Box.separator(),
+                zoomControls,
                 Box.separator("down"),
                 themeBtn,
                 closeBtn
@@ -191,14 +196,42 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
             getChildren().add(sidebar);
 
             /* Content */
-            StackPane wrapper = StackPaneBuilder.stackPane()
-                .addStyleClasses("wrapper")
-                .getNode();
-            wrapper.setMaxSize(USE_PREF_SIZE, USE_PREF_SIZE);
-            vsp = new VFXScrollPane(new StackPane(wrapper));
+            ContentPane contentPane = new ContentPane();
+            When.onInvalidated(zoomControls.valueProperty())
+                .then(v -> {
+                    double scale = v.doubleValue();
+                    contentPane.setZoom(scale);
+                })
+                .listen();
+
+            vsp = new VFXScrollPane(contentPane) {
+                @Override
+                protected void onContentChanged() {
+                    Node content = getContent();
+                    if (content == null) {
+                        contentBoundsProperty().unbind();
+                        setContentBounds(ScrollBounds.ZERO);
+                        return;
+                    }
+
+                    contentBoundsProperty().bind(ObjectBindingBuilder.<ScrollBounds>build()
+                        .setMapper(() -> new ScrollBounds(
+                            snapSizeX(content.prefWidth(-1) * zoomControls.getValue()),
+                            snapSizeY(content.prefHeight(-1) * zoomControls.getValue()),
+                            getViewportSize().getWidth(),
+                            getViewportSize().getHeight()
+                        ))
+                        .addSources(zoomControls.valueProperty())
+                        .addSources(content.layoutBoundsProperty())
+                        .addSources(viewportSizeProperty())
+                        .get()
+                    );
+                }
+            };
             getChildren().add(vsp);
 
             boundsOverlay = new BoundsOverlay();
+            boundsOverlay.scaleProperty().bind(zoomControls.valueProperty());
             getChildren().add(boundsOverlay);
             WhenEvent.intercept(this, ObjInspector.InspectorEvents.SHOW_BOUNDS_OVERLAY)
                 .process(e -> {
@@ -222,13 +255,12 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
                 .then(r -> {
                     if (r == null) {
                         inspector.setRoot(null);
-                        wrapper.getChildren().clear();
+                        contentPane.setContent(null);
                         return;
                     }
-                    wrapper.getChildren().setAll(r.root());
+                    contentPane.setContent(r.root());
                     inspector.setRoot(r.document().getRoot());
                 })
-                .executeNow()
                 .listen();
 
             getStyleClass().add("live-preview");
@@ -387,6 +419,29 @@ public class LivePreviewView extends View<LivePreviewPane, LivePreviewBehavior> 
         public void close() {
             events.publish(new UIEvent.ViewSwitchEvent(InitialView.class));
             previewModel.setProject(null);
+        }
+    }
+
+    protected static class ContentPane extends StackPane {
+        private final StackPane wrapper = new StackPane();
+
+        public ContentPane() {
+            wrapper.getStyleClass().add("wrapper");
+            wrapper.setMaxSize(USE_PREF_SIZE, USE_PREF_SIZE);
+
+            getStyleClass().add("content");
+            getChildren().setAll(wrapper);
+        }
+
+        public void setContent(Node content) {
+            wrapper.getChildren().clear();
+            if (content != null) wrapper.getChildren().add(content);
+        }
+
+        public void setZoom(double zoom) {
+            wrapper.setScaleX(zoom);
+            wrapper.setScaleY(zoom);
+            requestLayout();
         }
     }
 }

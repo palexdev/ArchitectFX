@@ -21,12 +21,13 @@ package io.github.palexdev.architectfx.frontend.components;
 
 import java.util.Optional;
 
-import io.github.palexdev.mfxcore.builders.bindings.DoubleBindingBuilder;
 import io.github.palexdev.mfxcore.builders.bindings.StringBindingBuilder;
 import io.github.palexdev.mfxcore.controls.Label;
+import io.github.palexdev.mfxcore.observables.When;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.HPos;
@@ -46,6 +47,7 @@ public class BoundsOverlay extends Region {
             onNodeChanged();
         }
     };
+    private final DoubleProperty scale = new SimpleDoubleProperty(1.0);
 
     private final Label boundsLabel;
 
@@ -62,13 +64,6 @@ public class BoundsOverlay extends Region {
         getStyleClass().add("bounds-overlay");
 
         boundsLabel = new Label();
-        boundsLabel.textProperty().bind(StringBindingBuilder.build()
-            .setMapper(() -> {
-                Bounds bounds = getLayoutBounds();
-                return "%.2f x %.2f".formatted(bounds.getWidth(), bounds.getHeight());
-            })
-            .addSources(layoutBoundsProperty())
-            .get());
         getChildren().add(boundsLabel);
     }
 
@@ -90,37 +85,42 @@ public class BoundsOverlay extends Region {
         Node node = this.node.get();
         if (node == null) return;
 
-        prefWidthProperty().bind(node.layoutBoundsProperty().map(Bounds::getWidth));
-        prefHeightProperty().bind(node.layoutBoundsProperty().map(Bounds::getHeight));
-        translateXProperty().bind(nodeX(node));
-        translateYProperty().bind(nodeY(node));
+        When.onInvalidated(node.boundsInParentProperty())
+            .then(b -> {
+                /* Convert bounds and compute position*/
+                Bounds nodeBounds = node.getLayoutBounds();
+                Bounds toScene = node.localToScene(nodeBounds);
+                Bounds toLocal = Optional.ofNullable(getParent())
+                    .map(p -> p.sceneToLocal(toScene))
+                    .orElse(ZERO);
+                double x = toLocal.getMinX();
+                double y = toLocal.getMinY();
+
+                /* Compute size */
+                double w = nodeBounds.getWidth() * getScale();
+                double h = nodeBounds.getHeight() * getScale();
+
+                /* Set properties */
+                setPrefWidth(w);
+                setPrefHeight(h);
+                setTranslateX(x);
+                setTranslateY(y);
+            })
+            .invalidating(parentProperty())
+            .invalidating(scaleProperty())
+            .executeNow()
+            .listen();
+
+        /* Bind label's text */
+        boundsLabel.textProperty().bind(StringBindingBuilder.build()
+            .setMapper(() -> {
+                Bounds nodeBounds = node.getLayoutBounds();
+                return "%.2f x %.2f".formatted(nodeBounds.getWidth(), nodeBounds.getHeight());
+            })
+            .addSources(node.layoutBoundsProperty())
+            .get());
+
         setVisible(true);
-    }
-
-    protected ObservableValue<Number> nodeX(Node node) {
-        return DoubleBindingBuilder.build()
-            .setMapper(() -> {
-                Bounds toScene = node.localToScene(node.getLayoutBounds());
-                Bounds toLocal = Optional.ofNullable(getParent())
-                    .map(p -> p.sceneToLocal(toScene))
-                    .orElse(ZERO);
-                return toLocal.getMinX();
-            })
-            .addSources(node.boundsInParentProperty(), parentProperty())
-            .get();
-    }
-
-    protected ObservableValue<Number> nodeY(Node node) {
-        return DoubleBindingBuilder.build()
-            .setMapper(() -> {
-                Bounds toScene = node.localToScene(node.getLayoutBounds());
-                Bounds toLocal = Optional.ofNullable(getParent())
-                    .map(p -> p.sceneToLocal(toScene))
-                    .orElse(ZERO);
-                return toLocal.getMinY();
-            })
-            .addSources(node.boundsInParentProperty(), parentProperty())
-            .get();
     }
 
     //================================================================================
@@ -134,5 +134,20 @@ public class BoundsOverlay extends Region {
             0, 0, getWidth(), getHeight(), 0,
             HPos.CENTER, VPos.CENTER
         );
+    }
+
+    //================================================================================
+    // Getters/Setters
+    //================================================================================
+    public double getScale() {
+        return scale.get();
+    }
+
+    public DoubleProperty scaleProperty() {
+        return scale;
+    }
+
+    public void setScale(double scale) {
+        this.scale.set(scale);
     }
 }
