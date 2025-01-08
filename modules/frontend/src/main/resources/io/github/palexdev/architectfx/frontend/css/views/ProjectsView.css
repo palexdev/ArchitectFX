@@ -87,12 +87,21 @@
   -vfx-h-spacing: 24px;
 }
 
-/* Import Button */
-.projects-view > .mfx-button.fab.import {
+/* Create Button */
+.projects-view > .mfx-button.fab.create {
   -fx-font-family: 'Montserrat Medium';
   -fx-font-size: 14px;
 }
 
-.projects-view > .mfx-button.fab.import .mfx-font-icon {
+.projects-view > .mfx-button.fab.create .mfx-font-icon {
   -mfx-description: 'fas-plus';
+}
+
+/* Import Button */
+.projects-view > .mfx-button.fab.import {
+  -fx-padding: 12px;
+}
+
+.projects-view > .mfx-button.fab.import .mfx-font-icon {
+  -mfx-description: 'afx-folder-arrow-down';
 }

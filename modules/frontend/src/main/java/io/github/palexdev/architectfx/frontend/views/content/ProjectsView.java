@@ -19,12 +19,14 @@
 package io.github.palexdev.architectfx.frontend.views.content;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
+import io.github.palexdev.architectfx.backend.loaders.jui.JUIBaseLoader;
 import io.github.palexdev.architectfx.frontend.components.ProjectCard;
 import io.github.palexdev.architectfx.frontend.components.ProjectCardOverlay;
 import io.github.palexdev.architectfx.frontend.components.TextField;
@@ -35,6 +37,7 @@ import io.github.palexdev.architectfx.frontend.model.PreviewModel;
 import io.github.palexdev.architectfx.frontend.model.Project;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.utils.CollectionUtils;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.architectfx.frontend.views.View;
 import io.github.palexdev.architectfx.frontend.views.content.ProjectsView.ProjectsPane;
 import io.github.palexdev.architectfx.frontend.views.content.ProjectsView.ProjectsViewBehavior;
@@ -59,9 +62,11 @@ import io.github.palexdev.virtualizedfx.grid.VFXGridHelper;
 import io.inverno.core.annotation.Bean;
 import javafx.animation.PauseTransition;
 import javafx.application.HostServices;
+import javafx.geometry.Pos;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.tinylog.Logger;
 
 @Bean
 public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
@@ -106,10 +111,12 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
         private final Box header;
         private final VFXGrid<Project, ProjectCard> grid;
         private final VFXScrollPane vsp;
+        private final MFXFab createFAB;
         private final MFXFab importFAB;
 
         private final int minColumns = 3;
         private final double V_GAP = 24.0;
+        private final double FABS_GAP = 8.0;
 
         ProjectsPane() {
             MFXSegment nameSegment = new MFXSegment("Name", new MFXFontIcon("fas-font"));
@@ -168,18 +175,34 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             vsp.setHBarPolicy(ScrollBarPolicy.NEVER);
             getChildren().add(vsp);
 
+            // Create FAB
+            createFAB = new MFXFab("New Project", new MFXFontIcon()).extended();
+            createFAB.setManaged(false);
+            createFAB.getStyleClass().add("create");
+            createFAB.setOnAction(e -> {
+                // Debounce for a smoother UX
+                PauseBuilder.build()
+                    .setDuration(M3Motion.SHORT4)
+                    .setOnFinished(end -> behavior.createProject())
+                    .getAnimation()
+                    .play();
+            });
+            getChildren().add(createFAB);
+
             // Import FAB
-            importFAB = new MFXFab("Import", new MFXFontIcon()).extended();
+            /* TODO move debounce to UIUtils? */
+            importFAB = new MFXFab(new MFXFontIcon()).small();
             importFAB.setManaged(false);
             importFAB.getStyleClass().add("import");
             importFAB.setOnAction(e ->
                 // Debounce for a smoother UX
                 PauseBuilder.build()
                     .setDuration(M3Motion.SHORT4)
-                    .setOnFinished(end -> behavior.addProject())
+                    .setOnFinished(end -> behavior.addProjects())
                     .getAnimation()
                     .play()
             );
+            UIUtils.installTooltip(importFAB, "Import Projects", Pos.CENTER_LEFT);
             getChildren().add(importFAB);
 
             getStyleClass().add("projects-view");
@@ -206,8 +229,8 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
         protected double computePrefHeight(double width) {
             double headerH = LayoutUtils.boundHeight(header);
             double rowH = grid.getHelper().getTotalCellSize().getHeight();
-            double iH = LayoutUtils.boundHeight(importFAB);
-            return snappedTopInset() + snapSizeY(headerH + rowH + iH + V_GAP) + snappedBottomInset();
+            double fabsH = LayoutUtils.boundHeight(importFAB) + LayoutUtils.boundHeight(createFAB) + FABS_GAP;
+            return snappedTopInset() + snapSizeY(headerH + rowH + fabsH + V_GAP) + snappedBottomInset();
         }
 
         @Override
@@ -228,10 +251,20 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             // Grid
             area.layout(vsp::resizeRelocate);
 
-            // FAB
-            Rect bottom = area.getBottom(LayoutUtils.snappedBoundHeight(importFAB));
-            bottom.cutRight(LayoutUtils.snappedBoundWidth(importFAB))
-                .layout(importFAB::resizeRelocate);
+            // FABs
+            double cfW = LayoutUtils.snappedBoundWidth(createFAB);
+            double cfH = LayoutUtils.snappedBoundHeight(createFAB);
+            Rect b1 = area.withVSpacing(FABS_GAP).cutBottom(cfH);
+            b1.getRight(cfW)
+                .resize((fw, fh) -> createFAB.autosize())
+                .position(createFAB::relocate);
+
+            double ifW = LayoutUtils.snappedBoundWidth(importFAB);
+            double ifH = LayoutUtils.snappedBoundHeight(importFAB);
+            Rect b2 = area.cutBottom(ifH);
+            b2.getRight(ifW)
+                .resize((fw, fh) -> importFAB.autosize())
+                .position(importFAB::relocate);
         }
     }
 
@@ -269,15 +302,41 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             );
         }
 
-        public void addProject() {
+        public void createProject() {
+            Path lastDir = getLastDir();
+            FileChooser fc = new FileChooser();
+            fc.setTitle("Create new JUI Project");
+            fc.setInitialDirectory((lastDir != null) ? lastDir.toFile() : null);
+            FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("JUI Project", "*." + JUIBaseLoader.EXTENSION);
+            fc.getExtensionFilters().add(filter);
+
+            File file = fc.showSaveDialog(mainWindow);
+            if (file == null) return;
+            try {
+                Files.writeString(
+                    file.toPath(),
+                    JUIBaseLoader.NEW_TEMPLATE,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
+                );
+            } catch (IOException ex) {
+                Logger.error("Failed to write new template to file {} because:\n{}", file, ex);
+            }
+            CollectionUtils.addUnique(
+                appModel.getProjects(),
+                new Project(file.toPath())
+            );
+        }
+
+        public void addProjects() {
             Path lastDir = getLastDir();
             FileChooser fc = new FileChooser();
             fc.setTitle("Import JUI Project");
             fc.setInitialDirectory((lastDir != null) ? lastDir.toFile() : null);
-            FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("JUI Project", "*.jui");
+            FileChooser.ExtensionFilter filter = new FileChooser.ExtensionFilter("JUI Project", "*." + JUIBaseLoader.EXTENSION);
             fc.getExtensionFilters().add(filter);
 
-            List<File> files = Optional.ofNullable(fc.showOpenMultipleDialog(mainWindow)).orElseGet(List::of);
+            List<File> files = fc.showOpenMultipleDialog(mainWindow);
+            if (files == null) return;
             for (File file : files) {
                 CollectionUtils.addUnique(
                     appModel.getProjects(),
