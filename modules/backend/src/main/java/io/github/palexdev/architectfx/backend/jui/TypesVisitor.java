@@ -56,6 +56,7 @@ public class TypesVisitor {
             put(JUIParser.BOOLEAN, s -> new Value.BooleanValue(Boolean.parseBoolean(s)));
             put(JUIParser.CHAR, s -> new Value.CharValue(s.charAt(1)));
             put(JUIParser.STRING, s -> new Value.StringValue(s.replaceAll("^['\"]|['\"]$", "")));
+            put(JUIParser.TRIPLE_STRING, s -> new StringValue(TypesVisitor.processTripleQuotedString(s)));
             put(JUIParser.INTEGER, s -> new Value.NumberValue(Integer.parseInt(s)));
             put(JUIParser.HEXADECIMAL, s -> new Value.NumberValue(Integer.parseInt(s.substring(2), 16)));
             put(JUIParser.BINARY, s -> new Value.NumberValue(Integer.parseInt(s.substring(2), 2)));
@@ -66,6 +67,24 @@ public class TypesVisitor {
             put(JUIParser.NAN, s -> new Value.NumberValue(Double.parseDouble(s)));
         }
     };
+
+    //================================================================================
+    // Static Methods
+    //================================================================================
+    public static String processTripleQuotedString(String s) {
+        // Remove the enclosing triple quotes
+        if (s.startsWith("\"\"\"") && s.endsWith("\"\"\"")) {
+            s = s.substring(3, s.length() - 3);
+        }
+
+        // Replace escape sequences with their actual representations
+        return s
+            .replace("\\\"", "\"")  // Handle escaped double quotes
+            .replace("\\n", "\n")   // Handle newline escape
+            .replace("\\t", "\t")   // Handle tab escape
+            .replace("\\r", "\r")   // Handle carriage return escape
+            .replace("\\\\", "\\"); // Handle backslash escape
+    }
 
     //================================================================================
     // Methods
