@@ -87,6 +87,29 @@
   -vfx-h-spacing: 24px;
 }
 
+.projects-view .vfx-grid .label.dnd {
+  -fx-alignment: CENTER;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-radius: 12px;
+  -fx-border-style: segments(10) line-cap round;
+  -fx-border-width: 2px;
+  -fx-graphic-text-gap: 24px;
+  -fx-font-family: "Montserrat Bold";
+  -fx-font-size: 22px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 24px;
+}
+
+.projects-view .vfx-grid .label.dnd > .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-surface-variant;
+  -mfx-description: "fas-file-code";
+  -mfx-size: 128px;
+}
+
+.projects-view .vfx-grid:dnd .label.dnd {
+  -fx-border-color: -md-sys-color-primary;
+}
+
 /* Create Button */
 .projects-view > .mfx-button.fab.create {
   -fx-font-family: 'Montserrat Medium';

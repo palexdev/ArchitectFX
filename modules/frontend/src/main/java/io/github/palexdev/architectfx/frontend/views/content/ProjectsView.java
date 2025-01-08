@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.loaders.jui.JUIBaseLoader;
+import io.github.palexdev.architectfx.frontend.components.DnDGrid;
 import io.github.palexdev.architectfx.frontend.components.ProjectCard;
 import io.github.palexdev.architectfx.frontend.components.ProjectCardOverlay;
 import io.github.palexdev.architectfx.frontend.components.TextField;
@@ -56,7 +57,6 @@ import io.github.palexdev.mfxresources.fonts.MFXFontIcon;
 import io.github.palexdev.rectcut.Rect;
 import io.github.palexdev.virtualizedfx.controls.VFXScrollPane;
 import io.github.palexdev.virtualizedfx.enums.ScrollPaneEnums.ScrollBarPolicy;
-import io.github.palexdev.virtualizedfx.grid.VFXGrid;
 import io.github.palexdev.virtualizedfx.grid.VFXGridHelper;
 import io.inverno.core.annotation.Bean;
 import javafx.animation.Animation;
@@ -108,7 +108,7 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
     //================================================================================
     protected class ProjectsPane extends Pane {
         private final Box header;
-        private final VFXGrid<Project, ProjectCard> grid;
+        private final DnDGrid<Project, ProjectCard> grid;
         private final VFXScrollPane vsp;
         private final MFXFab createFAB;
         private final MFXFab importFAB;
@@ -155,10 +155,11 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             getChildren().add(header);
 
             // Grid
-            grid = new VFXGrid<>(
+            grid = new DnDGrid<>(
                 appModel.getProjects().getView(),
                 ProjectCard::new
             );
+            grid.setOnProjectsDropped(behavior::addProjects);
             When.onInvalidated(grid.cellSizeProperty())
                 .then(v -> grid.autoArrange(minColumns))
                 .invalidating(grid.widthProperty())
@@ -185,7 +186,6 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             getChildren().add(createFAB);
 
             // Import FAB
-            /* TODO move debounce to UIUtils? */
             importFAB = new MFXFab(new MFXFontIcon()).small();
             importFAB.setManaged(false);
             importFAB.getStyleClass().add("import");
@@ -327,12 +327,13 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
 
             List<File> files = fc.showOpenMultipleDialog(mainWindow);
             if (files == null) return;
-            for (File file : files) {
-                CollectionUtils.addUnique(
-                    appModel.getProjects(),
-                    new Project(file.toPath())
-                );
-                settings.lastDir().set((lastDir == null) ? "" : lastDir.toString());
+            addProjects(files.stream().map(f -> new Project(f.toPath())).toList());
+            settings.lastDir().set((lastDir == null) ? "" : lastDir.toString());
+        }
+
+        protected void addProjects(List<Project> projects) {
+            for (Project project : projects) {
+                CollectionUtils.addUnique(appModel.getProjects(), project);
             }
         }
 
