@@ -12,13 +12,13 @@ document:
 // Document metadata
 dependencies:
   DEPENDENCIES LBRACE
-    STRING (COMMA STRING)*
+    STRING? (COMMA STRING)*
   RBRACE
 ;
 
 imports:
   IMPORTS LBRACE
-    STRING (COMMA STRING)*
+    STRING? (COMMA STRING)*
   RBRACE
 ;
 
