@@ -85,6 +85,7 @@ type:
   | BOOLEAN
   | CHAR
   | STRING
+  | TRIPLE_STRING
   | INTEGER
   | HEXADECIMAL
   | BINARY
@@ -132,7 +133,7 @@ INJECTION: '$'~('\r' | '\n')+'$';
 // Types - String and Character Literals
 CHAR: '\'' ( ~['\\\r\n] | '\\' . ) '\'';                                 // Single-quoted character literals, including escape sequences.
 STRING: ('\'' (~[\r\n'] | '\\' .)* '\'' | '"' (~[\r\n"] | '\\' .)* '"'); // Matches both single-quoted and double-quoted strings with escape sequences.
-
+TRIPLE_STRING: '"""' ( ~["\\] | '\\' . )* '"""';                         // Allows string with new lines and carriage returns
 
 // Types - Integers
 INTEGER: Digit+;                                                         // Matches decimal integers
