@@ -133,7 +133,7 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
         } catch (Exception ex) {
             onProgress(Progress.CANCELED);
             throw ex;
-        }finally {
+        } finally {
             config.setControllerFactory(null);
             resolver = null;
         }
