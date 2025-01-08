@@ -32,6 +32,7 @@ import io.github.palexdev.architectfx.backend.jui.JUIVisitor;
 import io.github.palexdev.architectfx.backend.loaders.UILoader;
 import io.github.palexdev.architectfx.backend.model.UIDocument;
 import io.github.palexdev.architectfx.backend.resolver.Resolver;
+import io.github.palexdev.architectfx.backend.utils.Progress;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -129,7 +130,10 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             // 6) Finally return result
             onProgress("Loaded!", 1.0);
             return new Loaded<>(document, root, controller.orElse(null));
-        } finally {
+        } catch (Exception ex) {
+            onProgress(Progress.CANCELED);
+            throw ex;
+        }finally {
             config.setControllerFactory(null);
             resolver = null;
         }
