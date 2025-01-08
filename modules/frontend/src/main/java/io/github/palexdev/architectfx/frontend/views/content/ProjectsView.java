@@ -51,7 +51,6 @@ import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.observables.When;
 import io.github.palexdev.mfxcore.utils.fx.LayoutUtils;
 import io.github.palexdev.mfxeffects.animations.Animations;
-import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.github.palexdev.mfxresources.fonts.MFXFontIcon;
 import io.github.palexdev.rectcut.Rect;
@@ -60,7 +59,7 @@ import io.github.palexdev.virtualizedfx.enums.ScrollPaneEnums.ScrollBarPolicy;
 import io.github.palexdev.virtualizedfx.grid.VFXGrid;
 import io.github.palexdev.virtualizedfx.grid.VFXGridHelper;
 import io.inverno.core.annotation.Bean;
-import javafx.animation.PauseTransition;
+import javafx.animation.Animation;
 import javafx.application.HostServices;
 import javafx.geometry.Pos;
 import javafx.scene.layout.Pane;
@@ -181,11 +180,7 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             createFAB.getStyleClass().add("create");
             createFAB.setOnAction(e -> {
                 // Debounce for a smoother UX
-                PauseBuilder.build()
-                    .setDuration(M3Motion.SHORT4)
-                    .setOnFinished(end -> behavior.createProject())
-                    .getAnimation()
-                    .play();
+                UIUtils.delayAction(M3Motion.SHORT4, behavior::createProject);
             });
             getChildren().add(createFAB);
 
@@ -196,11 +191,7 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
             importFAB.getStyleClass().add("import");
             importFAB.setOnAction(e ->
                 // Debounce for a smoother UX
-                PauseBuilder.build()
-                    .setDuration(M3Motion.SHORT4)
-                    .setOnFinished(end -> behavior.addProjects())
-                    .getAnimation()
-                    .play()
+                UIUtils.delayAction(M3Motion.SHORT4, behavior::addProjects)
             );
             UIUtils.installTooltip(importFAB, "Import Projects", Pos.CENTER_LEFT);
             getChildren().add(importFAB);
@@ -269,7 +260,7 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
     }
 
     protected class ProjectsViewBehavior {
-        private PauseTransition filterDelay;
+        private Animation filterDelay;
 
         public void onOverlayAction(ProjectCardOverlay.OverlayEvents event) {
             Project project = event.getProject();
@@ -282,11 +273,10 @@ public class ProjectsView extends View<ProjectsPane, ProjectsViewBehavior> {
 
         public void filter(String text) {
             if (Animations.isPlaying(filterDelay)) filterDelay.stop();
-            filterDelay = PauseBuilder.build()
-                .setDuration(M3Motion.MEDIUM1)
-                .setOnFinished(e -> appModel.setFilter(text))
-                .getAnimation();
-            filterDelay.play();
+            filterDelay = UIUtils.delayAction(
+                M3Motion.SHORT4,
+                () -> appModel.setFilter(text)
+            );
         }
 
         public void sortBy(Project.SortBy sortBy) {

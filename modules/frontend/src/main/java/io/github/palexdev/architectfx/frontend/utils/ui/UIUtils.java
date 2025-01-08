@@ -30,7 +30,10 @@ import io.github.palexdev.mfxcomponents.window.popups.MFXTooltip;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.utils.fx.NodeUtils;
 import io.github.palexdev.mfxcore.utils.fx.SwingFXUtils;
+import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
+import javafx.animation.Animation;
+import javafx.animation.PauseTransition;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
@@ -114,6 +117,15 @@ public class UIUtils {
             out = transform.transform(out);
         }
         return SwingFXUtils.toFXImage(out, null);
+    }
+
+    public static Animation delayAction(Duration delay, Runnable action) {
+        PauseTransition animation = PauseBuilder.build()
+            .setDuration(delay)
+            .setOnFinished(e -> action.run())
+            .getAnimation();
+        animation.play();
+        return animation;
     }
 
     public static void debugTheme(Parent parent, String theme) {

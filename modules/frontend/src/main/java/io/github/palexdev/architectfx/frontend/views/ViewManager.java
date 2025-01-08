@@ -29,9 +29,9 @@ import io.github.palexdev.architectfx.frontend.events.UIEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
 import io.github.palexdev.architectfx.frontend.theming.ThemeMode;
+import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
 import io.github.palexdev.mfxcore.base.beans.Size;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
-import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
 import javafx.beans.property.ObjectProperty;
@@ -91,11 +91,7 @@ public class ViewManager {
         rootPane.onLayout(this::ensureWindowSizes);
         initMainWindow();
         // Delay centering because of how we handle windows's min sizes
-        PauseBuilder.build()
-            .setDuration(M3Motion.LONG2)
-            .setOnFinished(e -> mainWindow.centerOnScreen())
-            .getAnimation()
-            .play();
+        UIUtils.delayAction(M3Motion.LONG2, mainWindow::centerOnScreen);
     }
 
     private void initMainWindow() {

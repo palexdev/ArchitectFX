@@ -37,7 +37,6 @@ import io.github.palexdev.architectfx.frontend.views.InitialView;
 import io.github.palexdev.architectfx.frontend.views.LivePreviewView;
 import io.github.palexdev.mfxcore.base.properties.resettable.ResettableIntegerProperty;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
-import io.github.palexdev.mfxeffects.animations.Animations.PauseBuilder;
 import io.github.palexdev.mfxeffects.animations.motion.M3Motion;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.BeanSocket;
@@ -194,19 +193,15 @@ public class PreviewModel {
     }
 
     protected void snapshotProject() {
-        PauseBuilder.build()
-            .setDuration(M3Motion.EXTRA_LONG4)
-            .setOnFinished(e -> {
-                Parent parent = Optional.ofNullable(getRoot())
-                    .map(UILoader.Loaded::root)
-                    .map(Node::getParent)
-                    .orElse(null);
-                if (parent == null) return;
-                Image snap = parent.snapshot(null, null);
-                getProject().setPreview(snap);
-            })
-            .getAnimation()
-            .play();
+        UIUtils.delayAction(M3Motion.EXTRA_LONG4, () -> {
+            Parent parent = Optional.ofNullable(getRoot())
+                .map(UILoader.Loaded::root)
+                .map(Node::getParent)
+                .orElse(null);
+            if (parent == null) return;
+            Image snap = parent.snapshot(null, null);
+            getProject().setPreview(snap);
+        });
     }
 
     //================================================================================
