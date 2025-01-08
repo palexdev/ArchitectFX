@@ -20,11 +20,13 @@ package io.github.palexdev.architectfx.frontend;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ConcurrentModificationException;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import io.github.palexdev.architectfx.backend.utils.OSUtils;
@@ -32,11 +34,14 @@ import io.github.palexdev.architectfx.frontend.components.layout.RootPane;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
 import io.github.palexdev.architectfx.frontend.events.SettingsEvent;
 import io.github.palexdev.architectfx.frontend.settings.AppSettings;
+import io.github.palexdev.architectfx.frontend.theming.AFXIcons;
 import io.github.palexdev.architectfx.frontend.theming.ThemeEngine;
 import io.github.palexdev.architectfx.frontend.utils.FileUtils;
 import io.github.palexdev.architectfx.frontend.views.ViewManager;
 import io.github.palexdev.mfxcore.events.bus.IEventBus;
 import io.github.palexdev.mfxcore.settings.Settings;
+import io.github.palexdev.mfxresources.fonts.IconProvider;
+import io.github.palexdev.mfxresources.fonts.IconsProviders;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.Wrapper;
 import io.inverno.core.v1.StandardBanner;
@@ -127,6 +132,22 @@ public class ArchitectFX extends Application {
             return Optional.empty();
         }
 
+        IconsProviders.registerProvider("afx-", new IconProvider() {
+            @Override
+            public String getFontPath() {
+                return "css/fonts/AFX-Extra.ttf";
+            }
+
+            @Override
+            public Function<String, Character> getConverter() {
+                return AFXIcons::toCode;
+            }
+
+            @Override
+            public InputStream load() {
+                return Resources.loadStream(getFontPath());
+            }
+        });
         themeEngine.loadTheme();
 
         // Check if settings reset has been requested via arguments
