@@ -87,7 +87,7 @@ public class ArchitectFX extends Application {
             if (e instanceof ConcurrentModificationException)
                 // Shut the fuck up
                 return;
-            Logger.error("!!Exception occurred on the UI thread!!\n {}", e);
+            Logger.error(e, "!!Exception occurred on the UI thread!!\n {}");
         });
 
         // Init extra beans
