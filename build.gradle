@@ -26,8 +26,11 @@ subprojects {
         // Inverno Framework :D
         annotationProcessor "io.inverno:inverno-core-compiler:$inverno"
         implementation "io.inverno:inverno-core:$inverno"
+
+        // Logging
         implementation "org.tinylog:tinylog-impl:$tinylog"
         implementation "org.tinylog:slf4j-tinylog:$tinylog"
+        implementation 'org.apache.logging.log4j:log4j-to-slf4j:3.0.0-beta2'
 
         // Test
         testImplementation platform("org.junit:junit-bom:$junit")

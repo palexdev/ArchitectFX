@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
  * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
  *
  * ArchitectFX is free software: you can redistribute it and/or
@@ -18,10 +18,8 @@
 
 package io.github.palexdev.architectfx.frontend;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ConcurrentModificationException;
@@ -44,7 +42,6 @@ import io.github.palexdev.mfxresources.fonts.IconProvider;
 import io.github.palexdev.mfxresources.fonts.IconsProviders;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.Wrapper;
-import io.inverno.core.v1.StandardBanner;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
@@ -119,11 +116,6 @@ public class ArchitectFX extends Application {
 
     private Optional<Frontend> bootstrap() {
         // First of all, start Inverno modules
-        Logger.info(() -> {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            new StandardBanner().print(new PrintStream(out));
-            return out.toString();
-        });
         Frontend frontend = io.inverno.core.v1.Application.with(new Frontend.Builder()).run();
 
         // Ensure supported platform
