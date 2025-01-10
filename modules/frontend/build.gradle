@@ -1,5 +1,7 @@
 plugins {
     id 'application'
+    id 'org.beryx.jlink'
+    id 'com.gradleup.shadow'
 }
 
 version = "$afx_frontend"
@@ -83,3 +85,61 @@ sourceSets {
 
 sourcesJar.dependsOn(compileJava)
 compileTestJava.dependsOn(sourcesJar)
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+    archives jar
+}
+
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'ArchitectFX'
+    }
+
+    addExtraDependencies("javafx")
+    forceMerge("jresolve")
+    forceMerge("tinylog")
+    forceMerge("slf4j")
+
+    mergedModule {
+        requires 'java.net.http';
+        requires 'java.management';
+        requires 'javafx.graphics';
+        requires 'java.naming';
+        requires 'java.logging';
+        requires 'java.sql';
+        requires 'java.prefs';
+        requires 'java.xml';
+        requires 'java.desktop';
+        requires 'javafx.base';
+        requires 'jdk.unsupported';
+        uses 'org.slf4j.spi.SLF4JServiceProvider';
+        uses 'org.tinylog.policies.Policy';
+        uses 'org.tinylog.converters.FileConverter';
+        uses 'org.tinylog.configuration.ConfigurationLoader';
+        uses 'org.tinylog.provider.LoggingProvider';
+        uses 'org.tinylog.writers.Writer';
+        provides 'org.tinylog.converters.FileConverter' with 'org.tinylog.converters.GzipFileConverter';
+        provides 'org.tinylog.provider.LoggingProvider' with 'org.tinylog.core.TinylogLoggingProvider';
+        provides 'org.slf4j.spi.SLF4JServiceProvider' with 'org.tinylog.slf4j.TinylogSlf4jServiceProvider';
+        provides 'org.tinylog.configuration.ConfigurationLoader' with 'org.tinylog.configuration.PropertiesConfigurationLoader';
+    }
+
+    jpackage {
+        def os = project.getProperties().get('os');
+        icon = "src/main/resources/io/github/palexdev/architectfx/frontend/assets/icon.ico"
+        installerName = "ArchitectFX"
+        appVersion = "$afx_frontend"
+    }
+}
+
+shadowJar {
+    mergeServiceFiles()
+    dependencies {
+        exclude {
+            it.moduleGroup in List.of('org.openjfx', 'com.ibm.icu')
+        }
+    }
+}

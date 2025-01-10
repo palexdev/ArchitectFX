@@ -1,6 +1,8 @@
 plugins {
     id 'java'
     id 'org.openjfx.javafxplugin' version "$jfxPlugin" apply false
+    id 'org.beryx.jlink' version "$jlink" apply false
+    id 'com.gradleup.shadow' version "$shadow" apply false
 }
 
 subprojects {
