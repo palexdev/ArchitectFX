@@ -1,15 +1,15 @@
-# This workflow will build a Java project with Gradle
-# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
-
 name: Build main
+
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_call: { }
 
 jobs:
+  format-code:
+    name: Format code
+    uses: ./.github/workflows/intellij-format.yml
+
   build:
+    needs: format-code
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
@@ -18,14 +18,20 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v4
 
-      - name: Set up JDK 23
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '23'
 
-      - name: Grant execute permission for gradlew
+      - name: Give permissions to Gradle
         run: chmod +x gradlew
 
       - name: Build with Gradle
         run: xvfb-run ./gradlew build -Djava.awt.headless=true -Dtestfx.robot=glass -Dtestfx.headless=true -Dprism.order=sw
+
+      - name: Upload Shadow Jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadow-jar
+          path: modules/frontend/build/libs/*-all.jar

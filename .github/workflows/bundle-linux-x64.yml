@@ -1,0 +1,31 @@
+name: Bundle for Linux x64
+
+on:
+  workflow_call: { }
+
+jobs:
+  linux-x64:
+    name: Build and Package for Linux x64
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 23
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '23'
+
+      - name: Give permissions to Gradle
+        run: chmod +x gradlew
+
+      - name: Create Installer
+        run: ./gradlew jpackage -Pos=linux
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-x64-binaries
+          path: modules/frontend/build/jpackage/*

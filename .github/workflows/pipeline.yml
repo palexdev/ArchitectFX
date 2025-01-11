@@ -1,0 +1,65 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  create-tag:
+    if: ${{ contains(github.event.head_commit.message, ':bookmark:') }}
+    runs-on: ubuntu-latest
+    needs: build
+    outputs:
+      VERSION: ${{ steps.extract.outputs.ver }}
+    steps:
+      - name: Extract version
+        id: extract
+        run: echo "ver=$(echo ${{ github.event.head_commit.message }} | sed -n 's/.*version \([0-9]\+\.[0-9]\+\.[0-9]\+\).*/\1/p')" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create tag
+        uses: rickstaa/action-create-tag@v1.7.2
+        with:
+          tag: 'v${{ steps.extract.outputs.ver }}'
+
+  bundle-windows:
+    needs: create-tag
+    uses: ./.github/workflows/bundle-windows-x64.yml
+
+  bundle-linux:
+    needs: create-tag
+    uses: ./.github/workflows/bundle-linux-x64.yml
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [ create-tag, bundle-windows, bundle-linux ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: tree:0
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Generate changelog
+        id: changelog-gen
+        run: python ./scripts/generate_changelog.py
+
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: 'v${{ needs.create-tag.outputs.VERSION }}'
+          artifacts: "artifacts/TestCICD-*,artifacts/testcicd-*,artifacts/testcicd_*"
+          bodyFile: 'Changelog.md'
