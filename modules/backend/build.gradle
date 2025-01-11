@@ -2,8 +2,6 @@ plugins {
     id 'antlr'
 }
 
-version = "$afx_backend"
-
 dependencies {
     antlr "org.antlr:antlr4:$antlr"
     implementation "org.antlr:antlr4-runtime:$antlr"

@@ -1,10 +1,10 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
     id 'application'
     id 'org.beryx.jlink'
     id 'com.gradleup.shadow'
 }
-
-version = "$afx_frontend"
 
 dependencies {
     implementation(project(":backend"))
@@ -90,9 +90,28 @@ artifacts {
     archives javadocJar
     archives sourcesJar
     archives jar
+    archives shadowJar
+}
+
+shadowJar {
+    mergeServiceFiles()
+    dependencies {
+        exclude {
+            it.moduleGroup in List.of('com.ibm.icu')
+        }
+    }
 }
 
 jlink {
+    def os
+    if (project.hasProperty('os')) {
+        os = project.getProperty('os')
+    } else {
+        os = getOS()
+    }
+    if (os == null)
+        throw new IllegalStateException("Unknown os")
+
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher {
         name = 'ArchitectFX'
@@ -128,18 +147,46 @@ jlink {
     }
 
     jpackage {
-        def os = project.getProperties().get('os');
+        appVersion = "$appVer"
+        installerName = 'ArchitectFX'
+        description = 'ArchitectFX is a new tool with a modern and pleasant interface, which allows' +
+                'to easily and quickly build and prototype views for JavaFX.' +
+                'UIs are declared in a clear and concise custom DSL called JUI (Java User Interface), ' +
+                'its syntax is based on Java and Groovy'
+        vendor = 'palexdev'
         icon = "src/main/resources/io/github/palexdev/architectfx/frontend/assets/icon.ico"
-        installerName = "ArchitectFX"
-        appVersion = "$afx_frontend"
+
+        if (os == 'windows') {
+            installerOptions += [
+                    "--win-help-url", "https://github.com/palexdev/ArchitectFX",
+                    "--win-dir-chooser",
+                    "--win-menu",
+                    "--win-per-user-install",
+                    "--win-shortcut",
+                    "--win-shortcut-prompt",
+            ]
+        }
+
+        if (os == 'linux') {
+            installerOptions += [
+                    "--linux-package-name", "ArchitectFX",
+                    "--linux-menu-group", '"Development;Building;GUIDesigner;Java;"',
+                    "--install-dir", "/opt",
+                    "--linux-shortcut"
+            ]
+        }
     }
 }
 
-shadowJar {
-    mergeServiceFiles()
-    dependencies {
-        exclude {
-            it.moduleGroup in List.of('org.openjfx', 'com.ibm.icu')
-        }
+static String getOS() {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return 'windows'
     }
+    if (Os.isFamily(Os.FAMILY_UNIX)) {
+        return 'linux'
+    }
+    if (Os.isFamily(Os.FAMILY_MAC)) {
+        return 'macos'
+    }
+    return null
 }
