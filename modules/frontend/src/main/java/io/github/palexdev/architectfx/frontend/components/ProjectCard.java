@@ -195,6 +195,7 @@ public class ProjectCard extends VFXCellBase<Project> {
                     .process(e -> {
                         if (!overlay.isShowingFor(cell)) {
                             overlay.show(cell, getChildren());
+                            overlay.setProjectSupplier(cell::getItem);
                             e.consume();
                         }
                     })
