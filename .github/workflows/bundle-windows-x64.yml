@@ -33,3 +33,4 @@ jobs:
         with:
           name: windows-x64-binaries
           path: modules/frontend/build/jpackage/*.msi
+          retention-days: 7

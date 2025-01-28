@@ -35,3 +35,4 @@ jobs:
         with:
           name: shadow-jar
           path: modules/frontend/build/libs/*-all.jar
+          retention-days: 7

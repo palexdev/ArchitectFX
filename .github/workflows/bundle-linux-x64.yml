@@ -29,3 +29,4 @@ jobs:
         with:
           name: linux-x64-binaries
           path: modules/frontend/build/jpackage/*
+          retention-days: 7
