@@ -20,6 +20,7 @@ package io.github.palexdev.architectfx.frontend.components;
 
 import java.util.List;
 
+import io.github.palexdev.architectfx.frontend.components.ProjectCardOverlay.OverlayEvents;
 import io.github.palexdev.architectfx.frontend.model.Project;
 import io.github.palexdev.architectfx.frontend.utils.DateTimeUtils;
 import io.github.palexdev.architectfx.frontend.utils.ui.UIUtils;
@@ -39,6 +40,7 @@ import javafx.css.Styleable;
 import javafx.css.StyleablePropertyFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
@@ -198,7 +200,13 @@ public class ProjectCard extends VFXCellBase<Project> {
                             overlay.setProjectSupplier(cell::getItem);
                             e.consume();
                         }
-                    })
+                    }),
+                WhenEvent.intercept(cell, MouseEvent.MOUSE_CLICKED)
+                    .condition(e ->
+                        e.getButton() == MouseButton.PRIMARY &&
+                        e.getClickCount() % 2 == 0
+                    )
+                    .process(e -> OverlayEvents.fire(OverlayEvents.LIVE_PREVIEW_EVENT, overlay))
             );
         }
 
