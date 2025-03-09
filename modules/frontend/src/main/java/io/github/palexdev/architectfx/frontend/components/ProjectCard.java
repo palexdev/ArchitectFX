@@ -18,8 +18,6 @@
 
 package io.github.palexdev.architectfx.frontend.components;
 
-import java.util.List;
-
 import io.github.palexdev.architectfx.frontend.components.ProjectCardOverlay.OverlayEvents;
 import io.github.palexdev.architectfx.frontend.model.Project;
 import io.github.palexdev.architectfx.frontend.utils.DateTimeUtils;
@@ -35,6 +33,7 @@ import io.github.palexdev.mfxcore.utils.fx.StyleUtils;
 import io.github.palexdev.rectcut.Rect;
 import io.github.palexdev.virtualizedfx.cells.CellBaseBehavior;
 import io.github.palexdev.virtualizedfx.cells.VFXCellBase;
+import java.util.List;
 import javafx.css.CssMetaData;
 import javafx.css.Styleable;
 import javafx.css.StyleablePropertyFactory;
@@ -68,7 +67,7 @@ public class ProjectCard extends VFXCellBase<Project> {
     }
 
     //================================================================================
-    // StyleableProperties
+    // Styleable Properties
     //================================================================================
     private final StyleableDoubleProperty previewRadius = new StyleableDoubleProperty(
         StyleableProperties.PREVIEW_RADIUS,

@@ -31,11 +31,6 @@ application {
     applicationDefaultJvmArgs += ['-Dprism.forceUploadingPainter=true']
 }
 
-tasks.register('launch', JavaExec) {
-    classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'app.Launcher'
-}
-
 tasks.register('zipAssets', Zip) {
     delete(file("src/main/resources/io/github/palexdev/architectfx/frontend/assets/assets.zip"))
 

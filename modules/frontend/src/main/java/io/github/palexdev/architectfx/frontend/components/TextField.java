@@ -33,7 +33,7 @@ public class TextField extends Box {
     //================================================================================
     // Properties
     //================================================================================
-    private final javafx.scene.control.TextField field;
+    private final javafx.scene.control.TextField field = new javafx.scene.control.TextField();
 
     private final IconProperty leadingIcon = new IconProperty() {
         @Override
@@ -73,7 +73,7 @@ public class TextField extends Box {
 
     public TextField(String text, MFXFontIcon leading, MFXFontIcon trailing) {
         super(Direction.ROW);
-        field = new javafx.scene.control.TextField(text);
+        setText(text);
         getContainerChildren().add(field);
         setLeadingIcon(leading);
         setTrailingIcon(trailing);
