@@ -19,12 +19,6 @@
 package io.github.palexdev.architectfx.backend.resolver;
 
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import io.github.palexdev.architectfx.backend.enums.CollectionHandleStrategy;
 import io.github.palexdev.architectfx.backend.model.CollectionProperty;
 import io.github.palexdev.architectfx.backend.model.ObjProperty;
@@ -34,6 +28,12 @@ import io.github.palexdev.architectfx.backend.model.types.Value.*;
 import io.github.palexdev.architectfx.backend.utils.CastUtils;
 import io.github.palexdev.architectfx.backend.utils.reflection.ArrayUtils;
 import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import org.tinylog.Logger;
 
 public class DefaultResolver implements Resolver {
@@ -185,17 +185,32 @@ public class DefaultResolver implements Resolver {
 
     @Override
     public String resolveURL(URLValue value) {
-        if (context().getLocation() == null) {
+        URI location = context.getLocation();
+        if (location == null) {
             Logger.warn("Resources resolution is not available as load location is null");
             return null;
         }
 
-        URI uri = value.toURI();
-        if (uri.isAbsolute()) return uri.toString();
+        URI res = value.toURI();
+        if (res.isAbsolute()) {
+            Logger.debug("Resource location {} is absolute", res);
+            return res.toString();
+        }
 
-        URI location = context().getLocation();
-        uri = location.resolve(uri);
-        return uri.toString();
+        /* Jar protocol is shit. URI sucks. We'll use URL for now and eventually string manipulation */
+        try {
+            if (location.getScheme().equals("jar")) {
+                Logger.debug("Handling resource resolution for jar protocol...");
+                URL base = location.toURL();
+                return new URL(base, value.getValue()).toString();
+            }
+        } catch (Exception ex) {
+            Logger.error("Failed to resolve jar resource {} because:\n{}", res, ex);
+            return null;
+        }
+
+        res = location.resolve(res);
+        return res.toString();
     }
 
     @Override
