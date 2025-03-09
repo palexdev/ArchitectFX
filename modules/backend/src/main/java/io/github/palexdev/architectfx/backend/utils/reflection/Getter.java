@@ -2,6 +2,7 @@ package io.github.palexdev.architectfx.backend.utils.reflection;
 
 import org.joor.Reflect;
 import org.joor.ReflectException;
+import org.tinylog.Logger;
 
 /// API to retrieve a certain field/value from a target object (can be a class if it's static) given its name.
 ///
@@ -24,11 +25,15 @@ public sealed interface Getter permits Getter.Direct, Getter.Accessor {
     static <T> T read(Object target, String name) {
         try {
             return accessor().get(target, name);
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            Logger.trace(ex);
+        }
 
         try {
             return direct().get(target, name);
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            Logger.trace(ex);
+        }
 
         throw new ReflectException("Read access to field failed with both accessor and direct approaches");
     }

@@ -2,6 +2,7 @@ package io.github.palexdev.architectfx.backend.utils.reflection;
 
 import org.joor.Reflect;
 import org.joor.ReflectException;
+import org.tinylog.Logger;
 
 /// API to set a certain field on a target object (can be a class if it's static) given its name and the target value.
 ///
@@ -24,11 +25,15 @@ public sealed interface Setter permits Setter.Direct, Setter.Accessor {
     static <T> T write(Object target, String name, Object value) {
         try {
             return accessor().set(target, name, value);
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            Logger.trace(ex);
+        }
 
         try {
             return direct().set(target, name, value);
-        } catch (Exception ignored) {}
+        } catch (Exception ex) {
+            Logger.trace(ex);
+        }
 
         throw new ReflectException("Write access to field failed with both accessor and direct approaches");
     }
