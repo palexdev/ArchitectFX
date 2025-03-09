@@ -1,0 +1,317 @@
+/*
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Extra Colors */
+.root {
+  -high: #FF9C73;
+  -medium: #FFC972;
+  -low: #00D3FF;
+  -standard: -md-sys-color-primary;
+}
+
+/* Sidebar */
+.root-pane > .notes > .sidebar {
+  -fx-alignment: TOP_CENTER;
+  -fx-border-color: transparent -md-sys-color-outline transparent transparent;
+  -fx-padding: 16px 20px 16px 20px;
+  -fx-spacing: 12px;
+}
+
+.root-pane > .notes > .sidebar .mfx-icon-button {
+  -fx-background-radius: 12px;
+}
+
+.root-pane > .notes > .sidebar .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.root-pane > .notes > .sidebar > .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-plus';
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon {
+  -fx-opacity: 0.7;
+  -mfx-description: 'fas-circle';
+  -mfx-size: 20px;
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon:hover,
+.root-pane > .notes > .sidebar > .mfx-font-icon:pressed {
+  -fx-opacity: 1.0;
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon.high {
+  -mfx-color: -high;
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon.medium {
+  -mfx-color: -medium;
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon.low {
+  -mfx-color: -low;
+}
+
+.root-pane > .notes > .sidebar > .mfx-font-icon.standard {
+  -mfx-color: -standard;
+}
+
+.root-pane > .notes > .sidebar .mfx-icon-button.back .mfx-font-icon {
+  -mfx-description: 'fas-right-from-bracket';
+}
+
+.root-pane > .notes > .sidebar .mfx-icon-button.theme .mfx-font-icon {
+  -mfx-description: 'fas-sun';
+}
+
+.root-pane > .notes:dark > .sidebar .mfx-icon-button.theme .mfx-font-icon {
+  -mfx-description: 'fas-moon';
+}
+
+/* Header */
+.root-pane > .notes > .container > .header {
+  -fx-alignment: CENTER_RIGHT;
+  -fx-padding: 12px;
+  -fx-spacing: 8px;
+}
+
+.root-pane > .notes > .container > .header > .label {
+  -fx-font-family: 'MontSerrat Bold';
+  -fx-font-size: 40px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root-pane > .notes > .container > .header > .filter {
+  -fx-background-color: -md-sys-color-surface-container-highest;
+  -fx-background-radius: 12px;
+  -fx-padding: 8px;
+  -fx-spacing: 8px;
+}
+
+.root-pane > .notes > .container > .header > .filter:hover {
+  -fx-cursor: TEXT;
+}
+
+.root-pane > .notes > .container > .header > .filter .text-field {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-prompt-text-fill: -md-sys-color-on-surface;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root-pane > .notes > .container > .header > .filter .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-surface;
+  -mfx-description: 'fas-magnifying-glass';
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button {
+  -fx-background-color: transparent;
+  -fx-border-color: -md-sys-color-outline;
+  -fx-border-radius: 12px;
+  -fx-opacity: 0.5;
+  -mfx-size: 24px;
+
+  transition-property: -fx-opacity;
+  transition-duration: 100ms;
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button:hover {
+  -fx-opacity: 0.7;
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button:selected {
+  -fx-opacity: 1.0;
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button .mfx-font-icon {
+  -mfx-description: 'fas-star';
+  -mfx-size: 18px;
+}
+
+.root-pane > .notes > .container > .header > .mfx-icon-button:selected .mfx-font-icon {
+  -mfx-color: gold;
+}
+
+/* Content  */
+.root-pane > .notes > .container > .content {
+  -fx-padding: 12px 20px 12px 20px;
+  -fx-spacing: 12px;
+}
+
+.root-pane > .notes > .container > .content .vfx-scroll-pane {
+  -vfx-autohide-bars: true;
+  -vfx-layout-mode: COMPACT;
+  -vfx-smooth-scroll: true;
+  -vfx-vunit-increment: 40px;
+}
+
+.root-pane > .notes > .container > .content .vfx-scroll-pane .viewport {
+  -fx-padding: 8px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid {
+  -vfx-cell-size: '270 240';
+  -vfx-h-spacing: 24px;
+  -vfx-v-spacing: 24px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card {
+  -fx-background-radius: 12px;
+  -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.2), 10, 0.12, -1.0, 2.0);
+  -fx-padding: 4px 3px 4px 6px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button {
+  -fx-background-radius: 12px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button {
+  -mfx-size: 24px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button .mfx-font-icon {
+  -mfx-size: 16px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .title {
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 14px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button {
+  -fx-opacity: 0.0;
+  transition-property: -fx-opacity;
+  transition-duration: 200ms;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:hover > .mfx-icon-button {
+  -fx-opacity: 1.0;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button.fav .mfx-font-icon {
+  -mfx-description: 'fas-star';
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .body {
+  -fx-alignment: TOP_LEFT;
+  -fx-font-family: 'MontSerrat Medium';
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .date {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 12px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button.edit .mfx-font-icon {
+  -mfx-description: 'fas-pen'
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card > .mfx-icon-button.delete .mfx-font-icon {
+  -mfx-description: 'fas-trash'
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:high {
+  -fx-background-color: -high;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:medium {
+  -fx-background-color: -medium;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:low {
+  -fx-background-color: -low;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:standard {
+  -fx-background-color: -surface-low;
+  -fx-border-color: -standard;
+  -fx-border-radius: 12px;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:standard > .label {
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-wrap-text: true;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:fav .mfx-icon-button.fav {
+  -fx-opacity: 1.0;
+}
+
+.root-pane > .notes > .container > .content .vfx-grid .note-card:fav .mfx-icon-button.fav .mfx-font-icon {
+  -mfx-color: gold;
+}
+
+/* Edit Popup */
+.edit-popup {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 12px;
+  -fx-padding: 8px;
+  -fx-spacing: 12px;
+}
+
+.edit-popup > .text-field,
+.edit-popup > .text-area {
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-prompt-text-fill: -md-sys-color-outline;
+  -fx-padding: 8px;
+}
+
+.edit-popup > .text-field {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-background-radius: 6px;
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 20px;
+}
+
+.edit-popup > .text-area {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-background-radius: 6px;
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 14px;
+}
+
+.edit-popup > .actions {
+  -fx-alignment: CENTER_RIGHT;
+  -fx-spacing: 12px;
+}
+
+.edit-popup > .actions > .mfx-button {
+  -fx-font-family: 'MontSerrat Medium';
+}
+
+.edit-popup > .actions > .mfx-button,
+.edit-popup > .actions > .mfx-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+.edit-popup > .actions > .mfx-button.cancel {
+  -fx-text-fill: -md-sys-color-err;
+}
+
+.edit-popup > .actions > .mfx-button.cancel > .surface > .bg {
+  -fx-background-color: -md-sys-color-err;
+}

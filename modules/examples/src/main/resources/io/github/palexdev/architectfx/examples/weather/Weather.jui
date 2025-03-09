@@ -1,0 +1,66 @@
+.imports {
+  'io.github.palexdev.architectfx.examples.common.TextField',
+  'io.github.palexdev.architectfx.examples.weather.WeatherController',
+  'javafx.scene.control.Label',
+  'javafx.scene.layout.HBox',
+  'javafx.scene.layout.Priority',
+  'javafx.scene.layout.Region',
+  'javafx.scene.layout.VBox'
+}
+
+.controller: WeatherController {
+  appModel: $model$
+}
+
+VBox {
+  TextField {
+    .cid: 'locField'
+    promptText: 'Location'
+    leadingGraphic: MFXFontIcon {
+      description: 'fas-location-dot'
+    }
+    trailingGraphic: MFXButton::('Fetch') {
+      this.text()
+    }
+  }
+
+  Region {
+    styleClass = listOf('separator')
+  }
+
+  # Current conditions
+  Label::('None') {
+    .cid: 'locLabel'
+    styleClass += listOf('location')
+  }
+  Label::('None') {
+    .cid: 'condLabel'
+    styleClass += listOf('condition')
+  }
+
+  Region {
+    styleClass = listOf('separator')
+  }
+
+  Label::('None') {
+    .cid: 'tempLabel'
+    styleClass += listOf('temperature')
+  }
+  Label::('None') {
+    .cid: 'windLabel'
+    styleClass += listOf('wind')
+  }
+
+  Region {
+    styleClass = listOf('separator')
+  }
+
+  Label::('Forecasts') {
+    styleClass += listOf('forecasts')
+  }
+
+  VFXList {
+    .cid: 'forecastList'
+    VBox.setVgrow(this, Priority.ALWAYS)
+  }
+}

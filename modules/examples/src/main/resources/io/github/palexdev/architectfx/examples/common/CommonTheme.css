@@ -1,0 +1,149 @@
+/*
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+@import '../assets/fonts/Fonts.css';
+
+* {
+  -fx-font-smoothing-type: GRAY;
+}
+
+/* Extra Colors */
+.root {
+  -surface-low: -md-sys-color-surface-container-lowest;
+
+  -md-sys-color-err: #9F161E;
+  -md-sys-color-on-err: #FFFFFF;
+  -md-sys-color-err-container: #D23E3E;
+  -md-sys-color-on-err-container: #FFFFFF;
+
+  -md-sys-color-warn: #8B5000;
+  -md-sys-color-on-warn: #FFFFFF;
+  -md-sys-color-warn-container: #FFA643;
+  -md-sys-color-on-warn-container: #452500;
+
+  -md-sys-color-success: #006E1C;
+  -md-sys-color-on-success: #FFFFFF;
+  -md-sys-color-success-container: #58BC5B;
+  -md-sys-color-on-success-container: #002204;
+}
+
+.root:dark {
+  -surface-low: -md-sys-color-surface-container-high;
+
+  -md-sys-color-err: #FFB3AE;
+  -md-sys-color-on-err: #68000B;
+  -md-sys-color-err-container: #D23E3E;
+  -md-sys-color-on-err-container: #ffffff;
+
+  -md-sys-color-warn: #FFCA97;
+  -md-sys-color-on-warn: #4A2800;
+  -md-sys-color-warn-container: #F69300;
+  -md-sys-color-on-warn-container: #331A00;
+
+  -md-sys-color-success: #78DC77;
+  -md-sys-color-on-success: #00390A;
+  -md-sys-color-success-container: #43A648;
+  -md-sys-color-on-success-container: #000000;
+}
+
+.root-pane {
+  -fx-background-color: -surface-low;
+  -fx-background-insets: 1px;
+  -fx-background-radius: 12px;
+  -fx-border-color: -md-sys-color-primary;
+  -fx-border-radius: 12px;
+  -fx-spacing: 12px;
+}
+
+/* Window Header */
+.root-pane > .window-header {
+  -fx-alignment: CENTER_RIGHT;
+  -fx-border-color: transparent transparent -md-sys-color-outline transparent;
+  -fx-padding: 12px;
+  -fx-spacing: 8px;
+}
+
+.root-pane > .window-header > .label {
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 24px;
+  -fx-graphic-text-gap: 8px;
+  -fx-padding: 8px;
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root-pane > .window-header > .label > .mfx-font-icon {
+  -mfx-color: -md-sys-color-on-surface;
+  -mfx-size: 32px;
+}
+
+.root-pane > .window-header > .mfx-font-icon {
+  -fx-opacity: 0.7;
+  -fx-translate-y: -12px;
+  -mfx-description: 'fas-circle';
+  -mfx-size: 18px;
+}
+
+.root-pane > .window-header > .mfx-font-icon:hover,
+.root-pane > .window-header > .mfx-font-icon:pressed {
+  -fx-opacity: 1.0;
+}
+
+.root-pane > .window-header > .close-icon {
+  -mfx-color: -md-sys-color-err-container;
+}
+
+.root-pane > .window-header > .close-icon:hover,
+.root-pane > .window-header > .close-icon:pressed {
+  -mfx-description: 'fas-circle-xmark';
+}
+
+.root-pane > .window-header > .maximize-icon {
+  -mfx-color: -md-sys-color-success-container;
+}
+
+.root-pane > .window-header > .maximize-icon:hover,
+.root-pane > .window-header > .maximize-icon:pressed {
+  -mfx-description: 'fas-circle-stop';
+}
+
+.root-pane > .window-header > .minimize-icon {
+  -mfx-color: -md-sys-color-warn-container;
+}
+
+.root-pane > .window-header > .minimize-icon:hover,
+.root-pane > .window-header > .minimize-icon:pressed {
+  -mfx-description: 'fas-circle-minus';
+}
+
+.root-pane > .window-header > .aot-icon {
+  -mfx-color: -md-sys-color-primary;
+  -fx-opacity: 0.3;
+}
+
+.root-pane > .window-header > .aot-icon:hover,
+.root-pane > .window-header > .aot-icon:pressed {
+  -fx-opacity: 0.5;
+  -mfx-description: 'fas-circle-chevron-up';
+}
+
+.root-pane > .window-header > .aot-icon:aot {
+  -fx-opacity: 1.0;
+  -mfx-description: 'fas-circle-chevron-up';
+}
+
+/* Window Footer */

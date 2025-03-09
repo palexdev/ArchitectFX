@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/modules/backend" />
+            <option value="$PROJECT_DIR$/modules/examples" />
             <option value="$PROJECT_DIR$/modules/frontend" />
           </set>
         </option>

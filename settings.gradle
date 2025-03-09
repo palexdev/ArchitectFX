@@ -1,5 +1,6 @@
 include 'backend'
 include 'frontend'
+include 'examples'
 
 rootProject.name = 'ArchitectFX'
 rootProject.children.each { project ->

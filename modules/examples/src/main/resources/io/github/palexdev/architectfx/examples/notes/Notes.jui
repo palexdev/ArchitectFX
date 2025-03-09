@@ -1,0 +1,89 @@
+.imports {
+  'io.github.palexdev.architectfx.examples.common.TextField',
+  'io.github.palexdev.architectfx.examples.notes.NotesController',
+  'javafx.scene.control.Label',
+  'javafx.scene.layout.Region',
+  'javafx.scene.layout.HBox',
+  'javafx.scene.layout.Priority',
+  'javafx.scene.layout.VBox'
+}
+
+.controller: NotesController {
+  mainWindow: $mainWindow$
+  model: $model$
+}
+
+HBox {
+  styleClass = listOf("notes")
+
+  # Sidebar
+  VBox {
+    styleClass = listOf("sidebar")
+
+    MFXIconButton {
+      .cid: 'addBtn'
+      this.tonal()
+    }
+
+    MFXFontIcon {
+      .cid: 'highIcon'
+      styleClass += listOf("high")
+    }
+    MFXFontIcon {
+      .cid: 'mediumIcon'
+      styleClass += listOf("medium")
+    }
+    MFXFontIcon {
+      .cid: 'lowIcon'
+      styleClass += listOf("low")
+    }
+    MFXFontIcon {
+      .cid: 'standardIcon'
+      styleClass += listOf("standard")
+    }
+  }
+
+  # Container
+  VBox {
+    HBox.setHgrow(this, Priority.ALWAYS)
+    styleClass = listOf("container")
+
+    # Header
+    HBox {
+      styleClass = listOf("header")
+
+      Label::("Your Notes") {}
+
+      Region {
+        HBox.setHgrow(this, Priority.ALWAYS)
+      }
+
+      TextField {
+        .cid: 'filterField'
+        styleClass = listOf("filter")
+        promptText: 'Search'
+        leadingGraphic: MFXFontIcon {}
+        maxHeight: Region.USE_PREF_SIZE
+      }
+
+      MFXIconButton {
+        .cid: 'favFilter'
+        this.outlined()
+        this.asToggle()
+      }
+    }
+
+    # Content
+    VBox {
+      VBox.setVgrow(this, Priority.ALWAYS)
+      styleClass = listOf("content")
+
+      VFXScrollPane {
+        VBox.setVgrow(this, Priority.ALWAYS)
+        content: VFXGrid {
+          .cid: 'grid'
+        }
+      }
+    }
+  }
+}

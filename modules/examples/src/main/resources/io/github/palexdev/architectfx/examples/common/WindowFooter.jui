@@ -1,0 +1,10 @@
+.imports {
+  'io.github.palexdev.architectfx.examples.common.FooterController',
+  'javafx.scene.layout.HBox'
+}
+
+.controller: FooterController {
+  themeEngine: $themeEngine$
+}
+
+HBox {}

@@ -1,0 +1,46 @@
+.imports {
+  'io.github.palexdev.architectfx.examples.common.HeaderController',
+  'io.github.palexdev.mfxresources.fonts.MFXFontIcon',
+  'javafx.scene.control.Label',
+  'javafx.scene.layout.Region',
+  'javafx.scene.layout.HBox',
+  'javafx.scene.layout.Priority'
+}
+
+.controller: HeaderController {
+  mainWindow: $mainWindow$
+  rootPane: $rootPane$
+}
+
+HBox {
+  styleClass = listOf("window-header")
+
+  Label {
+    graphic: MFXFontIcon {
+      description: RootPane.ICON_DESCRIPTION
+    }
+    text: RootPane.TITLE
+  }
+
+  Region {
+    .cid: 'separator'
+    HBox.setHgrow(this, Priority.ALWAYS)
+  }
+
+  MFXFontIcon {
+    .cid: 'aotIcon'
+    styleClass += listOf("aot-icon")
+  }
+  MFXFontIcon {
+    .cid: 'minIcon'
+    styleClass += listOf("minimize-icon")
+  }
+  MFXFontIcon {
+    .cid: 'maxIcon'
+    styleClass += listOf("maximize-icon")
+  }
+  MFXFontIcon {
+    .cid: 'clsIcon'
+    styleClass += listOf("close-icon")
+  }
+}

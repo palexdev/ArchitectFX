@@ -1,0 +1,115 @@
+/*
+ * Copyright (C) 2025 Parisi Alessandro - alessandro.parisi406@gmail.com
+ * This file is part of ArchitectFX (https://github.com/palexdev/ArchitectFX)
+ *
+ * ArchitectFX is free software: you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 3 of the License,
+ * or (at your option) any later version.
+ *
+ * ArchitectFX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with ArchitectFX. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+.root-pane > VBox {
+  -fx-alignment: TOP_CENTER;
+  -fx-padding: 12px;
+}
+
+.root-pane > VBox > .separator {
+  -fx-min-height: 12px;
+}
+
+.root-pane > VBox > .field-box {
+  -fx-background-color: -md-sys-color-surface-container-high;
+  -fx-background-radius: 12px;
+  -fx-padding: 4px 4px 4px 12px;
+  -fx-spacing: 12px;
+}
+
+.root-pane > VBox > .field-box > .mfx-font-icon {
+  -mfx-size: 24px
+}
+
+.root-pane > VBox > .field-box > .text-field {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 14px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-prompt-text-fill: -md-sys-color-outline;
+}
+
+.root-pane > VBox > .field-box > .mfx-button,
+.root-pane > VBox > .field-box > .mfx-button > .surface > .bg {
+  -fx-background-radius: 12px;
+}
+
+/* Current */
+.root-pane > VBox > .location {
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 24px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 2px;
+}
+
+.root-pane > VBox > .condition {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 14px;
+  -fx-text-fill: -md-sys-color-outline;
+  -fx-padding: 2px;
+}
+
+.root-pane > VBox > .temperature {
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 16px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 2px;
+}
+
+.root-pane > VBox > .wind {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 14px;
+  -fx-text-fill: -md-sys-color-outline;
+  -fx-padding: 2px;
+}
+
+/* Forecasts */
+.root-pane > VBox > .forecasts {
+  -fx-font-family: 'MontSerrat SemiBold';
+  -fx-font-size: 20px;
+  -fx-text-fill: -md-sys-color-on-surface;
+  -fx-padding: 2px;
+}
+
+.root-pane > VBox > .vfx-list {
+  -vfx-cell-size: 180px;
+  -vfx-spacing: 12px;
+  -fx-padding: 12px;
+}
+
+.root-pane > VBox > .vfx-list .cell {
+  -fx-background-color: -md-sys-color-surface-container;
+  -fx-background-radius: 12px;
+}
+
+.root-pane > VBox > .vfx-list .cell VBox {
+  -fx-alignment: CENTER;
+}
+
+.root-pane > VBox > .vfx-list .cell .label {
+  -fx-text-fill: -md-sys-color-on-surface;
+}
+
+.root-pane > VBox > .vfx-list .cell .date {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 16px;
+}
+
+.root-pane > VBox > .vfx-list > .cell .temp {
+  -fx-font-family: 'MontSerrat Medium';
+  -fx-font-size: 14px;
+}

@@ -1,0 +1,39 @@
+.imports {
+  'io.github.palexdev.mfxcomponents.controls.buttons.MFXButton',
+  'javafx.scene.control.Label',
+  'javafx.scene.control.TextArea',
+  'javafx.scene.control.TextField',
+  'javafx.scene.layout.HBox',
+  'javafx.scene.layout.Priority',
+  'javafx.scene.layout.VBox'
+}
+
+VBox {
+  .cid: 'container'
+  styleClass = listOf('edit-popup')
+
+  TextField {
+    .cid: 'titleField'
+    alignment: Pos.CENTER
+    promptText: 'Title'
+  }
+
+  TextArea {
+    .cid: 'bodyArea'
+    VBox.setVgrow(this, Priority.ALWAYS)
+  }
+
+  HBox {
+    styleClass = listOf('actions')
+
+    MFXButton::('Save') {
+      .cid: 'saveBtn'
+      this.filled()
+    }
+    MFXButton::('Cancel') {
+      .cid: 'cancelBtn'
+      styleClass += listOf('cancel')
+      this.text()
+    }
+  }
+}

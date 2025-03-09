@@ -1,0 +1,24 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation(project(":backend"))
+
+    implementation "io.github.palexdev:mfxcore:$mfxcore"
+    implementation "io.github.palexdev:mfxcomponents:$materialfx"
+    implementation "io.github.palexdev:virtualizedfx:$virtualizedfx"
+    implementation "io.github.palexdev:rectcut-java:$rectcut"
+    implementation "io.github.palexdev:imcache:$imcache"
+
+    implementation "com.google.code.gson:gson:$gson"
+}
+
+javafx {
+    modules = ['javafx.fxml', 'javafx.graphics']
+}
+
+application {
+    mainModule = 'afx.examples'
+    mainClass = 'io.github.palexdev.architectfx.examples.Launcher'
+}
