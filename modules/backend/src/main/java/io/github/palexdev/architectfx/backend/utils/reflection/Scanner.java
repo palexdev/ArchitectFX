@@ -1,14 +1,14 @@
 package io.github.palexdev.architectfx.backend.utils.reflection;
 
-import java.nio.file.Path;
-import java.util.*;
-
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
 import io.github.palexdev.architectfx.backend.deps.DynamicClassLoader;
 import io.github.palexdev.architectfx.backend.utils.ImportsSet;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 import org.tinylog.Logger;
 
 /// This class offers core functionalities to the loading process. Thanks to the third-party library
@@ -109,14 +109,6 @@ public class Scanner {
         this.dm = dm;
         this.imports = imports;
         addToScanCache(CORE_CLASS_CACHE);
-        try {
-            Path[] toPaths = Arrays.stream(JAVAFX_MODULES)
-                .map(Path::of)
-                .toArray(Path[]::new);
-            dm.addDeps(toPaths);
-        } catch (Exception ex) {
-            Logger.error("Failed to add JavaFX modules to the DependencyManager");
-        }
     }
 
     //================================================================================
@@ -259,6 +251,15 @@ public class Scanner {
                     Logger.debug("No dependencies found to execute ClassGraph scan with DEPS scope, fallback to ALL...");
                     return ALL.build(dm);
                 }
+
+                for (String jfx : JAVAFX_MODULES) {
+                    try {
+                        dm.dependencies().add(Paths.get(jfx));
+                    } catch (Exception ex) {
+                        Logger.error("Failed to add module {} because:\n{}", jfx, ex);
+                    }
+                }
+
                 return new ClassGraph()
                     .overrideClassLoaders(
                         ClassLoader.getSystemClassLoader(),
