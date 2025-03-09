@@ -19,20 +19,20 @@
 package io.github.palexdev.architectfx.backend.loaders.jui;
 
 
+import io.github.palexdev.architectfx.backend.jui.JUILexer;
+import io.github.palexdev.architectfx.backend.jui.JUIParser;
+import io.github.palexdev.architectfx.backend.jui.JUIVisitor;
+import io.github.palexdev.architectfx.backend.loaders.UILoader;
+import io.github.palexdev.architectfx.backend.model.Initializable;
+import io.github.palexdev.architectfx.backend.model.UIDocument;
+import io.github.palexdev.architectfx.backend.resolver.Resolver;
+import io.github.palexdev.architectfx.backend.utils.Progress;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-
-import io.github.palexdev.architectfx.backend.jui.JUILexer;
-import io.github.palexdev.architectfx.backend.jui.JUIParser;
-import io.github.palexdev.architectfx.backend.jui.JUIVisitor;
-import io.github.palexdev.architectfx.backend.loaders.UILoader;
-import io.github.palexdev.architectfx.backend.model.UIDocument;
-import io.github.palexdev.architectfx.backend.resolver.Resolver;
-import io.github.palexdev.architectfx.backend.utils.Progress;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -124,10 +124,15 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             T root = resolver.resolveObj(document.getRoot());
 
             // 5) Inject controller
-            onProgress("Injecting controller", 0.9);
+            onProgress("Injecting controller", 0.8);
             controller.ifPresent(resolver::injectController);
 
-            // 6) Finally return result
+            // 6) Initialize controller
+            onProgress("Initializing controller", 0.9);
+            controller.filter(c -> c instanceof Initializable)
+                .ifPresent(c -> ((Initializable) c).initialize());
+
+            // 7) Finally return result
             onProgress("Loaded!", 1.0);
             return new Loaded<>(document, root, controller.orElse(null));
         } catch (Exception ex) {
