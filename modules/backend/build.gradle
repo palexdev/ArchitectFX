@@ -1,5 +1,8 @@
+import com.vanniktech.maven.publish.SonatypeHost
+
 plugins {
     id 'antlr'
+    id 'com.vanniktech.maven.publish' version "$mavenPublish"
 }
 
 dependencies {
@@ -9,12 +12,15 @@ dependencies {
     implementation "org.jooq:joor:$joor"
     implementation "io.github.classgraph:classgraph:$classgraph"
 
-    implementation name: 'jresolve-21.0.3'
-    implementation name: 'jresolve-21.0.3', classifier: 'sources'
+    implementation "io.github.palexdev:jresolve:$jresolve"
 }
 
 generateGrammarSource {
     arguments += ['-no-listener', '-package', 'io.github.palexdev.architectfx.backend.jui']
+}
+
+java {
+    tasks.withType(Jar).each { it.archiveBaseName.set("architectfx") }
 }
 
 javafx {
@@ -33,3 +39,17 @@ tasks.register('testRun', JavaExec) {
 }
 
 sourcesJar.dependsOn(generateGrammarSource)
+
+configurations {
+    // Remove vanniktech non-sense
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(plainJavadocJar)) {
+            plainJavadocJar.enabled = false
+        }
+    }
+}
+
+mavenPublishing {
+    publishToMavenCentral(SonatypeHost.S01)
+    signAllPublications()
+}

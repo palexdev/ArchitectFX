@@ -142,7 +142,7 @@ jlink {
     }
 
     jpackage {
-        appVersion = "$appVer"
+        appVersion = "$ver"
         installerName = 'ArchitectFX'
         description = 'ArchitectFX is a new tool with a modern and pleasant interface, which allows' +
                 'to easily and quickly build and prototype views for JavaFX.' +

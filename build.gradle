@@ -10,7 +10,7 @@ subprojects {
     apply plugin: "org.openjfx.javafxplugin"
 
     group 'io.github.palexdev'
-    version "$appVer"
+    version "$ver"
 
     repositories {
         mavenCentral()
