@@ -149,9 +149,9 @@ jlink {
                 'UIs are declared in a clear and concise custom DSL called JUI (Java User Interface), ' +
                 'its syntax is based on Java and Groovy'
         vendor = 'palexdev'
-        icon = "src/main/resources/io/github/palexdev/architectfx/frontend/assets/icon.ico"
 
         if (os == 'windows') {
+            icon = "src/main/resources/io/github/palexdev/architectfx/frontend/assets/icon.ico"
             installerOptions += [
                     "--win-help-url", "https://github.com/palexdev/ArchitectFX",
                     "--win-dir-chooser",
@@ -163,8 +163,9 @@ jlink {
         }
 
         if (os == 'linux') {
+            icon = "src/main/resources/io/github/palexdev/architectfx/frontend/assets/icon.png"
             installerOptions += [
-                    "--linux-package-name", "ArchitectFX",
+                    "--linux-package-name", "architectfx",
                     "--linux-menu-group", '"Development;Building;GUIDesigner;Java;"',
                     "--install-dir", "/opt",
                     "--linux-shortcut"
