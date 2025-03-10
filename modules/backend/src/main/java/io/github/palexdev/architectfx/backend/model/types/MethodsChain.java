@@ -32,25 +32,25 @@ import java.util.List;
 ///   Builder {
 ///     User u = new User();
 ///
-///     public static Builder build() {
+///     public static Builder build(){
 ///         return new Builder();
-///     }
+///}
 ///
-///     public Builder withFirstName(String fn) {
+///     public Builder withFirstName(String fn){
 ///         u.firstName = fn;
 ///         return this;
-///     }
+///}
 ///
-///     public Builder withLastName(String ln) {
+///     public Builder withLastName(String ln){
 ///         u.lastName = ln;
 ///         return this;
-///     }
+///}
 ///
-///     public User get() {
+///     public User get(){
 ///         return u;
-///     }
-///   }
-/// }
+///}
+///}
+///}
 ///
 /// /*
 ///  * A chain of methods could look like this:
@@ -63,7 +63,7 @@ import java.util.List;
 ///  * the builder instance on which the 'with' methods can be invoked to configure the user object.
 ///  * The last (build) is the terminal operation, which returns the overall result of the chain invocation
 ///  */
-/// ```
+///```
 ///
 /// @see MethodCall
 public class MethodsChain {
