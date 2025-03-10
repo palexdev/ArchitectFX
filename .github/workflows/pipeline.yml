@@ -63,3 +63,6 @@ jobs:
           tag: 'v${{ needs.create-tag.outputs.VERSION }}'
           artifacts: "artifacts/TestCICD-*,artifacts/testcicd-*,artifacts/testcicd_*"
           bodyFile: 'Changelog.md'
+
+      - name: Release on Maven
+        uses: ./.github/workflows/maven-release.yml
