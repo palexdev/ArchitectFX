@@ -228,8 +228,16 @@ public class DefaultResolver implements Resolver {
     }
 
     @Override
-    public void injectController(Object controller) {
+    public void injectController(Object controller, boolean extra) {
         Reflector reflector = context().getReflector();
+        if (extra) {
+            for (Map.Entry<String, Object> e : context.getInjections().entrySet()) {
+                String name = e.getKey();
+                Object value = e.getValue();
+                reflector.set(controller, name, value);
+            }
+        }
+
         for (Map.Entry<String, UIObj> e : context.getNodesById().entrySet()) {
             String name = e.getKey();
             UIObj obj = e.getValue();

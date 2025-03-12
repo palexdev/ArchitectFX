@@ -1,15 +1,15 @@
 package unit;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Map;
-
 import io.github.palexdev.architectfx.backend.loaders.UILoader;
 import io.github.palexdev.architectfx.backend.loaders.jui.JUIBaseLoader;
 import io.github.palexdev.architectfx.backend.resolver.DefaultResolver;
 import io.github.palexdev.architectfx.backend.resolver.Resolver;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Map;
 import misc.DummyLoader;
 import misc.InjectTestClass;
+import misc.NonStaticInjectTestClass;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,7 +70,6 @@ public class InjectionTest {
 
         InjectTestClass.Controller controller = loaded.controller(InjectTestClass.Controller.class);
         assertNotNull(controller);
-        controller.init();
 
         InjectTestClass root = loaded.root();
         assertEquals("done", root.aString);
@@ -92,8 +91,8 @@ public class InjectionTest {
         JUIBaseLoader.Loaded<InjectTestClass> loaded = new DummyLoader<InjectTestClass>()
             .setConfig(() -> new UILoader.Config().setControllerFactory(() -> new InjectTestClass.Controller() {
                 @Override
-                public void init() {
-                    super.init();
+                public void initialize() {
+                    super.initialize();
                     obj.aDouble = Double.NEGATIVE_INFINITY;
                     obj.nested = null;
                 }
@@ -102,12 +101,34 @@ public class InjectionTest {
 
         InjectTestClass.Controller controller = loaded.controller(InjectTestClass.Controller.class);
         assertNotNull(controller);
-        controller.init();
 
         InjectTestClass root = loaded.root();
         assertEquals("done", root.aString);
         assertEquals(1, root.anInt);
         assertEquals(Double.NEGATIVE_INFINITY, root.aDouble);
         assertNull(root.nested);
+    }
+
+    @Test
+    void testNonStaticControllerFail() throws IOException {
+        String doc = """
+            .controller: misc.NonStaticInjectTestClass$Controller {}
+            
+            InjectTestClass {
+              .cid: 'obj'
+            }
+            """;
+
+        UILoader.Loaded<InjectTestClass> res = new DummyLoader<InjectTestClass>()
+            .load(new ByteArrayInputStream(doc.getBytes()), null);
+        assertNull(res.controller());
+    }
+
+    @Test
+    void testNonStaticController() throws IOException {
+        NonStaticInjectTestClass enclosingInstance = new NonStaticInjectTestClass();
+        UILoader.Loaded<NonStaticInjectTestClass> res = enclosingInstance.load();
+        assertNotNull(res.controller());
+        assertEquals("Successfully Injected!", res.controller(NonStaticInjectTestClass.Controller.class).aString);
     }
 }

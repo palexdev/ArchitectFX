@@ -22,6 +22,7 @@ package io.github.palexdev.architectfx.backend.model.types;
 import java.util.ArrayList;
 import java.util.List;
 
+// @formatter:off
 /// Represents a chain of methods, each should produce a result on which the next is invoked.
 /// Example:
 /// ```java
@@ -32,24 +33,24 @@ import java.util.List;
 ///   Builder {
 ///     User u = new User();
 ///
-///     public static Builder build(){
+///     public static Builder build() {
 ///         return new Builder();
-///}
+///     }
 ///
-///     public Builder withFirstName(String fn){
+///     public Builder withFirstName(String fn) {
 ///         u.firstName = fn;
 ///         return this;
-///}
+///     }
 ///
-///     public Builder withLastName(String ln){
+///     public Builder withLastName(String ln) {
 ///         u.lastName = ln;
 ///         return this;
-///}
+///     }
 ///
-///     public User get(){
+///     public User get() {
 ///         return u;
-///}
-///}
+///     }
+///   }
 ///}
 ///
 /// /*
@@ -66,6 +67,7 @@ import java.util.List;
 ///```
 ///
 /// @see MethodCall
+// @formatter:on
 public class MethodsChain {
     //================================================================================
     // Properties

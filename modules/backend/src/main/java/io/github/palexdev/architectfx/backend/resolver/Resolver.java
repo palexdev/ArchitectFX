@@ -19,10 +19,6 @@
 package io.github.palexdev.architectfx.backend.resolver;
 
 
-import java.net.URI;
-import java.util.*;
-import java.util.function.BiConsumer;
-
 import io.github.palexdev.architectfx.backend.deps.DependencyManager;
 import io.github.palexdev.architectfx.backend.enums.CollectionType;
 import io.github.palexdev.architectfx.backend.model.UIDocument;
@@ -34,6 +30,9 @@ import io.github.palexdev.architectfx.backend.model.types.Value.*;
 import io.github.palexdev.architectfx.backend.utils.CastUtils;
 import io.github.palexdev.architectfx.backend.utils.reflection.Reflector;
 import io.github.palexdev.architectfx.backend.utils.reflection.Scanner;
+import java.net.URI;
+import java.util.*;
+import java.util.function.BiConsumer;
 
 /// Core API which is the bridge between the model parsed from the document and the actual UI graph. In other words, the
 /// main purpose of a _resolver_ is to convert [Value] into the appropriate object, thus creating and initializing the tree.
@@ -79,7 +78,15 @@ public interface Resolver {
 
     /// Implementations should define how to populate the given controller's instance with the nodes marked and stored
     /// by the [Context]. Ideally, you want to call this just before the loading process ends.
-    void injectController(Object controller);
+    ///
+    /// Extra injects are usually handled automatically by [#resolveKeyword(KeywordValue)] but they are ignored if the
+    /// controller is built from a factory set on the loader.
+    ///
+    /// Therefore, the `extra` flag is used to indicate that the extra injects carried by the [Context] should also be
+    /// set on the given controller object.
+    /// The only caveat of such solution is that since we are not resolving the injections as keywords, the property's
+    /// name and the name put in the context must be the same!
+    void injectController(Object controller, boolean extra);
 
     Context context();
 
@@ -99,7 +106,7 @@ public interface Resolver {
     /// 3) Nodes can be marked by ids, [UIObj#getControllerId()]. Those who are marked are stored in a map `[String -> UIObj]`
     /// (automatically handled by [#pushNode(UIObj)]).
     /// By resolving this mapping, and the one in point 1, we can easily inject marked nodes into the controller (if present),
-    /// [#injectController(Object)].
+    /// [#injectController(Object, boolean)].
     class Context {
         // Deps
         private final Set<String> imports = new HashSet<>();

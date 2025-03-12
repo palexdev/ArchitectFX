@@ -1,5 +1,7 @@
 package misc;
 
+import io.github.palexdev.architectfx.backend.model.Initializable;
+
 public class InjectTestClass {
     public String aString;
     public int anInt;
@@ -15,10 +17,11 @@ public class InjectTestClass {
         this.nested = nested;
     }
 
-    public static class Controller {
+    public static class Controller implements Initializable {
         protected InjectTestClass obj;
 
-        public void init() {
+        @Override
+        public void initialize() {
             obj.aString = "done";
             obj.anInt = 1;
             obj.aDouble = Double.POSITIVE_INFINITY;

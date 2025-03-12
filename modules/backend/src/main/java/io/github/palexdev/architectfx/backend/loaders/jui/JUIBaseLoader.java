@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -113,8 +114,10 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
             // 3) Handle controller
             onProgress("Handling controller", 0.3);
             Optional<Object> controller = Optional.empty();
+            AtomicBoolean injectExtra = new AtomicBoolean(false);
             if (config.getControllerFactory() != null) {
                 controller = Optional.ofNullable(config.getControllerFactory().get());
+                injectExtra.set(true);
             } else if (document.getController() != null) {
                 controller = Optional.ofNullable(resolver.resolveObj(document.getController()));
             }
@@ -125,7 +128,7 @@ public abstract class JUIBaseLoader<T> implements UILoader<T> {
 
             // 5) Inject controller
             onProgress("Injecting controller", 0.8);
-            controller.ifPresent(resolver::injectController);
+            controller.ifPresent(c -> resolver.injectController(c, injectExtra.get()));
 
             // 6) Initialize controller
             onProgress("Initializing controller", 0.9);
