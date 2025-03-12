@@ -18,7 +18,6 @@ subprojects {
         flatDir {
             dirs "$rootDir/libs"
             dirs "$rootDir/libs/dirwatcher"
-            dirs "$rootDir/libs/jresolve"
             dirs "$rootDir/libs/nfx-lib"
             dirs "$rootDir/libs/pragmatica"
         }
