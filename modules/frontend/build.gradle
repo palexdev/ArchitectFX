@@ -186,3 +186,20 @@ static String getOS() {
     }
     return null
 }
+
+/* Generate Properties for runtime checks */
+def buildDir = file(layout.buildDirectory)
+tasks.register('generateProps') {
+    def outputDir = file("$buildDir/generated/resources/io/github/palexdev/architectfx/frontend")
+    def versionFile = file("$outputDir/app.properties")
+
+    outputs.file(versionFile)
+
+    doLast {
+        outputDir.mkdirs()
+        versionFile.text = "version=${project.version}"
+    }
+}
+
+processResources.dependsOn generateProps
+sourceSets.main.resources.srcDir("$buildDir/generated/resources")
