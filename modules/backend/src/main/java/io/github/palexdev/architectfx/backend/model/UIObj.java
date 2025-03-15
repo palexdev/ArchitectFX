@@ -49,7 +49,6 @@ import io.github.palexdev.architectfx.backend.model.types.ObjConstructor;
 /// [UIObj] and is set on the children when invoking [#addChildren(UIObj...)], [#setChildren(UIObj...)] or
 /// [#removeChildren(UIObj...)]. Beware that for this reason, the list returned by [#getChildren()] is immutable!
 /// 3) `Children`. UI nodes typically form a graph/hierarchy of nodes.
-///
 public class UIObj implements Iterable<UIObj> {
     //================================================================================
     // Properties
