@@ -18,15 +18,6 @@
 
 package io.github.palexdev.architectfx.frontend;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ConcurrentModificationException;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import io.github.palexdev.architectfx.backend.utils.OSUtils;
 import io.github.palexdev.architectfx.frontend.components.layout.RootPane;
 import io.github.palexdev.architectfx.frontend.events.AppEvent;
@@ -42,6 +33,14 @@ import io.github.palexdev.mfxresources.fonts.IconProvider;
 import io.github.palexdev.mfxresources.fonts.IconsProviders;
 import io.inverno.core.annotation.Bean;
 import io.inverno.core.annotation.Wrapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ConcurrentModificationException;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javafx.application.Application;
 import javafx.application.HostServices;
 import javafx.application.Platform;
